@@ -1,57 +1,75 @@
 // =========================================================================
-// BANCO DE DADOS DE USUÁRIOS E PROJETOS
+// SISTEMA DE ARMAZENAMENTO SEGURO
 // =========================================================================
+let memoryDb = { users: {}, activeUser: null, projects: {} };
+
 const Storage = {
-  // Retorna a lista de usuários registrados
   getUsers() {
     try {
-      return JSON.parse(localStorage.getItem("studio_accounts_db") || "{}");
+      const data = localStorage.getItem("studio_users_v2");
+      return data ? JSON.parse(data) : memoryDb.users;
     } catch (e) {
-      return {};
+      return memoryDb.users;
     }
   },
   saveUsers(users) {
-    localStorage.setItem("studio_accounts_db", JSON.stringify(users));
-  },
-
-  // Sessão do usuário atual conectado
-  getCurrentUser() {
-    return localStorage.getItem("studio_logged_username") || null;
-  },
-  setCurrentUser(username) {
-    localStorage.setItem("studio_logged_username", username);
-  },
-  clearCurrentUser() {
-    localStorage.removeItem("studio_logged_username");
-  },
-
-  // Projetos salvos por usuário
-  getProjects(username) {
-    const key = `studio_data_${username.toLowerCase()}`;
     try {
-      return JSON.parse(localStorage.getItem(key) || "[]");
+      localStorage.setItem("studio_users_v2", JSON.stringify(users));
     } catch (e) {
-      return [];
+      memoryDb.users = users;
+    }
+  },
+  getActiveUser() {
+    try {
+      return localStorage.getItem("studio_active_user_v2") || memoryDb.activeUser;
+    } catch (e) {
+      return memoryDb.activeUser;
+    }
+  },
+  setActiveUser(username) {
+    try {
+      localStorage.setItem("studio_active_user_v2", username);
+    } catch (e) {
+      memoryDb.activeUser = username;
+    }
+  },
+  clearActiveUser() {
+    try {
+      localStorage.removeItem("studio_active_user_v2");
+    } catch (e) {
+      memoryDb.activeUser = null;
+    }
+  },
+  getProjects(username) {
+    const key = `studio_projects_${username.toLowerCase()}`;
+    try {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : (memoryDb.projects[username.toLowerCase()] || []);
+    } catch (e) {
+      return memoryDb.projects[username.toLowerCase()] || [];
     }
   },
   saveProjects(username, projects) {
-    const key = `studio_data_${username.toLowerCase()}`;
-    localStorage.setItem(key, JSON.stringify(projects));
+    const key = `studio_projects_${username.toLowerCase()}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(projects));
+    } catch (e) {
+      memoryDb.projects[username.toLowerCase()] = projects;
+    }
   }
 };
 
-let currentUsername = Storage.getCurrentUser();
+let currentUsername = Storage.getActiveUser();
 let currentConversationId = null;
 let conversationHistory = [];
 
 // Elementos da Interface
 const authScreen = document.getElementById("authScreen");
 const appScreen = document.getElementById("appScreen");
-const loginForm = document.getElementById("loginForm");
 const authUsername = document.getElementById("authUsername");
 const authPassword = document.getElementById("authPassword");
-const loginFeedback = document.getElementById("loginFeedback");
 const submitLoginBtn = document.getElementById("submitLoginBtn");
+const loginFeedback = document.getElementById("loginFeedback");
 
 const logoutBtn = document.getElementById("logoutBtn");
 const userName = document.getElementById("userName");
@@ -67,70 +85,84 @@ const sendBtn = document.getElementById("sendBtn");
 const geminiKeyInput = document.getElementById("geminiKeyInput");
 const saveGeminiKeyBtn = document.getElementById("saveGeminiKeyBtn");
 
-// Salvar chave Gemini
+// Salvar API Key do Gemini
 geminiKeyInput.value = localStorage.getItem("GEMINI_API_KEY") || "";
 saveGeminiKeyBtn.addEventListener("click", () => {
-  localStorage.setItem("GEMINI_API_KEY", geminiKeyInput.value.trim());
-  alert("Chave Gemini salva com sucesso!");
+  const key = geminiKeyInput.value.trim();
+  if (key) {
+    localStorage.setItem("GEMINI_API_KEY", key);
+    alert("Chave Gemini salva!");
+  }
 });
 
 // =========================================================================
-// LÓGICA DE RECONHECIMENTO E CADASTRO AUTOMÁTICO
+// FUNÇÃO DE LOGIN / CADASTRO POR CLIQUE DIRETO (SEM SUBMIT DE FORM)
 // =========================================================================
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = authUsername.value.trim();
-  const pass = authPassword.value.trim();
+function handleAuthAction() {
+  const username = (authUsername.value || "").trim();
+  const password = (authPassword.value || "").trim();
 
-  if (!name || !pass) {
-    showMsg("Por favor, preencha o nome de usuário e a senha.", "error");
+  if (!username) {
+    showFeedback("Digite um nome de usuário.", "error");
+    authUsername.focus();
+    return;
+  }
+  if (!password) {
+    showFeedback("Digite uma senha.", "error");
+    authPassword.focus();
     return;
   }
 
   const users = Storage.getUsers();
-  const userKey = name.toLowerCase();
+  const key = username.toLowerCase();
 
-  if (users[userKey]) {
-    // USUÁRIO JÁ EXISTE -> VALIDAR SENHA
-    if (users[userKey].password === pass) {
-      showMsg(`Bem-vindo de volta, ${users[userKey].name}! Carregando seus projetos...`, "success");
-      setTimeout(() => {
-        Storage.setCurrentUser(users[userKey].name);
-        openStudio(users[userKey].name);
-      }, 500);
+  if (users[key]) {
+    // USUÁRIO JÁ EXISTE: CONFERIR SENHA
+    if (users[key].password === password) {
+      showFeedback(`Bem-vindo de volta, ${users[key].name}! Entrando...`, "success");
+      Storage.setActiveUser(users[key].name);
+      setTimeout(() => openStudio(users[key].name), 300);
     } else {
-      showMsg("⚠️ Senha incorreta para este usuário! Digite a senha cadastrada.", "error");
+      showFeedback("⚠️ Senha incorreta! Digite a senha cadastrada para este usuário.", "error");
     }
   } else {
-    // PRIMEIRO ACESSO -> REGISTRAR CADASTRO AUTOMATICAMENTE
-    users[userKey] = {
-      name: name,
-      password: pass,
+    // PRIMEIRO ACESSO: CRIA O CADASTRO E ENTRA
+    users[key] = {
+      name: username,
+      password: password,
       created: new Date().toISOString()
     };
     Storage.saveUsers(users);
-    Storage.setCurrentUser(name);
+    Storage.setActiveUser(username);
 
-    showMsg(`✨ Cadastro realizado com sucesso! Bem-vindo, ${name}!`, "success");
-    setTimeout(() => {
-      openStudio(name);
-    }, 500);
-  }
-});
-
-function showMsg(text, type) {
-  loginFeedback.textContent = text;
-  loginFeedback.classList.remove("hidden");
-  if (type === "success") {
-    loginFeedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
-  } else {
-    loginFeedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/15 text-rose-300 border border-rose-500/30";
+    showFeedback(`✨ Usuário cadastrado com sucesso! Bem-vindo, ${username}!`, "success");
+    setTimeout(() => openStudio(username), 300);
   }
 }
 
-// Botão Sair / Deslogar
+submitLoginBtn.addEventListener("click", handleAuthAction);
+
+// Permite apertar Enter no campo de senha
+authPassword.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleAuthAction();
+  }
+});
+
+function showFeedback(text, type) {
+  loginFeedback.textContent = text;
+  loginFeedback.classList.remove("hidden");
+  if (type === "success") {
+    loginFeedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+  } else {
+    loginFeedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+  }
+}
+
+// Desconectar (Logout)
 logoutBtn.addEventListener("click", () => {
-  Storage.clearCurrentUser();
+  Storage.clearActiveUser();
   currentUsername = null;
   window.location.reload();
 });
@@ -286,7 +318,6 @@ async function handleSendMessage(text, isInitial = false) {
 
     if (currentProj) {
       currentProj.messages.push({ role: "model", content: reply });
-      // Se for a primeira resposta após a etapa 1, atualiza o título do projeto
       if (currentProj.messages.length <= 4 && !isInitial) {
         currentProj.title = text.length > 25 ? text.substring(0, 25) + "..." : text;
         currentChatTitle.textContent = currentProj.title;
@@ -313,7 +344,7 @@ chatForm.addEventListener("submit", (e) => {
   handleSendMessage(val, false);
 });
 
-// Inicialização: Se já estiver conectado, abre direto
+// Inicialização imediata
 window.addEventListener("DOMContentLoaded", () => {
   if (currentUsername) {
     openStudio(currentUsername);
