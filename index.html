@@ -353,7 +353,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
+    // MENU DE 3 PONTINHOS
     // ==========================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
@@ -530,7 +530,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // CHAMADA AO MODELO ATUALIZADO (gemini-3.8-flash)
+    // CHAMADA MULTI-MODELO COM FALLBACK AUTOMÁTICO
     // ==========================================
     async function dispararGemini(texto, isInicial = false) {
       const apiKey = obterChave();
@@ -578,36 +578,57 @@ Selecione o que deseja produzir hoje:
       chatArea.appendChild(indicador);
       chatArea.scrollTop = chatArea.scrollHeight;
 
-      try {
-        // Atualizado para o endpoint oficial recomendado pelo Google: gemini-3.8-flash
-        const resp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              contents: conversationHistory,
-              generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-            })
+      // Lista ordenada de modelos para contornar sobrecarga
+      const modelosCandidatos = [
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-3.8-flash"
+      ];
+
+      let respostaFinal = null;
+      let ultimoErro = null;
+
+      for (const modelo of modelosCandidatos) {
+        try {
+          const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                contents: conversationHistory,
+                generationConfig: { maxOutputTokens: 8192 }
+              })
+            }
+          );
+
+          const data = await resp.json();
+
+          if (data.error) {
+            ultimoErro = data.error.message || `Código ${data.error.code}`;
+            // Se for erro de demanda/limite, passa imediatamente ao próximo modelo
+            continue;
           }
-        );
 
-        const data = await resp.json();
-        const loadEl = document.getElementById("indicadorCarregando");
-        if (loadEl) loadEl.remove();
-
-        if (data.error) {
-          throw new Error(data.error.message || `Código ${data.error.code}`);
+          if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            respostaFinal = data.candidates[0].content.parts[0].text;
+            break; // Sucesso, sai do loop
+          }
+        } catch (err) {
+          ultimoErro = err.message;
         }
+      }
 
-        const resposta = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sem resposta do modelo.";
+      const loadEl = document.getElementById("indicadorCarregando");
+      if (loadEl) loadEl.remove();
 
-        conversationHistory.push({ role: "model", parts: [{ text: resposta }] });
-        renderizarMensagem(resposta, false);
+      if (respostaFinal) {
+        conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
+        renderizarMensagem(respostaFinal, false);
 
         if (atual) {
-          atual.messages.push({ role: "model", content: resposta });
+          atual.messages.push({ role: "model", content: respostaFinal });
           if (atual.messages.length <= 4 && !isInicial) {
             atual.title = texto.length > 25 ? texto.substring(0, 25) + "..." : texto;
             document.getElementById("currentChatTitle").textContent = atual.title;
@@ -615,15 +636,13 @@ Selecione o que deseja produzir hoje:
           saveStorageProjects(activeUser, projs);
           atualizarListaProjetos();
         }
-      } catch (err) {
-        const loadEl = document.getElementById("indicadorCarregando");
-        if (loadEl) loadEl.remove();
-        renderizarMensagem(`❌ **Erro na API Gemini:** ${err.message}`, false);
-      } finally {
-        sendBtn.disabled = false;
-        userInput.disabled = false;
-        userInput.focus();
+      } else {
+        renderizarMensagem(`❌ **Falha ao processar:** ${ultimoErro || "Servidores do Google ocupados no momento. Tente novamente em alguns segundos."}`, false);
       }
+
+      sendBtn.disabled = false;
+      userInput.disabled = false;
+      userInput.focus();
     }
 
     function iniciarProducao() {
