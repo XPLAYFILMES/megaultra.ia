@@ -11,7 +11,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
 
-  <!-- ================= TELA DE LOGIN / CADASTRO ================= -->
+  <!-- ================= TELA DE CADASTRO E ACESSO ================= -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
       <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-inner">
@@ -19,11 +19,11 @@
       </div>
       <h1 class="text-2xl font-bold text-white tracking-tight">Universal Master Studio</h1>
       <p class="text-xs text-slate-400">
-        Digite seu nome e senha. Use sempre os mesmos dados para acessar seus projetos salvos.
+        Digite seu nome de usuário e senha. Na primeira vez ele cadastra; nas próximas, ele reconhece você e recupera seus projetos.
       </p>
     </div>
 
-    <!-- Formulário de Autenticação -->
+    <!-- Formulário Simplificado -->
     <form id="loginForm" class="space-y-4">
       <div>
         <label for="authUsername" class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
@@ -32,9 +32,8 @@
         <input 
           type="text" 
           id="authUsername" 
-          placeholder="Ex: alex_studio" 
+          placeholder="Ex: alex" 
           required
-          autocomplete="username"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
       </div>
@@ -46,28 +45,28 @@
         <input 
           type="password" 
           id="authPassword" 
-          placeholder="Digite sua senha de acesso" 
+          placeholder="Crie ou digite sua senha" 
           required
-          autocomplete="current-password"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
       </div>
 
-      <div id="loginFeedback" class="text-xs py-2 px-3 rounded-lg hidden font-medium"></div>
+      <!-- Mensagens de Alerta ou Sucesso -->
+      <div id="loginFeedback" class="text-xs py-2.5 px-3 rounded-lg hidden font-medium"></div>
 
       <button 
         type="submit" 
         id="submitLoginBtn"
         class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/25 active:scale-[0.98]">
-        Entrar no Studio
+        Cadastrar / Acessar
       </button>
     </form>
   </div>
 
-  <!-- ================= APLICAÇÃO PRINCIPAL (SÓ APARECE APÓS LOGIN) ================= -->
+  <!-- ================= PAINEL DO STUDIO (SÓ LIBERA APÓS ACESSO) ================= -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden hidden">
     
-    <!-- BARRA LATERAL -->
+    <!-- BARRA LATERAL COM PROJETOS -->
     <aside class="w-64 sm:w-72 bg-slate-950 border-r border-slate-800 flex flex-col justify-between">
       <div class="p-4 space-y-4">
         <button id="newChatBtn" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20">
@@ -75,12 +74,12 @@
         </button>
 
         <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1">
-          Seus Projetos
+          Seus Projetos Salvos
         </div>
         <div id="conversationsList" class="space-y-1 overflow-y-auto max-h-[60vh] pr-1"></div>
       </div>
 
-      <!-- Perfil do Usuário Conectado -->
+      <!-- Rodapé do Usuário Logado -->
       <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
@@ -88,16 +87,16 @@
           </div>
           <div class="flex flex-col truncate">
             <span id="userName" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
-            <span class="text-[10px] text-emerald-400 font-medium">Sessão Ativa</span>
+            <span class="text-[10px] text-emerald-400 font-medium">Reconhecido</span>
           </div>
         </div>
-        <button id="logoutBtn" title="Encerrar Sessão" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
+        <button id="logoutBtn" title="Trocar de Usuário / Sair" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
           Sair
         </button>
       </div>
     </aside>
 
-    <!-- ÁREA DO CHAT -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="flex-1 flex flex-col h-full bg-slate-900">
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2">
@@ -119,14 +118,14 @@
       </header>
 
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela de Abertura da Sessão com o Botão Iniciar -->
+        <!-- Tela com o Botão Iniciar -->
         <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
             ⚡
           </div>
           <h2 class="text-lg font-bold text-white">Pronto para a Etapa 1?</h2>
           <p class="text-sm text-slate-400 max-w-sm">
-            O motor audiovisual executará estritamente uma etapa por vez sob o sistema monotarefa.
+            O motor executará estritamente uma etapa por vez sob o sistema monotarefa.
           </p>
           <button id="startBtn" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
             Iniciar Produção
