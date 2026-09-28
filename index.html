@@ -81,11 +81,11 @@
           Suas Produções
         </div>
         
-        <!-- Lista de Conversas com rolagem -->
+        <!-- Lista de Conversas -->
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Perfil do Usuário Conectado -->
+      <!-- Rodapé do Usuário -->
       <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60 shrink-0">
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
@@ -158,22 +158,6 @@
 
   </div>
 
-  <!-- MODAL PARA EDITAR CONVERSA COMPLETA -->
-  <div id="editModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center">
-        <h3 class="text-base font-bold text-white">Editar Mensagens da Produção</h3>
-        <button onclick="fecharModalEdicao()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-      </div>
-      <p class="text-xs text-slate-400">Edite o conteúdo em texto bruto caso deseje recalibrar as instruções ou respostas:</p>
-      <textarea id="editModalContent" rows="12" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"></textarea>
-      <div class="flex justify-end gap-2">
-        <button onclick="fecharModalEdicao()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200 bg-slate-800">Cancelar</button>
-        <button onclick="salvarEdicaoModal()" class="px-4 py-2 rounded-xl text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">Salvar Alterações</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ================= LÓGICA DO STUDIO ================= -->
   <script>
     const SYSTEM_PROMPT = `[CONFIGURAÇÃO_DE_SISTEMA]
@@ -235,7 +219,6 @@ Selecione o que deseja produzir hoje:
     let activeUser = null;
     let currentConversationId = null;
     let conversationHistory = [];
-    let editingProjectId = null;
 
     try {
       const savedKey = localStorage.getItem("GEMINI_API_KEY");
@@ -318,7 +301,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EDITAR, EXCLUIR)
+    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
     // ==========================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
@@ -364,56 +347,6 @@ Selecione o que deseja produzir hoje:
       }
     }
 
-    function abrirModalEdicao(e, id) {
-      e.stopPropagation();
-      editingProjectId = id;
-      const projs = getStorageProjects(activeUser);
-      const proj = projs.find(p => p.id === id);
-      if (!proj) return;
-
-      // Junta as mensagens em formato texto para edição fácil
-      const textoFormatado = (proj.messages || [])
-        .map(m => `[${m.role.toUpperCase()}]:\n${m.content}`)
-        .join("\n\n---\n\n");
-
-      document.getElementById("editModalContent").value = textoFormatado;
-      document.getElementById("editModal").classList.remove("hidden");
-    }
-
-    function fecharModalEdicao() {
-      document.getElementById("editModal").classList.add("hidden");
-      editingProjectId = null;
-    }
-
-    function salvarEdicaoModal() {
-      if (!editingProjectId) return;
-      const rawText = document.getElementById("editModalContent").value;
-      const projs = getStorageProjects(activeUser);
-      const proj = projs.find(p => p.id === editingProjectId);
-      if (!proj) return;
-
-      // Reconstrói o histórico baseado nos blocos editados
-      const blocos = rawText.split("\n\n---\n\n");
-      const novasMensagens = [];
-
-      blocos.forEach(b => {
-        const texto = b.trim();
-        if (texto.startsWith("[USER]:")) {
-          novasMensagens.push({ role: "user", content: texto.replace("[USER]:", "").trim() });
-        } else if (texto.startsWith("[MODEL]:")) {
-          novasMensagens.push({ role: "model", content: texto.replace("[MODEL]:", "").trim() });
-        }
-      });
-
-      proj.messages = novasMensagens;
-      saveStorageProjects(activeUser, projs);
-      fecharModalEdicao();
-
-      if (currentConversationId === editingProjectId) {
-        selecionarProjeto(editingProjectId);
-      }
-    }
-
     function excluirProjeto(e, id) {
       e.stopPropagation();
       const projs = getStorageProjects(activeUser);
@@ -442,7 +375,7 @@ Selecione o que deseja produzir hoje:
       if (!activeUser) return;
       const projs = getStorageProjects(activeUser);
       
-      // Ordena: fixados primeiro, depois por ordem de inserção
+      // Fixados primeiro, depois por ordem de inserção
       projs.sort((a, b) => {
         if (a.pinned === b.pinned) return 0;
         return a.pinned ? -1 : 1;
@@ -475,16 +408,13 @@ Selecione o que deseja produzir hoje:
             ⋮
           </button>
 
-          <!-- Menu Dropdown -->
+          <!-- Menu Dropdown com apenas Fixar, Renomear e Excluir -->
           <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
             <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
               <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
             </button>
             <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
               <span>✏️</span> Renomear
-            </button>
-            <button onclick="abrirModalEdicao(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 flex items-center gap-2 text-xs">
-              <span>📝</span> Editar
             </button>
             <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
               <span>🗑️</span> Excluir
