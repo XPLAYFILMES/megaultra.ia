@@ -1,7 +1,6 @@
 const CONFIG = {
-  // Preencha com os dados do seu painel Supabase:
-  SUPABASE_URL: "https://SEU_PROJETO.supabase.co",
-  SUPABASE_ANON_KEY: "SUA_ANON_PUBLIC_KEY",
+  // Opcional: Client ID do Google Cloud Console para o botão "Entrar com Google"
+  GOOGLE_CLIENT_ID: "SEU_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
 
   SYSTEM_PROMPT: `[CONFIGURAÇÃO_DE_SISTEMA]
 NOME: Universal Master Studio Engine
