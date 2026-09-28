@@ -81,7 +81,6 @@
           Suas Produções
         </div>
         
-        <!-- Lista de Conversas -->
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
@@ -107,25 +106,18 @@
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2 truncate">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[180px] sm:max-w-md">Nova Produção</span>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[200px] sm:max-w-md">Nova Produção</span>
         </div>
         
-        <!-- Campo Gemini API Key -->
-        <div class="flex items-center gap-2 shrink-0">
-          <input 
-            type="password" 
-            id="geminiKeyInput" 
-            placeholder="Cole sua Gemini API Key" 
-            class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-52"
-          />
-          <button onclick="salvarChaveGemini()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs transition border border-slate-700">
-            Salvar
-          </button>
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+            ● Servidor Seguro Conectado
+          </span>
         </div>
       </header>
 
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela de Início com Botão Iniciar -->
+        <!-- Tela de Início -->
         <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
             ⚡
@@ -220,21 +212,8 @@ Selecione o que deseja produzir hoje:
     let currentConversationId = null;
     let conversationHistory = [];
 
-    try {
-      const savedKey = localStorage.getItem("GEMINI_API_KEY");
-      if (savedKey) document.getElementById("geminiKeyInput").value = savedKey;
-    } catch (e) {}
-
-    function salvarChaveGemini() {
-      const key = document.getElementById("geminiKeyInput").value.trim();
-      if (key) {
-        try { localStorage.setItem("GEMINI_API_KEY", key); } catch(e){}
-        alert("Chave Gemini salva!");
-      }
-    }
-
     // ==========================================
-    // AUTENTICAÇÃO SIMPLES
+    // AUTENTICAÇÃO
     // ==========================================
     function executarAcesso() {
       const userInput = document.getElementById("authUsername");
@@ -272,7 +251,7 @@ Selecione o que deseja produzir hoje:
         feedback.textContent = `✨ Conta criada com sucesso! Bem-vindo, ${username}!`;
         feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
         feedback.classList.remove("hidden");
-        setTimeout(() => abrirStudio(username), 300);
+        setTimeout(() => abrirStudio(username), 400);
       }
     }
 
@@ -301,7 +280,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
+    // MENU DE 3 PONTINHOS
     // ==========================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
@@ -368,14 +347,10 @@ Selecione o que deseja produzir hoje:
       }
     }
 
-    // ==========================================
-    // RENDERIZAÇÃO DA LISTA DE PROJETOS
-    // ==========================================
     function atualizarListaProjetos() {
       if (!activeUser) return;
       const projs = getStorageProjects(activeUser);
       
-      // Fixados primeiro, depois por ordem de inserção
       projs.sort((a, b) => {
         if (a.pinned === b.pinned) return 0;
         return a.pinned ? -1 : 1;
@@ -400,7 +375,6 @@ Selecione o que deseja produzir hoje:
             <span class="truncate">${p.title || "Nova Produção"}</span>
           </div>
 
-          <!-- Botão dos 3 Pontinhos -->
           <button 
             type="button" 
             onclick="toggleMenu(event, '${p.id}')"
@@ -408,7 +382,6 @@ Selecione o que deseja produzir hoje:
             ⋮
           </button>
 
-          <!-- Menu Dropdown com apenas Fixar, Renomear e Excluir -->
           <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
             <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
               <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
@@ -484,19 +457,9 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // CHAMADA AO MOTOR GEMINI
+    // CHAMADA BLINDADA VIA NETLIFY FUNCTION (ZERO CHAVES NO NAVEGADOR)
     // ==========================================
     async function dispararGemini(texto, isInicial = false) {
-      const keyInput = document.getElementById("geminiKeyInput");
-      let apiKey = keyInput.value.trim();
-      try { if (!apiKey) apiKey = localStorage.getItem("GEMINI_API_KEY"); } catch(e){}
-
-      if (!apiKey) {
-        alert("Cole sua Gemini API Key no campo superior direito e clique em Salvar!");
-        keyInput.focus();
-        return;
-      }
-
       document.getElementById("startScreen").classList.add("hidden");
 
       const projs = getStorageProjects(activeUser);
@@ -522,21 +485,23 @@ Selecione o que deseja produzir hoje:
       userInput.disabled = true;
 
       try {
-        const resp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-              contents: conversationHistory,
-              generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-            })
-          }
-        );
+        // Chamada à função serverless interna (a chave fica escondida no Netlify)
+        const resp = await fetch("/.netlify/functions/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: conversationHistory
+          })
+        });
 
         const data = await resp.json();
-        const resposta = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro na geração.";
+
+        if (data.error) {
+          throw new Error(data.error.message || data.error);
+        }
+
+        const resposta = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erro na resposta do modelo.";
 
         conversationHistory.push({ role: "model", parts: [{ text: resposta }] });
         renderizarMensagem(resposta, false);
@@ -551,7 +516,7 @@ Selecione o que deseja produzir hoje:
           atualizarListaProjetos();
         }
       } catch (err) {
-        renderizarMensagem(`❌ Erro: ${err.message}`, false);
+        renderizarMensagem(`❌ Erro no servidor: ${err.message}`, false);
       } finally {
         sendBtn.disabled = false;
         userInput.disabled = false;
