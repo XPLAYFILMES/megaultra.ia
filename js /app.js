@@ -1,11 +1,32 @@
-let currentUser = null;
+// =========================================================================
+// BANCO LOCAL (LOCALSTORAGE)
+// =========================================================================
+const Storage = {
+  getConversations() {
+    return JSON.parse(localStorage.getItem("studio_conversations") || "[]");
+  },
+  saveConversations(chats) {
+    localStorage.setItem("studio_conversations", JSON.stringify(chats));
+  },
+  getUser() {
+    return JSON.parse(localStorage.getItem("studio_user") || "null");
+  },
+  setUser(user) {
+    localStorage.setItem("studio_user", JSON.stringify(user));
+  },
+  clearUser() {
+    localStorage.removeItem("studio_user");
+  }
+};
+
+let currentUser = Storage.getUser();
 let currentConversationId = null;
 let conversationHistory = [];
 
 // Elementos da Interface
 const authScreen = document.getElementById("authScreen");
 const appScreen = document.getElementById("appScreen");
-const googleLoginBtn = document.getElementById("googleLoginBtn");
+const guestLoginBtn = document.getElementById("guestLoginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userAvatar = document.getElementById("userAvatar");
 const userName = document.getElementById("userName");
@@ -28,57 +49,116 @@ saveGeminiKeyBtn.addEventListener("click", () => {
   alert("Chave Gemini salva!");
 });
 
-// Autenticação
-googleLoginBtn.addEventListener("click", () => auth.loginWithGoogle());
-logoutBtn.addEventListener("click", () => auth.logout());
-
-auth.onStateChange(async (user) => {
-  currentUser = user;
-  if (user) {
-    authScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
-    userName.textContent = user.user_metadata?.full_name || user.email;
-    userAvatar.src = user.user_metadata?.avatar_url || "https://api.dicebear.com/7.x/bottts/svg?seed=user";
-    await refreshConversations();
-  } else {
-    authScreen.classList.remove("hidden");
-    appScreen.classList.add("hidden");
+// =========================================================================
+// AUTENTICAÇÃO GOOGLE (NATIVA DO GOOGLE)
+// =========================================================================
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
   }
+}
+
+// Callback chamado pelo botão oficial do Google
+window.handleGoogleCredentialResponse = (response) => {
+  const payload = parseJwt(response.credential);
+  if (payload) {
+    const user = {
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture
+    };
+    Storage.setUser(user);
+    initApp(user);
+  }
+};
+
+// Login direto / sem autenticação externa
+if (guestLoginBtn) {
+  guestLoginBtn.addEventListener("click", () => {
+    const user = {
+      name: "Criador Studio",
+      email: "criador@local",
+      picture: "https://api.dicebear.com/7.x/bottts/svg?seed=studio"
+    };
+    Storage.setUser(user);
+    initApp(user);
+  });
+}
+
+logoutBtn.addEventListener("click", () => {
+  Storage.clearUser();
+  window.location.reload();
 });
 
-async function refreshConversations() {
-  const chats = await db.getConversations();
+function initApp(user) {
+  currentUser = user;
+  authScreen.classList.add("hidden");
+  appScreen.classList.remove("hidden");
+  userName.textContent = user.name;
+  userAvatar.src = user.picture;
+  refreshConversations();
+
+  const chats = Storage.getConversations();
+  if (chats.length > 0) {
+    selectConversation(chats[0].id);
+  } else {
+    createNewConversation();
+  }
+}
+
+// =========================================================================
+// GERENCIADOR DE CONVERSAS (LOCAL)
+// =========================================================================
+function refreshConversations() {
+  const chats = Storage.getConversations();
   conversationsList.innerHTML = "";
   chats.forEach(chat => {
     const btn = document.createElement("button");
-    btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs truncate transition ${
+    btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs truncate transition flex justify-between items-center ${
       chat.id === currentConversationId ? "bg-slate-800 text-blue-400 font-semibold" : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"
     }`;
-    btn.textContent = chat.title || "Produção sem título";
-    btn.addEventListener("click", () => selectConversation(chat.id, chat.title));
+    btn.innerHTML = `<span class="truncate">${chat.title || "Nova Produção"}</span>`;
+    btn.addEventListener("click", () => selectConversation(chat.id));
     conversationsList.appendChild(btn);
   });
 }
 
-newChatBtn.addEventListener("click", async () => {
-  const newChat = await db.createConversation(currentUser.id);
-  await refreshConversations();
-  selectConversation(newChat.id, newChat.title);
-});
+function createNewConversation() {
+  const chats = Storage.getConversations();
+  const newChat = {
+    id: "chat_" + Date.now(),
+    title: "Nova Produção",
+    messages: []
+  };
+  chats.unshift(newChat);
+  Storage.saveConversations(chats);
+  refreshConversations();
+  selectConversation(newChat.id);
+}
 
-async function selectConversation(id, title) {
+newChatBtn.addEventListener("click", createNewConversation);
+
+function selectConversation(id) {
   currentConversationId = id;
-  currentChatTitle.textContent = title;
+  const chats = Storage.getConversations();
+  const chat = chats.find(c => c.id === id);
+  if (!chat) return;
+
+  currentChatTitle.textContent = chat.title;
   chatArea.innerHTML = "";
   conversationHistory = [];
 
-  const messages = await db.getMessages(id);
-  if (messages.length === 0) {
+  if (chat.messages.length === 0) {
     chatArea.appendChild(startScreen);
     startScreen.classList.remove("hidden");
   } else {
     startScreen.classList.add("hidden");
-    messages.forEach(msg => {
+    chat.messages.forEach(msg => {
       conversationHistory.push({
         role: msg.role,
         parts: [{ text: msg.content }]
@@ -86,7 +166,7 @@ async function selectConversation(id, title) {
       renderMessage(msg.content, msg.role === 'user');
     });
   }
-  await refreshConversations();
+  refreshConversations();
 }
 
 function renderMessage(text, isUser) {
@@ -102,6 +182,9 @@ function renderMessage(text, isUser) {
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
+// =========================================================================
+// ENVIO PARA O GEMINI
+// =========================================================================
 async function handleSendMessage(text, isInitial = false) {
   const apiKey = geminiKeyInput.value.trim() || localStorage.getItem("GEMINI_API_KEY");
   if (!apiKey) {
@@ -109,17 +192,18 @@ async function handleSendMessage(text, isInitial = false) {
     return;
   }
 
-  if (!currentConversationId) {
-    const newChat = await db.createConversation(currentUser.id);
-    currentConversationId = newChat.id;
-  }
-
   startScreen.classList.add("hidden");
+
+  const chats = Storage.getConversations();
+  const currentChat = chats.find(c => c.id === currentConversationId);
 
   if (!isInitial) {
     renderMessage(text, true);
     conversationHistory.push({ role: "user", parts: [{ text }] });
-    await db.saveMessage(currentConversationId, 'user', text);
+    if (currentChat) {
+      currentChat.messages.push({ role: "user", content: text });
+      Storage.saveConversations(chats);
+    }
   } else {
     conversationHistory.push({ role: "user", parts: [{ text: "Iniciar motor de produção. Apresente a ETAPA 1 do menu principal." }] });
   }
@@ -143,13 +227,15 @@ async function handleSendMessage(text, isInitial = false) {
 
     conversationHistory.push({ role: "model", parts: [{ text: reply }] });
     renderMessage(reply, false);
-    await db.saveMessage(currentConversationId, 'model', reply);
 
-    if (conversationHistory.length <= 4) {
-      const summaryTitle = text.length > 25 ? text.substring(0, 25) + "..." : text;
-      await db.updateConversationTitle(currentConversationId, summaryTitle);
-      currentChatTitle.textContent = summaryTitle;
-      await refreshConversations();
+    if (currentChat) {
+      currentChat.messages.push({ role: "model", content: reply });
+      if (currentChat.messages.length <= 4 && !isInitial) {
+        currentChat.title = text.length > 25 ? text.substring(0, 25) + "..." : text;
+        currentChatTitle.textContent = currentChat.title;
+      }
+      Storage.saveConversations(chats);
+      refreshConversations();
     }
   } catch (err) {
     renderMessage(`❌ Erro: ${err.message}`, false);
@@ -169,3 +255,8 @@ chatForm.addEventListener("submit", (e) => {
   userInput.value = "";
   handleSendMessage(val, false);
 });
+
+// Inicialização automática se já logado
+if (currentUser) {
+  initApp(currentUser);
+}
