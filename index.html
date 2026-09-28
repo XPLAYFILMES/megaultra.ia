@@ -223,9 +223,6 @@ Selecione o que deseja produzir hoje:
     let currentConversationId = null;
     let conversationHistory = [];
 
-    // ==========================================
-    // GERENCIAMENTO DA CHAVE GEMINI (INFALÍVEL)
-    // ==========================================
     function obterChave() {
       const input = document.getElementById("geminiKeyInput");
       const valInput = input ? input.value.trim() : "";
@@ -276,7 +273,6 @@ Selecione o que deseja produzir hoje:
       }
     }
 
-    // Carregar chave salva ao abrir
     function carregarChaveSalva() {
       try {
         const saved = localStorage.getItem("GEMINI_KEY_ACTIVE");
@@ -534,7 +530,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // CHAMADA AO MOTOR GEMINI COM SUPORTE FLEXÍVEL
+    // CHAMADA AO MODELO ATUALIZADO (gemini-3.8-flash)
     // ==========================================
     async function dispararGemini(texto, isInicial = false) {
       const apiKey = obterChave();
@@ -570,7 +566,6 @@ Selecione o que deseja produzir hoje:
       sendBtn.disabled = true;
       userInput.disabled = true;
 
-      // Indicador de carregamento
       const indicador = document.createElement("div");
       indicador.id = "indicadorCarregando";
       indicador.className = "flex justify-start w-full";
@@ -584,9 +579,9 @@ Selecione o que deseja produzir hoje:
       chatArea.scrollTop = chatArea.scrollHeight;
 
       try {
-        // Envia para o modelo estável v1beta
+        // Atualizado para o endpoint oficial recomendado pelo Google: gemini-3.8-flash
         const resp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -623,7 +618,7 @@ Selecione o que deseja produzir hoje:
       } catch (err) {
         const loadEl = document.getElementById("indicadorCarregando");
         if (loadEl) loadEl.remove();
-        renderizarMensagem(`❌ **Erro na API Gemini:** ${err.message}\n\n*Verifique se a chave de API inserida no topo é válida e está ativa no Google AI Studio.*`, false);
+        renderizarMensagem(`❌ **Erro na API Gemini:** ${err.message}`, false);
       } finally {
         sendBtn.disabled = false;
         userInput.disabled = false;
