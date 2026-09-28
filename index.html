@@ -11,7 +11,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
 
-  <!-- ================= TELA DE CADASTRO E ACESSO ================= -->
+  <!-- ================= TELA DE CADASTRO / LOGIN ================= -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
       <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-inner">
@@ -19,12 +19,12 @@
       </div>
       <h1 class="text-2xl font-bold text-white tracking-tight">Universal Master Studio</h1>
       <p class="text-xs text-slate-400">
-        Digite seu nome de usuário e senha. Na primeira vez ele cadastra; nas próximas, ele reconhece você e recupera seus projetos.
+        Digite seu nome de usuário e sua senha para entrar ou registrar uma nova conta.
       </p>
     </div>
 
-    <!-- Formulário Simplificado -->
-    <form id="loginForm" class="space-y-4">
+    <!-- Campos de Entrada -->
+    <div class="space-y-4">
       <div>
         <label for="authUsername" class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
           Nome de Usuário
@@ -33,40 +33,41 @@
           type="text" 
           id="authUsername" 
           placeholder="Ex: alex" 
-          required
+          autocomplete="off"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
       </div>
 
       <div>
         <label for="authPassword" class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-          Sua Senha
+          Senha de Acesso
         </label>
         <input 
           type="password" 
           id="authPassword" 
-          placeholder="Crie ou digite sua senha" 
-          required
+          placeholder="Digite sua senha" 
+          autocomplete="off"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
       </div>
 
-      <!-- Mensagens de Alerta ou Sucesso -->
+      <!-- Feedback de status (sucesso / erro) -->
       <div id="loginFeedback" class="text-xs py-2.5 px-3 rounded-lg hidden font-medium"></div>
 
+      <!-- Botão com clique direto -->
       <button 
-        type="submit" 
+        type="button" 
         id="submitLoginBtn"
-        class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/25 active:scale-[0.98]">
-        Cadastrar / Acessar
+        class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer">
+        Entrar / Cadastrar Conta
       </button>
-    </form>
+    </div>
   </div>
 
-  <!-- ================= PAINEL DO STUDIO (SÓ LIBERA APÓS ACESSO) ================= -->
+  <!-- ================= PAINEL DO STUDIO (LIBERA APÓS ACESSO) ================= -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden hidden">
     
-    <!-- BARRA LATERAL COM PROJETOS -->
+    <!-- BARRA LATERAL -->
     <aside class="w-64 sm:w-72 bg-slate-950 border-r border-slate-800 flex flex-col justify-between">
       <div class="p-4 space-y-4">
         <button id="newChatBtn" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20">
@@ -79,7 +80,7 @@
         <div id="conversationsList" class="space-y-1 overflow-y-auto max-h-[60vh] pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário Logado -->
+      <!-- Rodapé do Usuário -->
       <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
@@ -90,13 +91,13 @@
             <span class="text-[10px] text-emerald-400 font-medium">Reconhecido</span>
           </div>
         </div>
-        <button id="logoutBtn" title="Trocar de Usuário / Sair" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
+        <button id="logoutBtn" title="Encerrar Sessão" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
           Sair
         </button>
       </div>
     </aside>
 
-    <!-- ÁREA PRINCIPAL -->
+    <!-- ÁREA PRINCIPAL DO CHAT -->
     <main class="flex-1 flex flex-col h-full bg-slate-900">
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2">
