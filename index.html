@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Universal Master Studio AI</title>
   
-  <!-- Estilos e Renderizador -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
@@ -17,7 +16,7 @@
     .prose code { color: #38bdf8; font-family: monospace; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
 
   <!-- ================= TELA DE CADASTRO / LOGIN ================= -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
@@ -27,11 +26,10 @@
       </div>
       <h1 class="text-2xl font-bold text-white tracking-tight">Universal Master Studio</h1>
       <p class="text-xs text-slate-400">
-        Digite seu nome e sua senha. No primeiro acesso ele cria a conta; nos próximos, ele reconhece você e recupera seus projetos.
+        Digite seu nome e senha para acessar ou criar sua conta na hora.
       </p>
     </div>
 
-    <!-- Campos de Entrada -->
     <div class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
@@ -53,14 +51,13 @@
           type="password" 
           id="authPassword" 
           placeholder="Digite sua senha" 
+          onkeydown="if(event.key==='Enter') executarAcesso()"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
       </div>
 
-      <!-- Alerta visual imediato -->
       <div id="loginFeedback" class="text-xs py-2.5 px-3 rounded-lg hidden font-medium"></div>
 
-      <!-- Botão com disparo direto -->
       <button 
         type="button" 
         onclick="executarAcesso()"
@@ -70,24 +67,26 @@
     </div>
   </div>
 
-  <!-- ================= PAINEL DO STUDIO (LIBERA APÓS ACESSO) ================= -->
+  <!-- ================= PAINEL DO STUDIO ================= -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden hidden">
     
     <!-- BARRA LATERAL -->
-    <aside class="w-64 sm:w-72 bg-slate-950 border-r border-slate-800 flex flex-col justify-between">
-      <div class="p-4 space-y-4">
-        <button onclick="criarNovoProjeto()" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20">
+    <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
+      <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
+        <button onclick="criarNovoProjeto()" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
           <span>+</span> Nova Produção
         </button>
 
-        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1">
-          Seus Projetos Salvos
+        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1 shrink-0">
+          Suas Produções
         </div>
-        <div id="conversationsList" class="space-y-1 overflow-y-auto max-h-[60vh] pr-1"></div>
+        
+        <!-- Lista de Conversas com rolagem -->
+        <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Perfil do Usuário Logado -->
-      <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60">
+      <!-- Perfil do Usuário Conectado -->
+      <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60 shrink-0">
         <div class="flex items-center gap-2.5 overflow-hidden">
           <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
             👤
@@ -104,19 +103,20 @@
     </aside>
 
     <!-- ÁREA PRINCIPAL DO CHAT -->
-    <main class="flex-1 flex flex-col h-full bg-slate-900">
+    <main class="flex-1 flex flex-col h-full bg-slate-900 min-w-0">
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
-        <div class="flex items-center gap-2">
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[200px] sm:max-w-xs">Nova Produção</span>
+        <div class="flex items-center gap-2 truncate">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[180px] sm:max-w-md">Nova Produção</span>
         </div>
         
-        <div class="flex items-center gap-2">
+        <!-- Campo Gemini API Key -->
+        <div class="flex items-center gap-2 shrink-0">
           <input 
             type="password" 
             id="geminiKeyInput" 
             placeholder="Cole sua Gemini API Key" 
-            class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-48"
+            class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-52"
           />
           <button onclick="salvarChaveGemini()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs transition border border-slate-700">
             Salvar
@@ -125,14 +125,14 @@
       </header>
 
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela com o Botão Iniciar -->
+        <!-- Tela de Início com Botão Iniciar -->
         <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
             ⚡
           </div>
           <h2 class="text-lg font-bold text-white">Pronto para a Etapa 1?</h2>
           <p class="text-sm text-slate-400 max-w-sm">
-            O motor executará estritamente uma etapa por vez sob o sistema monotarefa.
+            O motor audiovisual executará estritamente uma etapa por vez sob o sistema monotarefa.
           </p>
           <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
             Iniciar Produção
@@ -158,9 +158,24 @@
 
   </div>
 
-  <!-- ================= LÓGICA COMPLETA EMBUTIDA ================= -->
+  <!-- MODAL PARA EDITAR CONVERSA COMPLETA -->
+  <div id="editModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Editar Mensagens da Produção</h3>
+        <button onclick="fecharModalEdicao()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-400">Edite o conteúdo em texto bruto caso deseje recalibrar as instruções ou respostas:</p>
+      <textarea id="editModalContent" rows="12" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"></textarea>
+      <div class="flex justify-end gap-2">
+        <button onclick="fecharModalEdicao()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200 bg-slate-800">Cancelar</button>
+        <button onclick="salvarEdicaoModal()" class="px-4 py-2 rounded-xl text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LÓGICA DO STUDIO ================= -->
   <script>
-    // Prompt Mestre Oculto do Sistema
     const SYSTEM_PROMPT = `[CONFIGURAÇÃO_DE_SISTEMA]
 NOME: Universal Master Studio Engine
 VERSÃO: 5.5 Ultra-Modular (Cross-Platform Ready: ChatGPT, Copilot, Gemini, Meta AI)
@@ -188,7 +203,6 @@ Selecione o que deseja produzir hoje:
 
 *(Resposta obrigatória: Escolha [1] ou [2] para avançar)*`;
 
-    // Armazenamento em memória (caso localStorage seja bloqueado pelo navegador)
     let memoryUsers = {};
     let memoryProjects = {};
 
@@ -196,16 +210,12 @@ Selecione o que deseja produzir hoje:
       try {
         const u = localStorage.getItem("studio_final_users");
         return u ? JSON.parse(u) : memoryUsers;
-      } catch (e) {
-        return memoryUsers;
-      }
+      } catch (e) { return memoryUsers; }
     }
 
     function saveStorageUsers(users) {
       memoryUsers = users;
-      try {
-        localStorage.setItem("studio_final_users", JSON.stringify(users));
-      } catch (e) {}
+      try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
     }
 
     function getStorageProjects(user) {
@@ -213,24 +223,20 @@ Selecione o que deseja produzir hoje:
       try {
         const p = localStorage.getItem(key);
         return p ? JSON.parse(p) : (memoryProjects[key] || []);
-      } catch (e) {
-        return memoryProjects[key] || [];
-      }
+      } catch (e) { return memoryProjects[key] || []; }
     }
 
     function saveStorageProjects(user, projs) {
       const key = "studio_proj_" + user.toLowerCase();
       memoryProjects[key] = projs;
-      try {
-        localStorage.setItem(key, JSON.stringify(projs));
-      } catch (e) {}
+      try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
     }
 
     let activeUser = null;
     let currentConversationId = null;
     let conversationHistory = [];
+    let editingProjectId = null;
 
-    // Carregar chave Gemini salva
     try {
       const savedKey = localStorage.getItem("GEMINI_API_KEY");
       if (savedKey) document.getElementById("geminiKeyInput").value = savedKey;
@@ -245,7 +251,7 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // FUNÇÃO DE LOGIN / CADASTRO
+    // AUTENTICAÇÃO SIMPLES
     // ==========================================
     function executarAcesso() {
       const userInput = document.getElementById("authUsername");
@@ -266,26 +272,24 @@ Selecione o que deseja produzir hoje:
       const userKey = username.toLowerCase();
 
       if (users[userKey]) {
-        // Usuário já cadastrado -> conferir senha
         if (users[userKey].password === password) {
           feedback.textContent = `Bem-vindo de volta, ${users[userKey].name}! Entrando...`;
           feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
           feedback.classList.remove("hidden");
-          setTimeout(() => abrirStudio(users[userKey].name), 400);
+          setTimeout(() => abrirStudio(users[userKey].name), 300);
         } else {
-          feedback.textContent = "⚠️ Senha incorreta para este usuário! Digite a senha cadastrada.";
+          feedback.textContent = "⚠️ Senha incorreta para este usuário!";
           feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
           feedback.classList.remove("hidden");
         }
       } else {
-        // Cadastro novo
         users[userKey] = { name: username, password: password };
         saveStorageUsers(users);
 
         feedback.textContent = `✨ Conta criada com sucesso! Bem-vindo, ${username}!`;
         feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
         feedback.classList.remove("hidden");
-        setTimeout(() => abrirStudio(username), 400);
+        setTimeout(() => abrirStudio(username), 300);
       }
     }
 
@@ -314,24 +318,181 @@ Selecione o que deseja produzir hoje:
     }
 
     // ==========================================
-    // GERENCIAMENTO DE PROJETOS E CONVERSAS
+    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EDITAR, EXCLUIR)
+    // ==========================================
+    function fecharMenusAbertos(e) {
+      if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
+        document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
+      }
+    }
+
+    function toggleMenu(e, id) {
+      e.stopPropagation();
+      const menu = document.getElementById("dropdown_" + id);
+      const estaAberto = !menu.classList.contains("hidden");
+      document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
+      if (!estaAberto) {
+        menu.classList.remove("hidden");
+      }
+    }
+
+    function alternarFixarProjeto(e, id) {
+      e.stopPropagation();
+      const projs = getStorageProjects(activeUser);
+      const proj = projs.find(p => p.id === id);
+      if (proj) {
+        proj.pinned = !proj.pinned;
+        saveStorageProjects(activeUser, projs);
+        atualizarListaProjetos();
+      }
+    }
+
+    function renomearProjeto(e, id) {
+      e.stopPropagation();
+      const projs = getStorageProjects(activeUser);
+      const proj = projs.find(p => p.id === id);
+      if (!proj) return;
+
+      const novoNome = prompt("Digite o novo nome para esta produção:", proj.title);
+      if (novoNome && novoNome.trim()) {
+        proj.title = novoNome.trim();
+        saveStorageProjects(activeUser, projs);
+        if (currentConversationId === id) {
+          document.getElementById("currentChatTitle").textContent = proj.title;
+        }
+        atualizarListaProjetos();
+      }
+    }
+
+    function abrirModalEdicao(e, id) {
+      e.stopPropagation();
+      editingProjectId = id;
+      const projs = getStorageProjects(activeUser);
+      const proj = projs.find(p => p.id === id);
+      if (!proj) return;
+
+      // Junta as mensagens em formato texto para edição fácil
+      const textoFormatado = (proj.messages || [])
+        .map(m => `[${m.role.toUpperCase()}]:\n${m.content}`)
+        .join("\n\n---\n\n");
+
+      document.getElementById("editModalContent").value = textoFormatado;
+      document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function fecharModalEdicao() {
+      document.getElementById("editModal").classList.add("hidden");
+      editingProjectId = null;
+    }
+
+    function salvarEdicaoModal() {
+      if (!editingProjectId) return;
+      const rawText = document.getElementById("editModalContent").value;
+      const projs = getStorageProjects(activeUser);
+      const proj = projs.find(p => p.id === editingProjectId);
+      if (!proj) return;
+
+      // Reconstrói o histórico baseado nos blocos editados
+      const blocos = rawText.split("\n\n---\n\n");
+      const novasMensagens = [];
+
+      blocos.forEach(b => {
+        const texto = b.trim();
+        if (texto.startsWith("[USER]:")) {
+          novasMensagens.push({ role: "user", content: texto.replace("[USER]:", "").trim() });
+        } else if (texto.startsWith("[MODEL]:")) {
+          novasMensagens.push({ role: "model", content: texto.replace("[MODEL]:", "").trim() });
+        }
+      });
+
+      proj.messages = novasMensagens;
+      saveStorageProjects(activeUser, projs);
+      fecharModalEdicao();
+
+      if (currentConversationId === editingProjectId) {
+        selecionarProjeto(editingProjectId);
+      }
+    }
+
+    function excluirProjeto(e, id) {
+      e.stopPropagation();
+      const projs = getStorageProjects(activeUser);
+      const proj = projs.find(p => p.id === id);
+      if (!proj) return;
+
+      if (confirm(`Tem certeza que deseja excluir a produção "${proj.title}"?`)) {
+        const filtrados = projs.filter(p => p.id !== id);
+        saveStorageProjects(activeUser, filtrados);
+        if (currentConversationId === id) {
+          if (filtrados.length > 0) {
+            selecionarProjeto(filtrados[0].id);
+          } else {
+            criarNovoProjeto();
+          }
+        } else {
+          atualizarListaProjetos();
+        }
+      }
+    }
+
+    // ==========================================
+    // RENDERIZAÇÃO DA LISTA DE PROJETOS
     // ==========================================
     function atualizarListaProjetos() {
       if (!activeUser) return;
       const projs = getStorageProjects(activeUser);
+      
+      // Ordena: fixados primeiro, depois por ordem de inserção
+      projs.sort((a, b) => {
+        if (a.pinned === b.pinned) return 0;
+        return a.pinned ? -1 : 1;
+      });
+
       const listEl = document.getElementById("conversationsList");
       listEl.innerHTML = "";
 
       projs.forEach(p => {
-        const btn = document.createElement("button");
-        btn.className = `w-full text-left px-3 py-2 rounded-lg text-xs truncate transition flex items-center justify-between ${
+        const wrapper = document.createElement("div");
+        wrapper.className = `relative group flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
           p.id === currentConversationId
             ? "bg-slate-800 text-blue-400 font-semibold"
-            : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"
-        }`;
-        btn.innerHTML = `<span class="truncate">${p.title || "Nova Produção"}</span>`;
-        btn.onclick = () => selecionarProjeto(p.id);
-        listEl.appendChild(btn);
+            : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
+        } ${p.pinned ? "border-l-2 border-amber-400 bg-slate-900/40" : ""}`;
+
+        wrapper.onclick = () => selecionarProjeto(p.id);
+
+        wrapper.innerHTML = `
+          <div class="flex items-center gap-2 truncate pr-2">
+            ${p.pinned ? '<span class="text-amber-400 text-[10px]" title="Fixado">📌</span>' : ''}
+            <span class="truncate">${p.title || "Nova Produção"}</span>
+          </div>
+
+          <!-- Botão dos 3 Pontinhos -->
+          <button 
+            type="button" 
+            onclick="toggleMenu(event, '${p.id}')"
+            class="menu-btn p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/60 transition opacity-80 group-hover:opacity-100">
+            ⋮
+          </button>
+
+          <!-- Menu Dropdown -->
+          <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
+            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
+              <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
+            </button>
+            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
+              <span>✏️</span> Renomear
+            </button>
+            <button onclick="abrirModalEdicao(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-emerald-300 flex items-center gap-2 text-xs">
+              <span>📝</span> Editar
+            </button>
+            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
+              <span>🗑️</span> Excluir
+            </button>
+          </div>
+        `;
+
+        listEl.appendChild(wrapper);
       });
     }
 
@@ -341,6 +502,7 @@ Selecione o que deseja produzir hoje:
       const novo = {
         id: "proj_" + Date.now(),
         title: "Nova Produção",
+        pinned: false,
         messages: []
       };
       projs.unshift(novo);
@@ -362,7 +524,7 @@ Selecione o que deseja produzir hoje:
       chatArea.innerHTML = "";
       conversationHistory = [];
 
-      if (proj.messages.length === 0) {
+      if (!proj.messages || proj.messages.length === 0) {
         chatArea.appendChild(startScreen);
         startScreen.classList.remove("hidden");
       } else {
@@ -479,13 +641,10 @@ Selecione o que deseja produzir hoje:
       dispararGemini(val, false);
     }
 
-    // Auto-login se já tiver sessão gravada
     window.onload = function() {
       try {
         const sessao = localStorage.getItem("studio_active_session");
-        if (sessao) {
-          abrirStudio(sessao);
-        }
+        if (sessao) abrirStudio(sessao);
       } catch (e) {}
     };
   </script>
