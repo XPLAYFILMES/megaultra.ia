@@ -130,14 +130,14 @@
       </header>
 
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela de Início -->
+        <!-- Tela de Início (Centralizada) -->
         <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
           <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
             ⚡
           </div>
           <h2 class="text-lg font-bold text-white">Pronto para a Etapa 1?</h2>
           <p class="text-sm text-slate-400 max-w-sm">
-            Para iniciar, certifique-se de que a sua Gemini API Key está salva no campo superior.
+            Universal Master Studio OS v7.0 ativo. Clique abaixo para iniciar a produção desta conversa.
           </p>
           <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
             Iniciar Produção
@@ -503,6 +503,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     let activeUser = null;
     let currentConversationId = null;
     let conversationHistory = [];
+    let ultimaMensagemPendente = "";
 
     // ==========================================
     // CHAVE GEMINI INDIVIDUAL POR USUÁRIO
@@ -583,7 +584,6 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }
     }
 
-    // Modal de Chave
     function abrirModalChave() {
       const modal = document.getElementById("keyModal");
       const modalInp = document.getElementById("modalKeyInput");
@@ -665,7 +665,13 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       atualizarListaProjetos();
 
       const projs = getStorageProjects(activeUser);
-      if (projs.length > 0) {
+      // Lembrar a última conversa aberta pelo usuário
+      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase());
+      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
+
+      if (chatParaAbrir) {
+        selecionarProjeto(chatParaAbrir.id);
+      } else if (projs.length > 0) {
         selecionarProjeto(projs[0].id);
       } else {
         criarNovoProjeto();
@@ -679,7 +685,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     }
 
     // ==========================================
-    // MENU DE 3 PONTINHOS
+    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
     // ==========================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
@@ -699,6 +705,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
     function alternarFixarProjeto(e, id) {
       e.stopPropagation();
+      fecharMenusAbertos({ target: document.body });
       const projs = getStorageProjects(activeUser);
       const proj = projs.find(p => p.id === id);
       if (proj) {
@@ -710,6 +717,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
     function renomearProjeto(e, id) {
       e.stopPropagation();
+      fecharMenusAbertos({ target: document.body });
       const projs = getStorageProjects(activeUser);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
@@ -725,33 +733,40 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }
     }
 
+    // EXCLUSÃO RÁPIDA E LIMPA
     function excluirProjeto(e, id) {
       e.stopPropagation();
+      fecharMenusAbertos({ target: document.body });
+
       const projs = getStorageProjects(activeUser);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
-      if (confirm(`Tem certeza que deseja excluir a produção "${proj.title}"?`)) {
-        const filtrados = projs.filter(p => p.id !== id);
-        saveStorageProjects(activeUser, filtrados);
-        if (currentConversationId === id) {
-          if (filtrados.length > 0) {
-            selecionarProjeto(filtrados[0].id);
-          } else {
-            criarNovoProjeto();
-          }
+      const confirmar = confirm(`Excluir "${proj.title}"?`);
+      if (!confirmar) return;
+
+      const filtrados = projs.filter(p => p.id !== id);
+      saveStorageProjects(activeUser, filtrados);
+
+      if (currentConversationId === id) {
+        if (filtrados.length > 0) {
+          selecionarProjeto(filtrados[0].id);
         } else {
-          atualizarListaProjetos();
+          criarNovoProjeto();
         }
+      } else {
+        atualizarListaProjetos();
       }
     }
 
+    // LISTAGEM COM RESPEITO TOTAL AOS ITENS FIXADOS
     function atualizarListaProjetos() {
       if (!activeUser) return;
       const projs = getStorageProjects(activeUser);
       
+      // Fixados sempre no topo de forma persistente
       projs.sort((a, b) => {
-        if (a.pinned === b.pinned) return 0;
+        if (Boolean(a.pinned) === Boolean(b.pinned)) return 0;
         return a.pinned ? -1 : 1;
       });
 
@@ -798,6 +813,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       });
     }
 
+    // CRIAÇÃO DE NOVA PRODUÇÃO COM BOTÃO CENTRAL IMEDIATO
     function criarNovoProjeto() {
       if (!activeUser) return;
       const projs = getStorageProjects(activeUser);
@@ -816,6 +832,10 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     function selecionarProjeto(id) {
       if (!activeUser) return;
       currentConversationId = id;
+      try {
+        localStorage.setItem("studio_last_chat_" + activeUser.toLowerCase(), id);
+      } catch (e) {}
+
       const projs = getStorageProjects(activeUser);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
@@ -826,6 +846,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       chatArea.innerHTML = "";
       conversationHistory = [];
 
+      // SE NÃO HOUVER MENSAGENS, EXIBE O PAINEL CENTRAL COM O BOTÃO INICIAR PRODUÇÃO
       if (!proj.messages || proj.messages.length === 0) {
         chatArea.appendChild(startScreen);
         startScreen.classList.remove("hidden");
@@ -839,29 +860,40 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       atualizarListaProjetos();
     }
 
-    function renderizarMensagem(texto, isUser) {
+    function renderizarMensagem(texto, isUser, isError = false) {
       const chatArea = document.getElementById("chatArea");
       const div = document.createElement("div");
       div.className = `flex ${isUser ? "justify-end" : "justify-start"} w-full`;
       const bubble = document.createElement("div");
-      bubble.className = `max-w-[85%] rounded-2xl p-4 text-sm ${
-        isUser
-          ? "bg-blue-600 text-white font-medium"
-          : "bg-slate-800 border border-slate-700 text-slate-100 prose prose-invert"
-      }`;
-      bubble.innerHTML = isUser ? texto : (window.marked ? marked.parse(texto) : texto);
+
+      if (isError) {
+        bubble.className = "max-w-[85%] rounded-2xl p-4 text-sm bg-rose-500/10 border border-rose-500/30 text-rose-200";
+        bubble.innerHTML = `
+          <div>${texto}</div>
+          <button onclick="tentarNovamente()" class="mt-3 px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            🔄 Tentar Novamente
+          </button>
+        `;
+      } else {
+        bubble.className = `max-w-[85%] rounded-2xl p-4 text-sm ${
+          isUser
+            ? "bg-blue-600 text-white font-medium"
+            : "bg-slate-800 border border-slate-700 text-slate-100 prose prose-invert"
+        }`;
+        bubble.innerHTML = isUser ? texto : (window.marked ? marked.parse(texto) : texto);
+      }
+
       div.appendChild(bubble);
       chatArea.appendChild(div);
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
     // ==========================================
-    // MULTI-MODELO COM FALLBACK AUTOMÁTICO
+    // CHAMADA MULTI-MODELO COM CONTINUIDADE E RECUPERAÇÃO DE ERRO
     // ==========================================
     async function dispararGemini(texto, isInicial = false) {
       const apiKey = obterChaveUsuario();
 
-      // TRAVA OBRIGATÓRIA: Não avança sem a chave cadastrada pelo usuário
       if (!apiKey || apiKey.length < 10) {
         abrirModalChave();
         return;
@@ -871,6 +903,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
       const projs = getStorageProjects(activeUser);
       const atual = projs.find(p => p.id === currentConversationId);
+
+      // Salva a tentativa para poder tentar de novo se der erro
+      ultimaMensagemPendente = isInicial ? "" : texto;
 
       if (!isInicial) {
         renderizarMensagem(texto, true);
@@ -903,11 +938,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       chatArea.appendChild(indicador);
       chatArea.scrollTop = chatArea.scrollHeight;
 
-      // Modelos em ordem de disponibilidade e velocidade
+      // Modelos ordenados por velocidade e disponibilidade
       const modelosCandidatos = [
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-2.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.6-flash",
+        "gemini-3.7-flash",
         "gemini-3.8-flash"
       ];
 
@@ -924,7 +959,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
               body: JSON.stringify({
                 systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
                 contents: conversationHistory,
-                generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+                generationConfig: { maxOutputTokens: 8192 }
               })
             }
           );
@@ -933,7 +968,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
           if (data.error) {
             ultimoErro = data.error.message || `Código ${data.error.code}`;
-            continue;
+            continue; // Se o modelo estiver sobrecarregado, salta para o próximo
           }
 
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
@@ -961,13 +996,39 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
           saveStorageProjects(activeUser, projs);
           atualizarListaProjetos();
         }
+        ultimaMensagemPendente = "";
       } else {
-        renderizarMensagem(`❌ **Erro na API Gemini:** ${ultimoErro || "Não foi possível conectar. Verifique sua chave de API."}`, false);
+        // EM CASO DE ERRO: Remove a última pergunta do histórico para não corromper o contexto
+        if (conversationHistory.length > 0) {
+          conversationHistory.pop();
+        }
+        if (atual && atual.messages.length > 0 && !isInicial) {
+          atual.messages.pop();
+          saveStorageProjects(activeUser, projs);
+        }
+
+        renderizarMensagem(
+          `⚠️ **O Gemini está com alta demanda momentânea.**\n\nSua última resposta foi preservada. Clique no botão abaixo para tentar novamente sem perder nada:`,
+          false,
+          true
+        );
       }
 
       sendBtn.disabled = false;
       userInput.disabled = false;
       userInput.focus();
+    }
+
+    function tentarNovamente() {
+      // Remove o balão de erro visual
+      const erroBox = chatArea.lastElementChild;
+      if (erroBox) erroBox.remove();
+
+      if (ultimaMensagemPendente) {
+        dispararGemini(ultimaMensagemPendente, false);
+      } else {
+        dispararGemini("", true);
+      }
     }
 
     function iniciarProducao() {
