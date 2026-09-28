@@ -106,18 +106,21 @@
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2 truncate">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[180px] sm:max-w-md">Nova Produção</span>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Nova Produção</span>
         </div>
         
-        <!-- Campo com Auto-Salvamento da Chave -->
+        <!-- Campo Individual da API Key do Usuário -->
         <div class="flex items-center gap-2 shrink-0">
+          <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
+            ⚠️ Chave Ausente
+          </span>
           <div class="relative">
             <input 
               type="password" 
               id="geminiKeyInput" 
-              placeholder="Cole sua Gemini API Key" 
+              placeholder="Cole sua Gemini API Key aqui" 
               oninput="autoSalvarChave()"
-              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-44 sm:w-64 transition"
+              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-40 sm:w-56 transition"
             />
           </div>
           <button id="saveKeyBtn" onclick="salvarChaveGemini(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
@@ -134,7 +137,7 @@
           </div>
           <h2 class="text-lg font-bold text-white">Pronto para a Etapa 1?</h2>
           <p class="text-sm text-slate-400 max-w-sm">
-            Universal Master Studio OS v7.0 ativo. O motor executará estritamente uma etapa por vez.
+            Para iniciar, certifique-se de que a sua Gemini API Key está salva no campo superior.
           </p>
           <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
             Iniciar Produção
@@ -160,9 +163,47 @@
 
   </div>
 
+  <!-- MODAL: AJUDA / PEDIDO DE API KEY -->
+  <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-bold">
+          🔑
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
+          <p class="text-xs text-slate-400">Cada usuário precisa de sua própria chave gratuita.</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Para usar o Universal Master Studio, você precisa de uma chave gratuita do Google Gemini:
+      </p>
+
+      <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
+        <li>Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 underline font-semibold">Google AI Studio</a> com sua conta Google.</li>
+        <li>Clique em <b>Create API key</b> e depois em <b>Create API key in new project</b>.</li>
+        <li>Copie a chave gerada e cole no campo abaixo.</li>
+      </ol>
+
+      <div class="space-y-2">
+        <input 
+          type="text" 
+          id="modalKeyInput" 
+          placeholder="Cole sua chave aqui (ex: AIzaSy...)" 
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="fecharModalChave()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200 bg-slate-800">Cancelar</button>
+        <button onclick="salvarChaveDoModal()" class="px-5 py-2 rounded-xl text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">Salvar e Começar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= LÓGICA DO STUDIO ================= -->
   <script>
-    // PROMPT v7.0 COMPLETO
     const SYSTEM_PROMPT = `[SISTEMA OPERACIONAL: Universal Master Studio OS - v7.0 Ultimate Omnichannel]
 [COMPATIBILIDADE UNIVERSAL: ChatGPT, Google Gemini, Microsoft Copilot, Meta AI, Claude]
 [FUNÇÃO: Diretor Executivo de Produção Audiovisual, Arquiteto Editorial e Engenheiro de Prompts]
@@ -432,7 +473,6 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
     let memoryUsers = {};
     let memoryProjects = {};
-    let memoryKey = "";
 
     function getStorageUsers() {
       try {
@@ -464,29 +504,35 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     let currentConversationId = null;
     let conversationHistory = [];
 
-    function obterChave() {
+    // ==========================================
+    // CHAVE GEMINI INDIVIDUAL POR USUÁRIO
+    // ==========================================
+    function obterChaveUsuario() {
+      if (!activeUser) return "";
       const input = document.getElementById("geminiKeyInput");
       const valInput = input ? input.value.trim() : "";
       if (valInput) return valInput;
 
       try {
-        const stored = localStorage.getItem("GEMINI_KEY_ACTIVE");
+        const stored = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase());
         if (stored) return stored.trim();
       } catch (e) {}
 
-      return memoryKey.trim();
+      return "";
     }
 
     function autoSalvarChave() {
+      if (!activeUser) return;
       const input = document.getElementById("geminiKeyInput");
       const key = input.value.trim();
-      memoryKey = key;
       try {
-        localStorage.setItem("GEMINI_KEY_ACTIVE", key);
+        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
       } catch (e) {}
+      atualizarBadgeChave(key);
     }
 
     function salvarChaveGemini(mostrarAviso = true) {
+      if (!activeUser) return;
       const input = document.getElementById("geminiKeyInput");
       const key = input.value.trim();
 
@@ -496,10 +542,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
         return;
       }
 
-      memoryKey = key;
       try {
-        localStorage.setItem("GEMINI_KEY_ACTIVE", key);
+        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
       } catch (e) {}
+
+      atualizarBadgeChave(key);
 
       const btn = document.getElementById("saveKeyBtn");
       btn.textContent = "Salvo ✓";
@@ -510,19 +557,57 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }, 1500);
 
       if (mostrarAviso) {
-        alert("Chave Gemini salva com sucesso!");
+        alert("Sua chave foi salva com sucesso no seu perfil!");
       }
     }
 
-    function carregarChaveSalva() {
+    function carregarChaveDoUsuario() {
+      if (!activeUser) return;
       try {
-        const saved = localStorage.getItem("GEMINI_KEY_ACTIVE");
-        if (saved) {
-          memoryKey = saved;
-          const input = document.getElementById("geminiKeyInput");
-          if (input) input.value = saved;
-        }
+        const key = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase()) || "";
+        const input = document.getElementById("geminiKeyInput");
+        if (input) input.value = key;
+        atualizarBadgeChave(key);
       } catch (e) {}
+    }
+
+    function atualizarBadgeChave(key) {
+      const badge = document.getElementById("keyStatusBadge");
+      if (!badge) return;
+      if (key && key.length > 10) {
+        badge.textContent = "✓ Chave Ativa";
+        badge.className = "text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-block";
+      } else {
+        badge.textContent = "⚠️ Chave Ausente";
+        badge.className = "text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block";
+      }
+    }
+
+    // Modal de Chave
+    function abrirModalChave() {
+      const modal = document.getElementById("keyModal");
+      const modalInp = document.getElementById("modalKeyInput");
+      modalInp.value = obterChaveUsuario();
+      modal.classList.remove("hidden");
+      modalInp.focus();
+    }
+
+    function fecharModalChave() {
+      document.getElementById("keyModal").classList.add("hidden");
+    }
+
+    function salvarChaveDoModal() {
+      const modalInp = document.getElementById("modalKeyInput");
+      const val = modalInp.value.trim();
+      if (!val) {
+        alert("Cole sua chave no campo!");
+        modalInp.focus();
+        return;
+      }
+      document.getElementById("geminiKeyInput").value = val;
+      salvarChaveGemini(false);
+      fecharModalChave();
+      iniciarProducao();
     }
 
     // ==========================================
@@ -576,7 +661,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       document.getElementById("appScreen").classList.remove("hidden");
       document.getElementById("userNameDisplay").textContent = username;
 
-      carregarChaveSalva();
+      carregarChaveDoUsuario();
       atualizarListaProjetos();
 
       const projs = getStorageProjects(activeUser);
@@ -774,12 +859,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     // MULTI-MODELO COM FALLBACK AUTOMÁTICO
     // ==========================================
     async function dispararGemini(texto, isInicial = false) {
-      const apiKey = obterChave();
+      const apiKey = obterChaveUsuario();
 
-      if (!apiKey) {
-        alert("Por favor, cole sua Gemini API Key no campo superior e clique em Salvar.");
-        const inp = document.getElementById("geminiKeyInput");
-        if (inp) inp.focus();
+      // TRAVA OBRIGATÓRIA: Não avança sem a chave cadastrada pelo usuário
+      if (!apiKey || apiKey.length < 10) {
+        abrirModalChave();
         return;
       }
 
@@ -819,10 +903,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       chatArea.appendChild(indicador);
       chatArea.scrollTop = chatArea.scrollHeight;
 
-      // Modelos em ordem de disponibilidade e estabilidade
+      // Modelos em ordem de disponibilidade e velocidade
       const modelosCandidatos = [
         "gemini-2.0-flash",
         "gemini-2.0-flash-lite",
+        "gemini-2.5-flash",
         "gemini-3.8-flash"
       ];
 
@@ -848,12 +933,12 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
           if (data.error) {
             ultimoErro = data.error.message || `Código ${data.error.code}`;
-            continue; // Se o modelo estiver sobrecarregado, tenta o próximo imediatamente
+            continue;
           }
 
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             respostaFinal = data.candidates[0].content.parts[0].text;
-            break; // Sucesso
+            break;
           }
         } catch (err) {
           ultimoErro = err.message;
@@ -877,7 +962,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
           atualizarListaProjetos();
         }
       } else {
-        renderizarMensagem(`❌ **Falha ao processar:** ${ultimoErro || "Servidores do Google ocupados. Tente novamente."}`, false);
+        renderizarMensagem(`❌ **Erro na API Gemini:** ${ultimoErro || "Não foi possível conectar. Verifique sua chave de API."}`, false);
       }
 
       sendBtn.disabled = false;
