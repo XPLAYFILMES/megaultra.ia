@@ -14,5 +14,13 @@
     "arquivo": "prompts/storyboard.txt",
     "titulo": "Engine de Storyboard Visual",
     "descricao": "Decupagem de câmera, quadros-chave sequenciais e painéis visuais."
+  },
+  {
+    "id": "gerador",
+    "nome": "Gerador de Prompts",
+    "icone": "⚡",
+    "arquivo": "prompts/gerador.txt",
+    "titulo": "Fábrica de Prompts Especializados",
+    "descricao": "Criação de mega-prompts estruturados e prompts para outras inteligências artificiais."
   }
 ]
