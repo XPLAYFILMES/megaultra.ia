@@ -59,7 +59,6 @@
     .prose h3, .prose h4 { color: #60a5fa; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.65rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
     .prose hr { border-color: #334155; margin: 1.5rem 0; }
 
-    /* Cursor de digitação estilo terminal/ChatGPT */
     .typing-cursor::after {
       content: '▋';
       display: inline-block;
@@ -239,10 +238,6 @@
           </button>
         </div>
 
-        <button onclick="baixarBancoConhecimento()" class="w-full py-1.5 px-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition">
-          💾 Baixar Conhecimento (<span id="countMemoria">0</span>)
-        </button>
-
         <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
           <span>💎</span> Quero Ativar 30 Dias
         </button>
@@ -258,6 +253,12 @@
         </div>
         
         <div class="flex items-center gap-2 shrink-0">
+          <!-- Indicador de Nuvem Automática Conectada -->
+          <div class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Nuvem Ativa
+          </div>
+
           <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
             <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
           </a>
@@ -340,6 +341,14 @@
   </div>
 
   <script>
+    // =========================================================================
+    // CONFIGURAÇÃO DA NUVEM JSONBIN (INTEGRAÇÃO CENTRAL GLOBAL)
+    // =========================================================================
+    const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
+    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
+    const BIN_TESTE = "6abc21bfac6210605a032f92";
+    const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
+
     let modoAuthAtual = "login";
     let sessoesDisponiveis = [];
     let promptsCache = {};
@@ -354,11 +363,72 @@
     let memoryUsers = {};
     let memoryProjects = {};
 
-    // =========================================================================
-    // BANCO DE CONHECIMENTO COLETIVO
-    // =========================================================================
+    // Cache local sincronizado
+    let bancoCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+    let bancoTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
+    // Sincronização de leitura com a nuvem JSONBin
+    async function sincronizarComNuvem() {
+      try {
+        const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
+
+        // Carrega Cadastros
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.usuarios || []);
+            if (arr.length > 0) {
+              bancoCadastros = arr;
+              localStorage.setItem("db_cadastros_completo", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
+
+        // Carrega Testes
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.testes || []);
+            if (arr.length > 0) {
+              bancoTeste = arr;
+              localStorage.setItem("db_cadastros_teste", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
+
+        // Carrega Conhecimento Coletivo
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.conhecimento || []);
+            if (arr.length > 0) {
+              bancoConhecimento = arr;
+              localStorage.setItem("banco_conhecimento_local", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
+      } catch (e) {
+        console.warn("Sincronização em nuvem:", e);
+      }
+    }
+
+    // Gravação na nuvem sem requerer permissão local
+    async function gravarNuvem(binId, dados, chaveObjeto) {
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_MASTER_KEY
+          },
+          body: JSON.stringify({ [chaveObjeto]: dados })
+        });
+      } catch (e) {
+        console.warn("Erro ao gravar na nuvem:", e);
+      }
+    }
+
+    // =========================================================================
+    // BANCO DE CONHECIMENTO COLETIVO COM VARIAÇÃO DINÂMICA
+    // =========================================================================
     function salvarConhecimento(pergunta, resposta) {
       if (!pergunta || !resposta || resposta.length < 10) return;
       const perguntaNormalizada = normalizarTexto(pergunta);
@@ -371,7 +441,6 @@
           data: new Date().toISOString()
         });
       } else {
-        // Armazena múltiplas variações de respostas para a mesma dúvida!
         if (!bancoConhecimento[index].respostas) {
           bancoConhecimento[index].respostas = [bancoConhecimento[index].resposta || resposta.trim()];
         }
@@ -381,27 +450,14 @@
       }
 
       localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-      atualizarContadorMemoria();
-    }
-
-    function atualizarContadorMemoria() {
-      const el = document.getElementById("countMemoria");
-      if (el) el.textContent = bancoConhecimento.length;
-    }
-
-    function baixarBancoConhecimento() {
-      const blob = new Blob([JSON.stringify(bancoConhecimento, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "banco_conhecimento.json";
-      a.click();
+      // Grava em segundo plano na nuvem global
+      gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
     }
 
     function normalizarTexto(txt) {
       return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
     }
 
-    // Aberturas e variações naturais para evitar respostas estáticas idênticas
     const variacoesAbertura = [
       "Com certeza! ",
       "Aqui está: ",
@@ -414,18 +470,13 @@
 
     function variarResposta(textoBase) {
       let texto = textoBase;
-      // Remove aberturas repetidas se já existirem
       variacoesAbertura.forEach(ab => {
-        if (texto.startsWith(ab)) {
-          texto = texto.substring(ab.length);
-        }
+        if (texto.startsWith(ab)) texto = texto.substring(ab.length);
       });
-      // Sorteia uma nova introdução natural
       const aberturaSorteada = variacoesAbertura[Math.floor(Math.random() * variacoesAbertura.length)];
       return aberturaSorteada + texto;
     }
 
-    // Busca inteligente na memória com variação de termos
     function buscarNaMemoriaLocal(perguntaUsuario) {
       const perguntaLimpa = normalizarTexto(perguntaUsuario);
       const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
@@ -449,7 +500,6 @@
 
         if (match) {
           const listaRespostas = item.respostas || [item.resposta];
-          // Sorteia entre as variações gravadas
           const respostaEscolhida = listaRespostas[Math.floor(Math.random() * listaRespostas.length)];
           return variarResposta(respostaEscolhida);
         }
@@ -513,6 +563,114 @@
       const nome = activeUser || "Cliente";
       const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio como teste e desejo ativar meu plano de 30 DIAS completo!\n\nNome do usuário: ${nome}`);
       window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
+    }
+
+    // AUTENTICAÇÃO COM VERIFICAÇÃO NA NUVEM
+    function executarAcesso(e) {
+      if (e) e.preventDefault();
+
+      const userInput = document.getElementById("authUsername");
+      const passInput = document.getElementById("authPassword");
+      const feedback = document.getElementById("loginFeedback");
+
+      const username = (userInput.value || "").trim();
+      const password = (passInput.value || "").trim();
+
+      if (!username || !password) {
+        feedback.textContent = "Preencha todos os campos!";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      if (modoAuthAtual === "login") {
+        const assinante = bancoCadastros.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (assinante) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(assinante.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            return;
+          }
+
+          feedback.textContent = `Assinante reconhecido! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Ativo (30 Dias)");
+          setTimeout(() => abrirStudio(assinante.nome), 200);
+          return;
+        }
+
+        const userTeste = bancoTeste.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (userTeste) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(userTeste.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            document.getElementById("expiredDescText").textContent = "Seu teste gratuito de 6 horas expirou. Ative o plano de 30 dias para continuar.";
+            return;
+          }
+
+          feedback.textContent = `Acesso de teste ativo! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+          setTimeout(() => abrirStudio(userTeste.nome), 200);
+          return;
+        }
+
+        feedback.textContent = "Usuário não encontrado. Crie uma conta teste na aba ao lado.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      // CADASTRO NOVO (TESTE DE 6 HORAS)
+      const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
+      if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
+        feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Fale com o suporte para assinar.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      const email = document.getElementById("authEmail").value.trim();
+      const tipoContato = document.getElementById("authTipoContato").value;
+      const numeroContato = document.getElementById("authNumeroContato").value.trim();
+
+      const agora = new Date();
+      const vencimento6h = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
+
+      const formatarData = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+      const novoTeste = {
+        id: "usr_" + Date.now(),
+        nome: username,
+        email: email || "Não informado",
+        tipoContato: tipoContato,
+        numero: numeroContato || "Cadastro pelo Site",
+        banco: "teste",
+        dataCadastroIso: agora.toISOString(),
+        dataCadastroFormatada: formatarData(agora),
+        dataVencimentoIso: vencimento6h.toISOString(),
+        dataVencimentoFormatada: formatarData(vencimento6h),
+        token: "tok_" + Date.now()
+      };
+
+      bancoTeste.unshift(novoTeste);
+      localStorage.setItem("db_cadastros_teste", JSON.stringify(bancoTeste));
+      localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
+      localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+
+      // Grava direto na nuvem sem precisar de permissões
+      gravarNuvem(BIN_TESTE, bancoTeste, "testes");
+
+      feedback.textContent = `✨ Conta teste de 6 horas criada com sucesso! Entrando...`;
+      feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+      feedback.classList.remove("hidden");
+      setTimeout(() => abrirStudio(username), 300);
     }
 
     function extrairEtapasDoTexto(rawTxt) {
@@ -771,8 +929,6 @@
         btnUpgrade.classList.remove("hidden");
       }
 
-      atualizarContadorMemoria();
-
       const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
       if (tabSalva) activeSessionId = tabSalva;
 
@@ -914,7 +1070,7 @@
               <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
             </button>
             <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
-              <span>✏️️</span> Renomear
+              <span>✏️</span> Renomear
             </button>
             <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
               <span>🗑️</span> Excluir
@@ -1003,7 +1159,6 @@
       return marked.parse(formatado);
     }
 
-    // Renderização estática para mensagens prévias do histórico
     function renderizarMensagemInstantanea(texto, isUser, isError = false, viaCacheLocal = false) {
       const chatArea = document.getElementById("chatArea");
       const div = document.createElement("div");
@@ -1037,9 +1192,6 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // =========================================================================
-    // EFEITO DE DIGITAÇÃO ULTRA-RÁPIDO ESTILO CHATGPT / GEMINI (TYPEWRITER)
-    // =========================================================================
     async function renderizarMensagemDigitando(textoCompleto, viaCacheLocal = false) {
       isDigitando = true;
       const chatArea = document.getElementById("chatArea");
@@ -1060,12 +1212,10 @@
 
       const spanConteudo = bubble.querySelector("span");
 
-      // Digitação dinâmica acelerada: grupos de caracteres para fluidez alta
       let index = 0;
       const tamanhoTotal = textoCompleto.length;
-      // Ajusta passo dinâmico: se texto for grande, acelera para não demorar
       const passo = tamanhoTotal > 800 ? 5 : (tamanhoTotal > 300 ? 3 : 2);
-      const velocidadeMs = 12; // 12ms por passo
+      const velocidadeMs = 12;
 
       return new Promise((resolve) => {
         const timer = setInterval(() => {
@@ -1107,9 +1257,6 @@
       }
     }
 
-    // =========================================================================
-    // EXECUÇÃO DO FLUXO: CHAT NATURAL vs MOTORES DE PRODUÇÃO
-    // =========================================================================
     async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
       if (isDigitando) return;
 
@@ -1123,7 +1270,6 @@
       const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
       const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      // 1. ABERTURA NO CHAT IA LIVRE: Sem etapas, sem questionários
       if (isInicial && activeSessionId === "chat") {
         const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
         conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
@@ -1135,7 +1281,6 @@
         return;
       }
 
-      // 2. ABERTURA NAS SESSÕES DE PRODUÇÃO / STORYBOARD: Exibe Etapa 1
       if (isInicial && activeSessionId !== "chat") {
         const primeiraEtapaId = Object.keys(mapaEtapas)[0];
         if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
@@ -1151,7 +1296,6 @@
         }
       }
 
-      // Registra a mensagem do usuário
       if (!isInicial && !isRetomada) {
         renderizarMensagemInstantanea(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -1161,7 +1305,6 @@
         }
       }
 
-      // 3. NO CHAT LIVRE: BUSCA PRIMEIRO NA MEMÓRIA COLETIVA LOCAL (COM VARIAÇÃO DE TERMOS)
       if (activeSessionId === "chat" && texto.length >= 3) {
         const respostaMemoria = buscarNaMemoriaLocal(texto);
         if (respostaMemoria) {
@@ -1173,11 +1316,10 @@
             detectarEAtualizarTitulo(texto, respostaMemoria, atual, projs);
             saveStorageProjects(activeUser, activeSessionId, projs);
           }
-          return; // Concluído com 0 gasto de tokens!
+          return;
         }
       }
 
-      // 4. SE FOR ETAPA ESTÁTICA DAS OUTRAS SESSÕES
       const mensagensModelo = conversationHistory.filter(m => m.role === "model");
       const indiceProximaEtapa = mensagensModelo.length;
       const chavesEtapas = Object.keys(mapaEtapas);
@@ -1194,7 +1336,6 @@
         return;
       }
 
-      // 5. ACIONA O GEMINI COM RESPOSTA RICA E NATURAL
       const apiKey = obterChaveUsuario();
       if (!apiKey || apiKey.length < 10) {
         abrirModalChave();
@@ -1262,9 +1403,7 @@
       if (respostaFinal) {
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
         
-        // Efeito de digitação suave e rápido letra por letra
         await renderizarMensagemDigitando(respostaFinal, false);
-
         salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
@@ -1312,14 +1451,13 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      atualizarContadorMemoria();
+      sincronizarComNuvem();
+
       const enteredByToken = (function() {
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get("token");
         if (!token) return false;
-        const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
-        const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
-        let u = dbCadastros.find(x => x.token === token) || dbTeste.find(x => x.token === token);
+        let u = bancoCadastros.find(x => x.token === token) || bancoTeste.find(x => x.token === token);
         if (u) {
           activeUser = u.nome;
           localStorage.setItem("studio_active_session", activeUser);
