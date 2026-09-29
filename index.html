@@ -5,23 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Universal Master Studio AI</title>
   
-  <!-- CSS Puro Crítico: Trava 100% de qualquer piscada ou flash antes de qualquer script carregar -->
+  <!-- Anti-Flash: Evita que a tela de login pisque ao dar F5 -->
   <style>
     body {
-      background-color: #020617; /* Slate 950 sólido para evitar fundo branco */
+      background-color: #020617;
       margin: 0;
       padding: 0;
       overflow: hidden;
     }
 
-    /* Ambas as telas começam absolutamente invisíveis por padrão */
     #authScreen, #appScreen {
       display: none !important;
       opacity: 0;
       transition: opacity 0.15s ease-in;
     }
 
-    /* Regras imediatas ativadas pelo script inline ultra-rápido */
     html.estado-deslogado #authScreen {
       display: block !important;
       opacity: 1;
@@ -32,7 +30,7 @@
       opacity: 1;
     }
 
-    /* Estilização das opções verticais e blocos */
+    /* Estilização moderna e organizada das opções verticais */
     .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
     .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
     .prose th { background-color: #1e293b; color: #93c5fd; font-weight: 600; }
@@ -59,7 +57,6 @@
     .prose hr { border-color: #334155; margin: 1.5rem 0; }
   </style>
 
-  <!-- Script Instantâneo (Executa antes do HTML ser renderizado na tela) -->
   <script>
     try {
       const sessaoAtiva = localStorage.getItem("studio_active_session");
@@ -73,7 +70,6 @@
     }
   </script>
 
-  <!-- Bibliotecas externas -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -135,10 +131,13 @@
     <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
       <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
         
-        <!-- SELETOR DINÂMICO DE SESSÕES -->
+        <!-- SELETOR DINÂMICO DE SESSÕES (EM LISTA / CARDS MODERNOS) -->
         <div>
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Sessões Especializadas</label>
-          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos & Motores</label>
+            <span id="sessionCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">3 sessões</span>
+          </div>
+          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 max-h-48 overflow-y-auto">
             <!-- Botões das sessões gerados dinamicamente via JS -->
           </div>
         </div>
@@ -284,6 +283,7 @@
       try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
     }
 
+    // ISOLAMENTO TOTAL POR USUÁRIO E POR SESSÃO
     function getStorageProjects(user, sessao) {
       const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       try {
@@ -299,7 +299,7 @@
     }
 
     // =========================================================================
-    // CARREGADOR DE SESSÕES DO GITHUB
+    // CARREGADOR DE SESSÕES
     // =========================================================================
     async function carregarSessoesDoGithub() {
       try {
@@ -338,6 +338,9 @@
         ];
       }
 
+      const countBadge = document.getElementById("sessionCountBadge");
+      if (countBadge) countBadge.textContent = `${sessoesDisponiveis.length} sessões`;
+
       renderizarBotoesSessoes();
     }
 
@@ -349,12 +352,18 @@
         const btn = document.createElement("button");
         btn.id = "btn_sessao_" + s.id;
         const isActive = (s.id === activeSessionId);
-        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center gap-2 ${
+        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
           isActive 
             ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" 
             : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
         }`;
-        btn.innerHTML = `<span class="text-sm">${s.icone}</span> <span>${s.nome}</span>`;
+        btn.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-sm">${s.icone}</span> 
+            <span>${s.nome}</span>
+          </div>
+          ${isActive ? '<span class="text-[10px] bg-blue-500/40 px-1.5 py-0.5 rounded text-blue-100">Ativa</span>' : ''}
+        `;
         btn.onclick = () => mudarSessao(s.id);
         container.appendChild(btn);
       });
@@ -387,6 +396,7 @@
       activeSessionId = novaSessaoId;
       currentConversationId = null;
       conversationHistory = [];
+      ultimaMensagemPendente = "";
       
       try {
         localStorage.setItem("studio_active_tab_" + activeUser.toLowerCase(), novaSessaoId);
@@ -835,10 +845,12 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
+    // DETECÇÃO AUTOMÁTICA DE TÍTULO PARA RENOMEAR A PRODUÇÃO / STORYBOARD
     function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
-      const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Projeto):\s*["']?([^"'\n]+)["']?/i);
+      // 1. Procura se a resposta da IA confirmou um título formal
+      const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
       if (matchTitulo && matchTitulo[1]) {
-        const tituloLimpo = matchTitulo[1].trim();
+        const tituloLimpo = matchTitulo[1].replace(/[*#]/g, '').trim();
         projetoAtual.title = tituloLimpo;
         document.getElementById("currentChatTitle").textContent = tituloLimpo;
         saveStorageProjects(activeUser, activeSessionId, todosProjetos);
@@ -846,7 +858,8 @@
         return;
       }
 
-      if (projetoAtual.messages.length <= 4 && textoUsuario && !textoUsuario.startsWith("[")) {
+      // 2. Se a mensagem do usuário for um título descritivo (e não um número simples como [1])
+      if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 4) {
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
         document.getElementById("currentChatTitle").textContent = tituloResumo;
@@ -856,9 +869,9 @@
     }
 
     // =========================================================================
-    // EXECUÇÃO DO GEMINI
+    // EXECUÇÃO DO GEMINI COM RETOMADA LIMPA (SEM DUPLICAR BALÕES)
     // =========================================================================
-    async function dispararGemini(texto, isInicial = false) {
+    async function dispararGemini(texto, isInicial = false, isRetomada = false) {
       const apiKey = obterChaveUsuario();
 
       if (!apiKey || apiKey.length < 10) {
@@ -875,14 +888,15 @@
 
       ultimaMensagemPendente = isInicial ? "" : texto;
 
-      if (!isInicial) {
+      // Se for envio novo (NÃO for uma retomada de erro), renderiza o balão do usuário
+      if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
         if (atual) {
           atual.messages.push({ role: "user", content: texto });
           saveStorageProjects(activeUser, activeSessionId, projs);
         }
-      } else {
+      } else if (isInicial) {
         const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
         const comandoInicial = `Iniciar motor de ${sessao ? sessao.nome : 'produção'}. Apresente a ETAPA 1 com todas as opções numeradas uma abaixo da outra e aguarde a resposta.`;
         conversationHistory.push({
@@ -902,7 +916,7 @@
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Organizando etapas...
+          Processando solicitação...
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
@@ -910,11 +924,11 @@
 
       const promptMestre = await obterPromptAtivo();
 
+      // MODELOS VIGENTES COM ALTA DISPONIBILIDADE
       const modelosCandidatos = [
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-2.5-flash",
-        "gemini-3.8-flash"
+        "gemini-3.5-flash-lite",
+        "gemini-3.8-flash",
+        "gemini-2.5-flash"
       ];
 
       let respostaFinal = null;
@@ -965,16 +979,8 @@
         }
         ultimaMensagemPendente = "";
       } else {
-        if (conversationHistory.length > 0) {
-          conversationHistory.pop();
-        }
-        if (atual && atual.messages.length > 0 && !isInicial) {
-          atual.messages.pop();
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-
         renderizarMensagem(
-          `⚠️ **Houve uma oscilação temporária na conexão do Gemini.**\n\nSua última escolha foi preservada. Clique no botão abaixo para continuar de onde parou:`,
+          `⚠️ **Houve uma oscilação na conexão do Gemini.**\n\nSua última escolha foi gravada com sucesso. Clique abaixo para avançar sem duplicar mensagens:`,
           false,
           true
         );
@@ -985,15 +991,16 @@
       userInput.focus();
     }
 
+    // RETOMADA INTELIGENTE: Remove o bloco de erro e prossegue sem duplicar a mensagem do usuário
     function tentarNovamente() {
       const chatArea = document.getElementById("chatArea");
       const erroBox = chatArea.lastElementChild;
       if (erroBox) erroBox.remove();
 
       if (ultimaMensagemPendente) {
-        dispararGemini(ultimaMensagemPendente, false);
+        dispararGemini(ultimaMensagemPendente, false, true);
       } else {
-        dispararGemini("", true);
+        dispararGemini("", true, true);
       }
     }
 
@@ -1006,10 +1013,9 @@
       const val = input.value.trim();
       if (!val) return;
       input.value = "";
-      dispararGemini(val, false);
+      dispararGemini(val, false, false);
     }
 
-    // Inicialização ao carregar a página
     window.addEventListener("DOMContentLoaded", () => {
       try {
         const sessao = localStorage.getItem("studio_active_session");
