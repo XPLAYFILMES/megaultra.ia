@@ -8,7 +8,23 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+  <!-- Anti-Flash: Evita que a tela de login pisque ao dar F5 caso o usuário já esteja logado -->
+  <script>
+    (function() {
+      try {
+        const sessao = localStorage.getItem("studio_active_session");
+        if (sessao) {
+          document.documentElement.classList.add("usuario-conectado");
+        }
+      } catch(e) {}
+    })();
+  </script>
+
   <style>
+    /* Estilos de prevenção do flash de login */
+    html.usuario-conectado #authScreen { display: none !important; }
+    html.usuario-conectado #appScreen { display: flex !important; }
+
     /* Estilização vertical e organizada para opções e blocos */
     .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
     .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
@@ -17,12 +33,12 @@
     .prose pre { background-color: #020617; border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
     .prose code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     
-    /* Organização vertical com espaçamento limpo entre cada opção */
+    /* Organização vertical das opções [0], [1], etc. */
     .prose ul, .prose ol { margin: 1rem 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
     .prose li { 
-      background: rgba(15, 23, 42, 0.6); 
-      border: 1px solid rgba(51, 65, 85, 0.6); 
-      padding: 0.6rem 0.85rem; 
+      background: rgba(15, 23, 42, 0.7); 
+      border: 1px solid rgba(51, 65, 85, 0.7); 
+      padding: 0.65rem 0.9rem; 
       border-radius: 0.65rem; 
       line-height: 1.5; 
       color: #e2e8f0;
@@ -30,7 +46,7 @@
     }
     .prose li:hover {
       border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.8);
+      background: rgba(30, 41, 59, 0.85);
     }
     .prose p { margin-bottom: 0.85rem; line-height: 1.6; }
     .prose h3, .prose h4 { color: #60a5fa; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.65rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
@@ -88,7 +104,7 @@
     </div>
   </div>
 
-  <!-- PAINEL PRINCIPAL -->
+  <!-- PAINEL PRINCIPAL DO STUDIO -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden hidden">
     
     <!-- BARRA LATERAL -->
@@ -99,7 +115,7 @@
         <div>
           <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 block">Sessões Especializadas</label>
           <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
-            <!-- Botões das sessões renderizados via JavaScript -->
+            <!-- Botões das sessões gerados dinamicamente via JS -->
           </div>
         </div>
 
@@ -139,7 +155,7 @@
           <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Novo Projeto</span>
         </div>
         
-        <!-- Campo da API Key do Usuário -->
+        <!-- Campo de API Key por Usuário -->
         <div class="flex items-center gap-2 shrink-0">
           <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
             ⚠️ Chave Ausente
@@ -159,21 +175,8 @@
         </div>
       </header>
 
-      <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela de Início Centralizada -->
-        <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
-          <div id="startScreenIcon" class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold shadow-inner">
-            ⚡
-          </div>
-          <h2 id="startScreenTitle" class="text-xl font-bold text-white tracking-tight">Pronto para Iniciar</h2>
-          <p id="startScreenDesc" class="text-sm text-slate-400 max-w-sm">
-            Clique no botão abaixo para ativar a inteligência e gerar a primeira etapa.
-          </p>
-          <button id="startBtnAction" onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
-            Iniciar Produção
-          </button>
-        </div>
-      </div>
+      <!-- ÁREA DINÂMICA DE MENSAGENS E PAINEL INICIAL -->
+      <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4"></div>
 
       <footer class="p-3 sm:p-4 border-t border-slate-800 bg-slate-900/80">
         <div class="flex gap-2">
@@ -232,7 +235,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT DEFINITIVO -->
+  <!-- SCRIPT DEFINITIVO DE ISOLAMENTO E CARREGAMENTO DE ETAPAS -->
   <script>
     let sessoesDisponiveis = [];
     let promptsCache = {};
@@ -257,7 +260,7 @@
       try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
     }
 
-    // ISOLAMENTO RIGOROSO DE CONVERSAS POR USUÁRIO E POR SESSÃO
+    // ISOLAMENTO TOTAL POR USUÁRIO E POR SESSÃO
     function getStorageProjects(user, sessao) {
       const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       try {
@@ -355,27 +358,35 @@
       return "Você é um diretor e engenheiro de IA especializado. Apresente exclusivamente a Etapa 1 e aguarde a resposta do usuário.";
     }
 
+    // TROCA LIMPA DE SESSÃO: Zera a tela, isola o histórico e carrega os projetos da sessão clicada
     function mudarSessao(novaSessaoId) {
-      if (activeSessionId === novaSessaoId) return;
+      if (activeSessionId === novaSessaoId && currentConversationId) return;
 
       activeSessionId = novaSessaoId;
+      currentConversationId = null;
       conversationHistory = [];
+      
+      try {
+        localStorage.setItem("studio_active_tab_" + activeUser.toLowerCase(), novaSessaoId);
+      } catch(e) {}
+
       renderizarBotoesSessoes();
 
       const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
       if (sessao) {
         document.getElementById("btnNovaAcao").innerHTML = `<span>+</span> Novo Projeto (${sessao.nome})`;
         document.getElementById("labelHistorico").textContent = `Projetos de ${sessao.nome}`;
-        document.getElementById("startScreenIcon").innerHTML = sessao.icone;
-        document.getElementById("startScreenTitle").textContent = sessao.titulo || sessao.nome;
-        document.getElementById("startScreenDesc").textContent = sessao.descricao || "Clique abaixo para iniciar.";
-        document.getElementById("startBtnAction").textContent = `Iniciar ${sessao.nome}`;
       }
 
       atualizarListaProjetos();
 
       const projs = getStorageProjects(activeUser, activeSessionId);
-      if (projs.length > 0) {
+      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
+      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
+
+      if (chatParaAbrir) {
+        selecionarProjeto(chatParaAbrir.id);
+      } else if (projs.length > 0) {
         selecionarProjeto(projs[0].id);
       } else {
         criarNovoProjeto();
@@ -532,11 +543,18 @@
 
     async function abrirStudio(username) {
       activeUser = username;
-      try { localStorage.setItem("studio_active_session", username); } catch(e){}
+      try { 
+        localStorage.setItem("studio_active_session", username);
+        document.documentElement.classList.add("usuario-conectado");
+      } catch(e) {}
 
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("appScreen").classList.remove("hidden");
       document.getElementById("userNameDisplay").textContent = username;
+
+      // Recupera a última sessão que o usuário estava navegando
+      const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
+      if (tabSalva) activeSessionId = tabSalva;
 
       await carregarSessoesDoGithub();
       carregarChaveDoUsuario();
@@ -556,7 +574,10 @@
     }
 
     function fazerLogout() {
-      try { localStorage.removeItem("studio_active_session"); } catch(e){}
+      try { 
+        localStorage.removeItem("studio_active_session");
+        document.documentElement.classList.remove("usuario-conectado");
+      } catch(e) {}
       activeUser = null;
       window.location.reload();
     }
@@ -687,6 +708,37 @@
       });
     }
 
+    // =========================================================================
+    // RENDERIZADOR DO PAINEL CENTRAL (SEMPRE GARANTIDO)
+    // =========================================================================
+    function exibirPainelInicialCentral() {
+      const chatArea = document.getElementById("chatArea");
+      chatArea.innerHTML = "";
+
+      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || {
+        nome: "Produção",
+        icone: "🎬",
+        titulo: "Pronto para Iniciar",
+        descricao: "Clique no botão abaixo para ativar a inteligência e gerar a primeira etapa."
+      };
+
+      const startDiv = document.createElement("div");
+      startDiv.className = "h-full flex flex-col items-center justify-center text-center space-y-4 py-12";
+      startDiv.innerHTML = `
+        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold shadow-inner">
+          ${sessao.icone}
+        </div>
+        <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo || sessao.nome}</h2>
+        <p class="text-sm text-slate-400 max-w-sm">
+          ${sessao.descricao || "Clique no botão abaixo para ativar a inteligência e gerar a primeira etapa."}
+        </p>
+        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
+          Iniciar ${sessao.nome}
+        </button>
+      `;
+      chatArea.appendChild(startDiv);
+    }
+
     // CRIAÇÃO DE NOVO PROJETO COM ABERTURA IMEDIATA DO PAINEL CENTRAL
     function criarNovoProjeto() {
       if (!activeUser) return;
@@ -717,16 +769,13 @@
 
       document.getElementById("currentChatTitle").textContent = proj.title;
       const chatArea = document.getElementById("chatArea");
-      const startScreen = document.getElementById("startScreen");
       chatArea.innerHTML = "";
       conversationHistory = [];
 
-      // SE NÃO TIVER MENSAGENS, EXIBE O BOTÃO CENTRAL DE INICIAR
+      // SE NÃO TIVER MENSAGENS, RENDERIZA O PAINEL CENTRAL COM O BOTÃO DE INICIAR
       if (!proj.messages || proj.messages.length === 0) {
-        chatArea.appendChild(startScreen);
-        startScreen.classList.remove("hidden");
+        exibirPainelInicialCentral();
       } else {
-        startScreen.classList.add("hidden");
         proj.messages.forEach(m => {
           conversationHistory.push({ role: m.role, parts: [{ text: m.content }] });
           renderizarMensagem(m.content, m.role === "user");
@@ -735,9 +784,8 @@
       atualizarListaProjetos();
     }
 
-    // FORMATAÇÃO ESTRUTURADA DE OPÇÕES
+    // FORMATAÇÃO ESTRUTURADA DE OPÇÕES VERTICAIS
     function formatarTextoComOpcoes(rawText) {
-      // Converte itens como [0] Opcao ou 1. Opcao em listas limpas
       let formatado = rawText;
       formatado = formatado.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
       return marked.parse(formatado);
@@ -773,7 +821,6 @@
 
     // DETECÇÃO AUTOMÁTICA DE TÍTULO PARA RENOMEAR O PROJETO
     function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
-      // 1. Se a IA ou o usuário confirmarem um título explícito
       const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Projeto):\s*["']?([^"'\n]+)["']?/i);
       if (matchTitulo && matchTitulo[1]) {
         const tituloLimpo = matchTitulo[1].trim();
@@ -784,7 +831,6 @@
         return;
       }
 
-      // 2. Se for uma das primeiras respostas com texto descritivo
       if (projetoAtual.messages.length <= 4 && textoUsuario && !textoUsuario.startsWith("[")) {
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
@@ -805,10 +851,13 @@
         return;
       }
 
-      document.getElementById("startScreen").classList.add("hidden");
-
       const projs = getStorageProjects(activeUser, activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
+
+      // Limpa a tela se for a primeira mensagem da conversa
+      if (isInicial && (!atual.messages || atual.messages.length === 0)) {
+        document.getElementById("chatArea").innerHTML = "";
+      }
 
       ultimaMensagemPendente = isInicial ? "" : texto;
 
@@ -842,8 +891,8 @@
           Organizando etapas...
         </div>
       `;
-      chatArea.appendChild(indicador);
-      chatArea.scrollTop = chatArea.scrollHeight;
+      document.getElementById("chatArea").appendChild(indicador);
+      document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
 
       const promptMestre = await obterPromptAtivo();
 
@@ -902,7 +951,6 @@
         }
         ultimaMensagemPendente = "";
       } else {
-        // EM CASO DE FALHA: remove a mensagem do histórico local para não travar a conversa futura
         if (conversationHistory.length > 0) {
           conversationHistory.pop();
         }
@@ -924,6 +972,7 @@
     }
 
     function tentarNovamente() {
+      const chatArea = document.getElementById("chatArea");
       const erroBox = chatArea.lastElementChild;
       if (erroBox) erroBox.remove();
 
@@ -946,6 +995,7 @@
       dispararGemini(val, false);
     }
 
+    // Inicialização ao carregar
     window.onload = function() {
       try {
         const sessao = localStorage.getItem("studio_active_session");
