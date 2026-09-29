@@ -34,7 +34,6 @@
       opacity: 1;
     }
 
-    /* Estilização moderna e organizada das opções verticais */
     .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
     .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
     .prose th { background-color: #1e293b; color: #93c5fd; font-weight: 600; }
@@ -66,21 +65,26 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
 
-  <!-- TELA DE ACESSO EXPIRADO (SE PASSOU DOS 30 DIAS) -->
+  <!-- TELA DE ACESSO EXPIRADO -->
   <div id="expiredScreen" class="w-full max-w-md bg-slate-900 border border-rose-500/30 p-8 rounded-2xl shadow-2xl text-center space-y-4">
     <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-3xl mx-auto">
       ⏳
     </div>
-    <h1 class="text-xl font-bold text-white">Acesso Expirado</h1>
-    <p class="text-xs text-slate-400 leading-relaxed">
-      O período de validade de 30 dias desta licença foi encerrado. Entre em contato com o suporte para renovar sua chave e continuar seus projetos.
+    <h1 class="text-xl font-bold text-white">Período de Acesso Expirado</h1>
+    <p class="text-xs text-slate-400 leading-relaxed" id="expiredDescText">
+      O período de acesso foi concluído. Clique no botão abaixo para ativar a sua assinatura completa de 30 dias diretamente com o suporte.
     </p>
-    <a href="admin.html" class="inline-block px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl font-medium transition border border-slate-700">
-      Acessar Painel Admin
-    </a>
+    <div class="pt-2 flex flex-col gap-2">
+      <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+        <span>💬</span> Ativar Assinatura 30 Dias no WhatsApp
+      </button>
+      <a href="admin.html" class="inline-block px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-xl transition border border-slate-700">
+        Painel Administrativo 🛡️
+      </a>
+    </div>
   </div>
 
-  <!-- TELA DE LOGIN / CADASTRO -->
+  <!-- TELA DE LOGIN / CADASTRO COM TRAVA DE 1 ÚNICO TESTE -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
       <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-inner">
@@ -88,18 +92,19 @@
       </div>
       <h1 class="text-2xl font-bold text-white tracking-tight">Universal Master Studio</h1>
       <p class="text-xs text-slate-400">
-        Digite seu nome e senha ou acesse através do link único enviado pelo suporte.
+        Cadastros diretos pelo site recebem <b class="text-purple-400">teste de 6 horas</b> (limite de 1 vez por aparelho).
       </p>
     </div>
 
     <div class="space-y-4">
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-          Nome de Usuário
+          Nome de Utilizador
         </label>
         <input 
           type="text" 
           id="authUsername" 
+          autocomplete="off"
           placeholder="Ex: alex" 
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
@@ -107,12 +112,13 @@
 
       <div>
         <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-          Sua Senha
+          Palavra-passe
         </label>
         <input 
           type="password" 
           id="authPassword" 
-          placeholder="Digite sua senha" 
+          autocomplete="off"
+          placeholder="Digite a palavra-passe" 
           onkeydown="if(event.key==='Enter') executarAcesso()"
           class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
         />
@@ -124,7 +130,7 @@
         type="button" 
         onclick="executarAcesso()"
         class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer">
-        Entrar / Cadastrar Conta
+        Entrar / Iniciar Teste de 6 Horas
       </button>
 
       <div class="pt-2 text-center">
@@ -140,7 +146,6 @@
     <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
       <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
         
-        <!-- SELETOR DINÂMICO DE SESSÕES -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos & Motores</label>
@@ -160,19 +165,26 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário -->
-      <div class="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60 shrink-0">
-        <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
-            👤
+      <!-- Rodapé do Utilizador com Botão de Ativação -->
+      <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
+              👤
+            </div>
+            <div class="flex flex-col truncate">
+              <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Utilizador</span>
+              <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo (30 Dias)</span>
+            </div>
           </div>
-          <div class="flex flex-col truncate">
-            <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
-            <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo</span>
-          </div>
+          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
+            Sair
+          </button>
         </div>
-        <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
-          Sair
+
+        <!-- BOTÃO DE ATIVAÇÃO 30 DIAS (VISÍVEL PARA UTILIZADORES EM TESTE) -->
+        <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
+          <span>💎</span> Quero Ativar 30 Dias
         </button>
       </div>
     </aside>
@@ -185,8 +197,11 @@
           <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Novo Projeto</span>
         </div>
         
-        <!-- Campo de API Key por Usuário -->
         <div class="flex items-center gap-2 shrink-0">
+          <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
+            <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
+          </a>
+
           <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
             ⚠️ Chave Ausente
           </span>
@@ -196,7 +211,7 @@
               id="geminiKeyInput" 
               placeholder="Cole sua Gemini API Key aqui" 
               oninput="autoSalvarChave()"
-              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-40 sm:w-56 transition"
+              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-56 transition"
             />
           </div>
           <button id="saveKeyBtn" onclick="salvarChaveGemini(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
@@ -205,7 +220,6 @@
         </div>
       </header>
 
-      <!-- ÁREA DE MENSAGENS -->
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4"></div>
 
       <footer class="p-3 sm:p-4 border-t border-slate-800 bg-slate-900/80">
@@ -226,7 +240,7 @@
 
   </div>
 
-  <!-- MODAL DE PEDIDO DE CHAVE GEMINI -->
+  <!-- MODAL DA CHAVE GEMINI -->
   <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
       <div class="flex items-center gap-3">
@@ -235,18 +249,18 @@
         </div>
         <div>
           <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
-          <p class="text-xs text-slate-400">Cada usuário utiliza sua própria chave gratuita.</p>
+          <p class="text-xs text-slate-400">Cada utilizador insere a sua própria chave gratuita.</p>
         </div>
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Para usar o Studio, você precisa de uma chave gratuita do Google Gemini:
+        Para utilizar o Studio, obtenha a sua chave gratuita do Google Gemini:
       </p>
 
       <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
-        <li>Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 underline font-semibold">Google AI Studio</a> com sua conta Google.</li>
-        <li>Clique em <b>Create API key</b> e depois em <b>Create API key in new project</b>.</li>
-        <li>Copie a chave gerada e cole no campo abaixo.</li>
+        <li>Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 underline font-semibold">Google AI Studio</a>.</li>
+        <li>Clique em <b>Create API key</b> e gere uma chave.</li>
+        <li>Cole no campo abaixo.</li>
       </ol>
 
       <div class="space-y-2">
@@ -265,7 +279,6 @@
     </div>
   </div>
 
-  <!-- SCRIPT DEFINITIVO DE VALIDAÇÃO DE TOKEN E AMBOS OS BANCOS -->
   <script>
     let sessoesDisponiveis = [];
     let promptsCache = {};
@@ -304,9 +317,14 @@
       try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
     }
 
-    // =========================================================================
-    // VALIDAÇÃO DOS DOIS BANCOS DE DADOS (CADASTRO ATIVO VS TESTE COM PRAZO DE 30 DIAS)
-    // =========================================================================
+    // DISPARO DO SUPORTE VIA WHATSAPP PARA ATIVAÇÃO DE 30 DIAS
+    function solicitarAtivacaoWhatsapp() {
+      const nome = activeUser || "Cliente";
+      const texto = encodeURIComponent(`Olá! Estou a utilizar o Universal Master Studio como teste e desejo ativar o meu plano de 30 DIAS completo!\n\nNome do utilizador: ${nome}`);
+      window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
+    }
+
+    // VALIDAÇÃO DOS BANCOS
     function verificarAcessoPorToken() {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
@@ -316,26 +334,26 @@
       const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
       const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
 
-      // Procura primeiro no banco de cadastros ativos, depois no banco teste
       let usuarioEncontrado = dbCadastros.find(u => u.token === token);
-      let tipoBanco = "Ativo (Completo)";
+      let tipoBanco = "Ativo (30 Dias)";
 
       if (!usuarioEncontrado) {
         usuarioEncontrado = dbTeste.find(u => u.token === token);
-        tipoBanco = "Teste (Demonstração)";
+        tipoBanco = "Teste (6 Horas)";
       }
 
       if (usuarioEncontrado) {
         const agoraMs = new Date().getTime();
         const vencMs = new Date(usuarioEncontrado.dataVencimentoIso).getTime();
 
-        // Se expirou os 30 dias
         if (agoraMs > vencMs) {
           document.documentElement.className = "estado-expirado";
+          document.getElementById("expiredDescText").textContent = usuarioEncontrado.banco === "cadastro"
+            ? "A sua assinatura de 30 dias expirou. Entre em contacto para renovar."
+            : "O seu período de teste gratuito de 6 horas terminou. Solicite o plano de 30 dias para continuar.";
           return true;
         }
 
-        // Acesso liberado dentro dos 30 dias
         activeUser = usuarioEncontrado.nome;
         localStorage.setItem("studio_active_session", activeUser);
         localStorage.setItem("studio_user_badge", tipoBanco);
@@ -346,9 +364,96 @@
       return false;
     }
 
-    // =========================================================================
-    // CARREGADOR DE SESSÕES
-    // =========================================================================
+    function executarAcesso() {
+      const userInput = document.getElementById("authUsername");
+      const passInput = document.getElementById("authPassword");
+      const feedback = document.getElementById("loginFeedback");
+
+      const username = (userInput.value || "").trim();
+      const password = (passInput.value || "").trim();
+
+      if (!username || !password) {
+        feedback.textContent = "Preencha o nome de utilizador e a palavra-passe!";
+        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+
+      const assinante = dbCadastros.find(u => u.nome.toLowerCase() === username.toLowerCase());
+      if (assinante) {
+        const agoraMs = new Date().getTime();
+        const vencMs = new Date(assinante.dataVencimentoIso).getTime();
+
+        if (agoraMs > vencMs) {
+          document.documentElement.className = "estado-expirado";
+          return;
+        }
+
+        feedback.textContent = `Assinante reconhecido! Entrando...`;
+        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        feedback.classList.remove("hidden");
+        localStorage.setItem("studio_user_badge", "Ativo (30 Dias)");
+        setTimeout(() => abrirStudio(assinante.nome), 200);
+        return;
+      }
+
+      const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
+
+      if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
+        feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Contacte o suporte para libertar o plano de 30 dias.";
+        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      let userTeste = dbTeste.find(u => u.nome.toLowerCase() === username.toLowerCase());
+
+      if (userTeste) {
+        const agoraMs = new Date().getTime();
+        const vencMs = new Date(userTeste.dataVencimentoIso).getTime();
+
+        if (agoraMs > vencMs) {
+          document.documentElement.className = "estado-expirado";
+          document.getElementById("expiredDescText").textContent = "O seu teste gratuito de 6 horas expirou. Ative o plano de 30 dias para continuar.";
+          return;
+        }
+
+        feedback.textContent = `Acesso de teste ativo! Entrando...`;
+        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+        feedback.classList.remove("hidden");
+        localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+        setTimeout(() => abrirStudio(userTeste.nome), 200);
+        return;
+      }
+
+      const agora = new Date();
+      const vencimento6h = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
+
+      const novoTeste = {
+        id: "usr_" + Date.now(),
+        nome: username,
+        tipoContato: "site",
+        numero: "Cadastro Direto",
+        banco: "teste",
+        dataCadastroIso: agora.toISOString(),
+        dataVencimentoIso: vencimento6h.toISOString(),
+        token: "tok_" + Date.now()
+      };
+
+      dbTeste.unshift(novoTeste);
+      localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
+      localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
+      localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+
+      feedback.textContent = `✨ Teste de 6 horas libertado com sucesso!`;
+      feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+      feedback.classList.remove("hidden");
+      setTimeout(() => abrirStudio(username), 200);
+    }
+
     async function carregarSessoesDoGithub() {
       try {
         const resp = await fetch("prompts/sessoes.json?t=" + Date.now());
@@ -373,7 +478,7 @@
             icone: "🎨",
             arquivo: "prompts/storyboard.txt",
             titulo: "Engine de Storyboard Visual",
-            descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais."
+            descricao: "Decupagem de câmara, quadros-chave sequenciais e painéis visuais."
           },
           {
             id: "gerador",
@@ -435,7 +540,7 @@
         console.warn("Erro ao buscar prompt da sessão:", e);
       }
 
-      return "Você é um diretor e engenheiro de IA especializado. Apresente exclusivamente a Etapa 1 e aguarde a resposta do usuário.";
+      return "Você é um diretor e engenheiro de IA especializado. Apresente exclusivamente a Etapa 1 e aguarde a resposta do utilizador.";
     }
 
     function mudarSessao(novaSessaoId) {
@@ -473,9 +578,6 @@
       }
     }
 
-    // =========================================================================
-    // CHAVE GEMINI POR USUÁRIO
-    // =========================================================================
     function obterChaveUsuario() {
       if (!activeUser) return "";
       const input = document.getElementById("geminiKeyInput");
@@ -578,49 +680,6 @@
       iniciarProducao();
     }
 
-    // =========================================================================
-    // AUTENTICAÇÃO MANUAL
-    // =========================================================================
-    function executarAcesso() {
-      const userInput = document.getElementById("authUsername");
-      const passInput = document.getElementById("authPassword");
-      const feedback = document.getElementById("loginFeedback");
-
-      const username = (userInput.value || "").trim();
-      const password = (passInput.value || "").trim();
-
-      if (!username || !password) {
-        feedback.textContent = "Preencha o nome de usuário e a senha!";
-        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        feedback.classList.remove("hidden");
-        return;
-      }
-
-      const users = getStorageUsers();
-      const userKey = username.toLowerCase();
-
-      if (users[userKey]) {
-        if (users[userKey].password === password) {
-          feedback.textContent = `Bem-vindo de volta, ${users[userKey].name}! Entrando...`;
-          feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-          feedback.classList.remove("hidden");
-          setTimeout(() => abrirStudio(users[userKey].name), 200);
-        } else {
-          feedback.textContent = "⚠️ Senha incorreta para este usuário!";
-          feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
-          feedback.classList.remove("hidden");
-        }
-      } else {
-        users[userKey] = { name: username, password: password };
-        saveStorageUsers(users);
-
-        feedback.textContent = `✨ Conta criada com sucesso! Bem-vindo, ${username}!`;
-        feedback.className = "text-xs py-2.5 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-        feedback.classList.remove("hidden");
-        setTimeout(() => abrirStudio(username), 200);
-      }
-    }
-
     async function abrirStudio(username) {
       activeUser = username;
       try { 
@@ -632,6 +691,14 @@
       const badgeBadge = localStorage.getItem("studio_user_badge") || "Ativo";
       const badgeEl = document.getElementById("licencaBadge");
       if (badgeEl) badgeEl.textContent = badgeBadge;
+
+      // Oculta o botão de upgrade caso o utilizador já seja assinante de 30 dias
+      const btnUpgrade = document.getElementById("btnUpgrade30Dias");
+      if (badgeBadge.includes("30 Dias")) {
+        btnUpgrade.classList.add("hidden");
+      } else {
+        btnUpgrade.classList.remove("hidden");
+      }
 
       const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
       if (tabSalva) activeSessionId = tabSalva;
@@ -660,12 +727,9 @@
         document.documentElement.className = "estado-deslogado";
       } catch(e) {}
       activeUser = null;
-      window.location.href = window.location.pathname; // recarrega sem parâmetros de token
+      window.location.href = window.location.pathname;
     }
 
-    // =========================================================================
-    // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
-    // =========================================================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
         document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
@@ -789,9 +853,6 @@
       });
     }
 
-    // =========================================================================
-    // RENDERIZADOR DO PAINEL CENTRAL (SEMPRE GARANTIDO)
-    // =========================================================================
     function exibirPainelInicialCentral() {
       const chatArea = document.getElementById("chatArea");
       chatArea.innerHTML = "";
@@ -897,7 +958,6 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // DETECÇÃO AUTOMÁTICA DE TÍTULO PARA RENOMEAR O PROJETO
     function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
       const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
       if (matchTitulo && matchTitulo[1]) {
@@ -909,7 +969,6 @@
         return;
       }
 
-      // Se o usuário digitou um texto com mais de 3 letras que não seja comando numérico
       if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 4) {
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
@@ -919,9 +978,6 @@
       }
     }
 
-    // =========================================================================
-    // EXECUÇÃO DO GEMINI COM MODELOS ESTÁVEIS E SEM DUPLICAR BALÕES
-    // =========================================================================
     async function dispararGemini(texto, isInicial = false, isRetomada = false) {
       const apiKey = obterChaveUsuario();
 
@@ -939,7 +995,6 @@
 
       ultimaMensagemPendente = isInicial ? "" : texto;
 
-      // Se for um envio normal novo, renderiza o balão; se for retomada de erro, NÃO duplica!
       if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -975,7 +1030,6 @@
 
       const promptMestre = await obterPromptAtivo();
 
-      // MODELOS OFICIAIS ATIVOS (sem endpoints descontinuados)
       const modelosCandidatos = [
         "gemini-3.5-flash-lite",
         "gemini-3.8-flash",
@@ -1042,7 +1096,6 @@
       userInput.focus();
     }
 
-    // CONTINUAÇÃO SEM DUPLICAÇÃO DE NÚMEROS/MENSAGENS
     function tentarNovamente() {
       const chatArea = document.getElementById("chatArea");
       const erroBox = chatArea.lastElementChild;
@@ -1067,7 +1120,6 @@
       dispararGemini(val, false, false);
     }
 
-    // INICIALIZAÇÃO COM VERIFICAÇÃO DE TOKEN (30 DIAS)
     window.addEventListener("DOMContentLoaded", () => {
       const entrouPorToken = verificarAcessoPorToken();
 
@@ -1090,4 +1142,3 @@
   </script>
 </body>
 </html>
-
