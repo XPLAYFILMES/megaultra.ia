@@ -14,7 +14,7 @@
 
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- CABEÇALHO ADMIN PROFISSIONAL NA NUVEM -->
+    <!-- CABEÇALHO ADMIN PROFISSIONAL -->
     <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold shadow-inner">
@@ -23,21 +23,29 @@
         <div>
           <h1 class="text-xl font-bold text-white flex items-center gap-2">
             Painel de Gestão & Licenças
-            <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Nuvem Global Ativa</span>
+            <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync Nuvem
+            </span>
           </h1>
-          <p class="text-xs text-slate-400">Banco central sincronizado em tempo real sem exigir permissões dos clientes.</p>
+          <p class="text-xs text-slate-400">Banco central sincronizado automaticamente em tempo real.</p>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-2">
-        <button onclick="carregarDadosDaNuvem(true)" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs rounded-xl transition font-medium flex items-center gap-1.5">
-          🔄 Atualizar da Nuvem
+      <!-- Configuração da Chave Gemini Central do Sistema -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="relative">
+          <input 
+            type="password" 
+            id="adminMasterKeyInput" 
+            placeholder="Gemini API Key do Sistema" 
+            class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-44 sm:w-56"
+          />
+        </div>
+        <button onclick="salvarChaveSistemaAdmin()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl transition cursor-pointer">
+          Salvar Chave
         </button>
-        <button onclick="salvarArquivoNoPC('cadastro')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Baixar banco_cadastros.json
-        </button>
-        <button onclick="salvarArquivoNoPC('teste')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Baixar banco_teste.json
+        <button onclick="carregarDadosDaNuvem(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs rounded-xl transition cursor-pointer">
+          🔄 Atualizar Agora
         </button>
       </div>
     </header>
@@ -77,7 +85,7 @@
       </button>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO COM DATA/HORA MANUAIS -->
+    <!-- FORMULÁRIO DE CADASTRO -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -123,14 +131,14 @@
       </form>
     </div>
 
-    <!-- BARRA DE BUSCA -->
+    <!-- BUSCA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="relative w-full sm:w-80">
         <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contato..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
       </div>
-      <div class="text-xs text-slate-400">
-        Gravado diretamente na nuvem JSONBin.
+      <div class="text-xs text-slate-400" id="infoSyncTexto">
+        Auto-sync ativo (atualiza sozinho a cada 10 segundos).
       </div>
     </div>
 
@@ -158,12 +166,22 @@
 
   <script>
     const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
+    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8"; // ID Atualizado!
     const BIN_TESTE = "6abc21bfac6210605a032f92";
 
     let bancoAtual = "cadastro";
     let dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
     let dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+
+    function salvarChaveSistemaAdmin() {
+      const val = document.getElementById("adminMasterKeyInput").value.trim();
+      if (!val) {
+        alert("Digite uma chave válida do Gemini.");
+        return;
+      }
+      localStorage.setItem("studio_master_gemini_key", val);
+      alert("Chave do sistema salva com sucesso!");
+    }
 
     async function carregarDadosDaNuvem(comAviso = false) {
       try {
@@ -181,10 +199,8 @@
 
         atualizarContadores();
         renderizarTabela();
-        if (comAviso) alert("Dados atualizados com sucesso diretamente da nuvem!");
-      } catch (err) {
-        console.warn("Erro ao buscar nuvem:", err);
-      }
+        if (comAviso) alert("Dados atualizados da nuvem com sucesso!");
+      } catch (err) {}
     }
 
     async function gravarNuvem(binId, dados, chave) {
@@ -197,9 +213,7 @@
           },
           body: JSON.stringify({ [chave]: dados })
         });
-      } catch (e) {
-        console.warn("Erro ao salvar no JSONBin:", e);
-      }
+      } catch (e) {}
     }
 
     async function salvarBancos() {
@@ -207,7 +221,6 @@
       localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
       atualizarContadores();
 
-      // Grava em paralelo nos bins da nuvem
       gravarNuvem(BIN_CADASTROS, dbCadastros, "usuarios");
       gravarNuvem(BIN_TESTE, dbTeste, "testes");
     }
@@ -324,7 +337,7 @@
       definirDataHoraAtual();
       renderizarTabela();
 
-      alert(`Usuário registrado no banco [${bancoAtual.toUpperCase()}] e sincronizado na nuvem!`);
+      alert(`Usuário registrado e salvo na nuvem com sucesso!`);
     }
 
     async function ativarPlano30Dias(id) {
@@ -332,7 +345,7 @@
       if (indexTeste === -1) return;
 
       const user = dbTeste[indexTeste];
-      if (!confirm(`Deseja ativar a assinatura de 30 DIAS para ${user.nome}? Ele será transferido para os Assinantes Ativos.`)) return;
+      if (!confirm(`Deseja ativar a assinatura de 30 DIAS para ${user.nome}?`)) return;
 
       const agora = new Date();
       const novoVenc = new Date(agora.getTime() + (30 * 24 * 60 * 60 * 1000));
@@ -358,7 +371,7 @@
 
       await salvarBancos();
       renderizarTabela();
-      alert(`🎉 Sucesso! ${user.nome} promovido a Assinante Ativo (30 dias).`);
+      alert(`🎉 Sucesso! ${user.nome} ativado por 30 dias na nuvem.`);
     }
 
     function renderizarTabela() {
@@ -482,19 +495,18 @@
       renderizarTabela();
     }
 
-    function salvarArquivoNoPC(tipo) {
-      const dados = tipo === "cadastro" ? dbCadastros : dbTeste;
-      const nomeArquivo = tipo === "cadastro" ? "banco_cadastros.json" : "banco_teste.json";
-      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = nomeArquivo;
-      a.click();
-    }
-
     window.onload = function() {
       definirDataHoraAtual();
+      
+      const keySalva = localStorage.getItem("studio_master_gemini_key") || "";
+      if (keySalva) document.getElementById("adminMasterKeyInput").value = keySalva;
+
       carregarDadosDaNuvem(false);
+
+      // Atualização automática contínua
+      setInterval(() => {
+        carregarDadosDaNuvem(false);
+      }, 10000);
     };
   </script>
 </body>
