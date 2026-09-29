@@ -9,16 +9,23 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    .prose table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
-    .prose th, .prose td { border: 1px solid #334155; padding: 0.5rem 0.75rem; text-align: left; }
-    .prose th { background-color: #1e293b; color: #93c5fd; }
-    .prose pre { background-color: #020617; border: 1px solid #334155; border-radius: 0.5rem; padding: 0.75rem; overflow-x: auto; margin: 0.75rem 0; }
-    .prose code { color: #38bdf8; font-family: monospace; }
+    /* Estilização moderna e organizada para opções e blocos */
+    .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
+    .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
+    .prose th { background-color: #1e293b; color: #93c5fd; font-weight: 600; }
+    .prose td { background-color: #0f172a; color: #cbd5e1; }
+    .prose pre { background-color: #020617; border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
+    .prose code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .prose ul, .prose ol { margin: 0.75rem 0; padding-left: 1.25rem; space-y: 0.35rem; }
+    .prose li { margin-bottom: 0.35rem; line-height: 1.5; }
+    .prose h3, .prose h4 { color: #60a5fa; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.35rem; }
+    .prose p { margin-bottom: 0.75rem; line-height: 1.6; }
+    .prose hr { border-color: #334155; margin: 1.25rem 0; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
 
-  <!-- TELA DE LOGIN -->
+  <!-- TELA DE LOGIN / CADASTRO -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
       <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-inner">
@@ -78,7 +85,7 @@
         <div>
           <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Sessão Ativa</label>
           <div id="sessoesContainer" class="flex flex-wrap gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-            <!-- Botões das sessões renderizados aqui -->
+            <!-- Botões das sessões renderizados via JS -->
           </div>
         </div>
 
@@ -118,7 +125,7 @@
           <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Nova Produção</span>
         </div>
         
-        <!-- Campo Individual da API Key do Usuário -->
+        <!-- Campo da API Key do Usuário -->
         <div class="flex items-center gap-2 shrink-0">
           <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
             ⚠️ Chave Ausente
@@ -211,7 +218,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT DINÂMICO COM CARREGAMENTO EXTERNO DE PROMPTS -->
+  <!-- SCRIPT DINÂMICO INDEPENDENTE POR SESSÃO -->
   <script>
     let sessoesDisponiveis = [];
     let promptsCache = {};
@@ -251,19 +258,17 @@
     }
 
     // =========================================================================
-    // CARREGADOR DINÂMICO DE SESSÕES E PROMPTS DO GITHUB
+    // CARREGADOR DE SESSÕES DO GITHUB
     // =========================================================================
     async function carregarSessoesDoGithub() {
       try {
-        // Tenta buscar o arquivo de sessões no repositório
         const resp = await fetch("prompts/sessoes.json?t=" + Date.now());
         if (resp.ok) {
           sessoesDisponiveis = await resp.json();
         } else {
-          throw new Error("Arquivo prompts/sessoes.json não encontrado");
+          throw new Error("sessoes.json não localizado");
         }
       } catch (e) {
-        // Fallback caso ainda não tenha subido o JSON
         sessoesDisponiveis = [
           {
             id: "producao",
@@ -304,6 +309,7 @@
       });
     }
 
+    // Leitura estrita do arquivo .txt correspondente da sessão
     async function obterPromptAtivo() {
       const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || sessoesDisponiveis[0];
 
@@ -319,14 +325,18 @@
           return texto;
         }
       } catch (e) {
-        console.warn("Erro ao buscar prompt externo:", e);
+        console.warn("Erro ao buscar prompt da sessão:", e);
       }
 
-      return "Você é um assistente especializado de IA. Apresente a etapa 1 e aguarde a resposta do usuário.";
+      return "Você é um diretor e engenheiro de IA especializado. Apresente exclusivamente a Etapa 1 e aguarde a resposta do usuário.";
     }
 
+    // Troca de sessão limpa o contexto e carrega o histórico exclusivo daquela sessão
     function mudarSessao(novaSessaoId) {
+      if (activeSessionId === novaSessaoId) return;
+
       activeSessionId = novaSessaoId;
+      conversationHistory = []; // Isola totalmente a memória da IA
       renderizarBotoesSessoes();
 
       const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
@@ -455,7 +465,7 @@
     }
 
     // =========================================================================
-    // AUTENTICAÇÃO SIMPLES
+    // AUTENTICAÇÃO
     // =========================================================================
     function executarAcesso() {
       const userInput = document.getElementById("authUsername");
@@ -715,10 +725,10 @@
           </button>
         `;
       } else {
-        bubble.className = `max-w-[85%] rounded-2xl p-4 text-sm ${
+        bubble.className = `max-w-[90%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${
           isUser
             ? "bg-blue-600 text-white font-medium"
-            : "bg-slate-800 border border-slate-700 text-slate-100 prose prose-invert"
+            : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md"
         }`;
         bubble.innerHTML = isUser ? texto : (window.marked ? marked.parse(texto) : texto);
       }
@@ -729,7 +739,7 @@
     }
 
     // =========================================================================
-    // EXECUÇÃO DO GEMINI COM O PROMPT CARREGADO DA PASTA PROMPTS/
+    // EXECUÇÃO DO GEMINI COM O PROMPT ISOLADO POR SESSÃO
     // =========================================================================
     async function dispararGemini(texto, isInicial = false) {
       const apiKey = obterChaveUsuario();
@@ -754,11 +764,15 @@
           saveStorageProjects(activeUser, activeSessionId, projs);
         }
       } else {
-        const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
-        const mensagemInicial = `Iniciar motor de ${sessao ? sessao.nome : 'produção'}. Apresente a ETAPA 1 do menu.`;
+        // Inicialização específica de acordo com a sessão ativa
+        let comandoInicial = "Iniciar motor de produção audiovisual. Apresente exclusivamente a ETAPA 1 e aguarde a resposta.";
+        if (activeSessionId === "storyboard") {
+          comandoInicial = "Iniciar motor de storyboard visual. Apresente exclusivamente a ETAPA 1 do storyboard e aguarde a resposta.";
+        }
+
         conversationHistory.push({
           role: "user",
-          parts: [{ text: mensagemInicial }]
+          parts: [{ text: comandoInicial }]
         });
       }
 
@@ -767,19 +781,20 @@
       sendBtn.disabled = true;
       userInput.disabled = true;
 
+      const sessaoAtual = sessoesDisponiveis.find(s => s.id === activeSessionId);
       const indicador = document.createElement("div");
       indicador.id = "indicadorCarregando";
       indicador.className = "flex justify-start w-full";
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Processando solicitação...
+          Diretor de ${sessaoAtual ? sessaoAtual.nome : 'Produção'} estruturando opções organizadas...
         </div>
       `;
       chatArea.appendChild(indicador);
       chatArea.scrollTop = chatArea.scrollHeight;
 
-      // Busca o prompt do arquivo no GitHub
+      // Puxa o prompt exclusivo da sessão ativa
       const promptMestre = await obterPromptAtivo();
 
       const modelosCandidatos = [
