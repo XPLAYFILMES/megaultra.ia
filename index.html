@@ -58,6 +58,20 @@
     .prose p { margin-bottom: 0.85rem; line-height: 1.6; }
     .prose h3, .prose h4 { color: #60a5fa; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.65rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
     .prose hr { border-color: #334155; margin: 1.5rem 0; }
+
+    /* Cursor de digitação estilo terminal/ChatGPT */
+    .typing-cursor::after {
+      content: '▋';
+      display: inline-block;
+      vertical-align: baseline;
+      color: #38bdf8;
+      animation: blink 0.8s infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
   </style>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -226,7 +240,7 @@
         </div>
 
         <button onclick="baixarBancoConhecimento()" class="w-full py-1.5 px-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition">
-          💾 Baixar banco_conhecimento.json (<span id="countMemoria">0</span>)
+          💾 Baixar Conhecimento (<span id="countMemoria">0</span>)
         </button>
 
         <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
@@ -244,11 +258,6 @@
         </div>
         
         <div class="flex items-center gap-2 shrink-0">
-          <!-- Conectar Pasta de Gravação em Tempo Real no Disco -->
-          <button onclick="conectarPastaStudio()" id="btnDiscoStudio" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition flex items-center gap-1 shadow-sm">
-            <span>📁</span> <span id="labelDiscoStudio">Conectar Pasta</span>
-          </button>
-
           <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
             <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
           </a>
@@ -340,80 +349,39 @@
     let currentConversationId = null;
     let conversationHistory = [];
     let ultimaMensagemPendente = "";
-    let pastaStudioHandle = null; // Acesso direto ao disco
+    let isDigitando = false;
 
     let memoryUsers = {};
     let memoryProjects = {};
 
     // =========================================================================
-    // BANCO DE CONHECIMENTO COLETIVO COM GRAVAÇÃO DIRETA NO COMPUTADOR
+    // BANCO DE CONHECIMENTO COLETIVO
     // =========================================================================
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
-    async function conectarPastaStudio() {
-      if (!window.showDirectoryPicker) {
-        alert("Seu navegador não suporta a conexão direta de pastas. Recomendamos o Chrome ou Edge.");
-        return;
-      }
-
-      try {
-        pastaStudioHandle = await window.showDirectoryPicker({ mode: "readwrite" });
-
-        // Tenta ler banco_conhecimento.json se já existir na pasta
-        try {
-          const fileHandle = await pastaStudioHandle.getFileHandle("banco_conhecimento.json", { create: true });
-          const file = await fileHandle.getFile();
-          const text = await file.text();
-          if (text.trim()) {
-            bancoConhecimento = JSON.parse(text);
-            localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-          }
-        } catch(e) {}
-
-        const btn = document.getElementById("btnDiscoStudio");
-        const lbl = document.getElementById("labelDiscoStudio");
-        btn.className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition flex items-center gap-1 shadow-sm";
-        lbl.textContent = "Disco Conectado ✓";
-
-        atualizarContadorMemoria();
-        alert("Pasta do computador conectada com sucesso! O arquivo 'banco_conhecimento.json' será atualizado a cada nova conversa.");
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          alert("Não foi possível conectar à pasta: " + err.message);
-        }
-      }
-    }
-
-    async function gravarConhecimentoNoDisco() {
-      if (!pastaStudioHandle) return;
-
-      try {
-        const fileHandle = await pastaStudioHandle.getFileHandle("banco_conhecimento.json", { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(JSON.stringify(bancoConhecimento, null, 2));
-        await writable.close();
-      } catch (e) {
-        console.warn("Erro ao gravar banco_conhecimento.json no disco:", e);
-      }
-    }
-
-    async function salvarConhecimento(pergunta, resposta) {
+    function salvarConhecimento(pergunta, resposta) {
       if (!pergunta || !resposta || resposta.length < 10) return;
       const perguntaNormalizada = normalizarTexto(pergunta);
       
-      const existe = bancoConhecimento.some(item => normalizarTexto(item.pergunta) === perguntaNormalizada);
-      if (!existe) {
+      const index = bancoConhecimento.findIndex(item => normalizarTexto(item.pergunta) === perguntaNormalizada);
+      if (index === -1) {
         bancoConhecimento.unshift({
           pergunta: pergunta.trim(),
-          resposta: resposta.trim(),
+          respostas: [resposta.trim()],
           data: new Date().toISOString()
         });
-        localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-        atualizarContadorMemoria();
-
-        // Grava no arquivo físico no computador em tempo real
-        await gravarConhecimentoNoDisco();
+      } else {
+        // Armazena múltiplas variações de respostas para a mesma dúvida!
+        if (!bancoConhecimento[index].respostas) {
+          bancoConhecimento[index].respostas = [bancoConhecimento[index].resposta || resposta.trim()];
+        }
+        if (!bancoConhecimento[index].respostas.includes(resposta.trim())) {
+          bancoConhecimento[index].respostas.push(resposta.trim());
+        }
       }
+
+      localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+      atualizarContadorMemoria();
     }
 
     function atualizarContadorMemoria() {
@@ -433,6 +401,31 @@
       return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
     }
 
+    // Aberturas e variações naturais para evitar respostas estáticas idênticas
+    const variacoesAbertura = [
+      "Com certeza! ",
+      "Aqui está: ",
+      "Entendido! ",
+      "Perfeito. ",
+      "Claro, veja a seguir: ",
+      "Com base no que você precisa: ",
+      "Sem problemas! "
+    ];
+
+    function variarResposta(textoBase) {
+      let texto = textoBase;
+      // Remove aberturas repetidas se já existirem
+      variacoesAbertura.forEach(ab => {
+        if (texto.startsWith(ab)) {
+          texto = texto.substring(ab.length);
+        }
+      });
+      // Sorteia uma nova introdução natural
+      const aberturaSorteada = variacoesAbertura[Math.floor(Math.random() * variacoesAbertura.length)];
+      return aberturaSorteada + texto;
+    }
+
+    // Busca inteligente na memória com variação de termos
     function buscarNaMemoriaLocal(perguntaUsuario) {
       const perguntaLimpa = normalizarTexto(perguntaUsuario);
       const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
@@ -442,18 +435,23 @@
       for (const item of bancoConhecimento) {
         const itemPerguntaLimpa = normalizarTexto(item.pergunta);
         
+        let match = false;
         if (itemPerguntaLimpa === perguntaLimpa) {
-          return item.resposta;
+          match = true;
+        } else {
+          let matches = 0;
+          palavrasPergunta.forEach(palavra => {
+            if (itemPerguntaLimpa.includes(palavra)) matches++;
+          });
+          const score = matches / palavrasPergunta.length;
+          if (score >= 0.85) match = true;
         }
 
-        let matches = 0;
-        palavrasPergunta.forEach(palavra => {
-          if (itemPerguntaLimpa.includes(palavra)) matches++;
-        });
-
-        const score = matches / palavrasPergunta.length;
-        if (score >= 0.8) {
-          return item.resposta;
+        if (match) {
+          const listaRespostas = item.respostas || [item.resposta];
+          // Sorteia entre as variações gravadas
+          const respostaEscolhida = listaRespostas[Math.floor(Math.random() * listaRespostas.length)];
+          return variarResposta(respostaEscolhida);
         }
       }
 
@@ -562,9 +560,8 @@
         console.warn("Erro ao ler arquivo de prompt:", e);
       }
 
-      // Prompt Natural Oficial caso não encontre arquivo
       if (sessaoId === "chat") {
-        return "Você é um assistente de inteligência artificial de ponta, prestativo, perspicaz e altamente capaz, como o Gemini e o ChatGPT. Responda em português com naturalidade, profundidade, exemplos claros e formatação markdown impecável.";
+        return "Você é uma inteligência artificial completa, prestativa e perspicaz, no mesmo padrão de excelência e naturalidade do Gemini e ChatGPT. Responda com linguagem clara, direta, bem estruturada em parágrafos e código quando solicitado.";
       }
 
       return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
@@ -724,7 +721,7 @@
         badge.textContent = "✓ Chave Ativa";
         badge.className = "text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-block";
       } else {
-        badge.textContent = "⚠️️ Chave Ausente";
+        badge.textContent = "⚠️ Chave Ausente";
         badge.className = "text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block";
       }
     }
@@ -917,7 +914,7 @@
               <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
             </button>
             <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
-              <span>✏️</span> Renomear
+              <span>✏️️</span> Renomear
             </button>
             <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
               <span>🗑️</span> Excluir
@@ -994,7 +991,7 @@
       } else {
         proj.messages.forEach(m => {
           conversationHistory.push({ role: m.role, parts: [{ text: m.content }] });
-          renderizarMensagem(m.content, m.role === "user");
+          renderizarMensagemInstantanea(m.content, m.role === "user");
         });
       }
       atualizarListaProjetos();
@@ -1006,7 +1003,8 @@
       return marked.parse(formatado);
     }
 
-    function renderizarMensagem(texto, isUser, isError = false, viaCacheLocal = false) {
+    // Renderização estática para mensagens prévias do histórico
+    function renderizarMensagemInstantanea(texto, isUser, isError = false, viaCacheLocal = false) {
       const chatArea = document.getElementById("chatArea");
       const div = document.createElement("div");
       div.className = `flex ${isUser ? "justify-end" : "justify-start"} w-full`;
@@ -1039,6 +1037,56 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
+    // =========================================================================
+    // EFEITO DE DIGITAÇÃO ULTRA-RÁPIDO ESTILO CHATGPT / GEMINI (TYPEWRITER)
+    // =========================================================================
+    async function renderizarMensagemDigitando(textoCompleto, viaCacheLocal = false) {
+      isDigitando = true;
+      const chatArea = document.getElementById("chatArea");
+      const div = document.createElement("div");
+      div.className = "flex justify-start w-full";
+      
+      const bubble = document.createElement("div");
+      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative typing-cursor";
+      
+      let badgeHtml = "";
+      if (viaCacheLocal) {
+        badgeHtml = `<div class="mb-2"><span class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">⚡ Resposta da Memória Local (0 Cota Usada)</span></div>`;
+      }
+
+      bubble.innerHTML = badgeHtml + "<span></span>";
+      div.appendChild(bubble);
+      chatArea.appendChild(div);
+
+      const spanConteudo = bubble.querySelector("span");
+
+      // Digitação dinâmica acelerada: grupos de caracteres para fluidez alta
+      let index = 0;
+      const tamanhoTotal = textoCompleto.length;
+      // Ajusta passo dinâmico: se texto for grande, acelera para não demorar
+      const passo = tamanhoTotal > 800 ? 5 : (tamanhoTotal > 300 ? 3 : 2);
+      const velocidadeMs = 12; // 12ms por passo
+
+      return new Promise((resolve) => {
+        const timer = setInterval(() => {
+          index += passo;
+          if (index >= tamanhoTotal) {
+            index = tamanhoTotal;
+            clearInterval(timer);
+            bubble.classList.remove("typing-cursor");
+            bubble.innerHTML = badgeHtml + formatarTextoComOpcoes(textoCompleto);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            isDigitando = false;
+            resolve();
+          } else {
+            const textoParcial = textoCompleto.substring(0, index);
+            spanConteudo.innerHTML = formatarTextoComOpcoes(textoParcial);
+            chatArea.scrollTop = chatArea.scrollHeight;
+          }
+        }, velocidadeMs);
+      });
+    }
+
     function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
       const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
       if (matchTitulo && matchTitulo[1]) {
@@ -1063,6 +1111,8 @@
     // EXECUÇÃO DO FLUXO: CHAT NATURAL vs MOTORES DE PRODUÇÃO
     // =========================================================================
     async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
+      if (isDigitando) return;
+
       const projs = getStorageProjects(activeUser, activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
 
@@ -1073,11 +1123,11 @@
       const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
       const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      // 1. ABERTURA NO CHAT IA LIVRE: Sem etapas, sem questionários (Estilo ChatGPT)
+      // 1. ABERTURA NO CHAT IA LIVRE: Sem etapas, sem questionários
       if (isInicial && activeSessionId === "chat") {
         const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
         conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
-        renderizarMensagem(boasVindas, false);
+        await renderizarMensagemDigitando(boasVindas, false);
         if (atual) {
           atual.messages.push({ role: "model", content: boasVindas });
           saveStorageProjects(activeUser, activeSessionId, projs);
@@ -1091,7 +1141,7 @@
         if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
           const textoEtapa1 = mapaEtapas[primeiraEtapaId].textoCompleto;
           conversationHistory.push({ role: "model", parts: [{ text: textoEtapa1 }] });
-          renderizarMensagem(textoEtapa1, false);
+          renderizarMensagemInstantanea(textoEtapa1, false);
 
           if (atual) {
             atual.messages.push({ role: "model", content: textoEtapa1 });
@@ -1103,7 +1153,7 @@
 
       // Registra a mensagem do usuário
       if (!isInicial && !isRetomada) {
-        renderizarMensagem(texto, true);
+        renderizarMensagemInstantanea(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
         if (atual) {
           atual.messages.push({ role: "user", content: texto });
@@ -1111,12 +1161,12 @@
         }
       }
 
-      // 3. NO CHAT LIVRE: BUSCA PRIMEIRO NA MEMÓRIA COLETIVA LOCAL (ZERO API)
+      // 3. NO CHAT LIVRE: BUSCA PRIMEIRO NA MEMÓRIA COLETIVA LOCAL (COM VARIAÇÃO DE TERMOS)
       if (activeSessionId === "chat" && texto.length >= 3) {
         const respostaMemoria = buscarNaMemoriaLocal(texto);
         if (respostaMemoria) {
           conversationHistory.push({ role: "model", parts: [{ text: respostaMemoria }] });
-          renderizarMensagem(respostaMemoria, false, false, true);
+          await renderizarMensagemDigitando(respostaMemoria, true);
 
           if (atual) {
             atual.messages.push({ role: "model", content: respostaMemoria });
@@ -1135,7 +1185,7 @@
       if (activeSessionId !== "chat" && chavesEtapas[indiceProximaEtapa] && mapaEtapas[chavesEtapas[indiceProximaEtapa]].estatica) {
         const textoProximaEtapa = mapaEtapas[chavesEtapas[indiceProximaEtapa]].textoCompleto;
         conversationHistory.push({ role: "model", parts: [{ text: textoProximaEtapa }] });
-        renderizarMensagem(textoProximaEtapa, false);
+        renderizarMensagemInstantanea(textoProximaEtapa, false);
 
         if (atual) {
           atual.messages.push({ role: "model", content: textoProximaEtapa });
@@ -1144,7 +1194,7 @@
         return;
       }
 
-      // 5. ACIONA O GEMINI COM ESCRITA NATURAL, INTELIGENTE E COMPLETA
+      // 5. ACIONA O GEMINI COM RESPOSTA RICA E NATURAL
       const apiKey = obterChaveUsuario();
       if (!apiKey || apiKey.length < 10) {
         abrirModalChave();
@@ -1174,9 +1224,8 @@
         "gemini-2.5-flash"
       ];
 
-      // Se for Chat Livre, instrui a responder naturalmente conforme o comando do usuário
       const systemInstructionFinal = activeSessionId === "chat"
-        ? "Você é uma inteligência artificial completa, brilhante e prestativa, com tom natural e adaptável idêntico ao Gemini e ChatGPT. Responda fielmente ao comando do usuário em português, usando linguagem rica, explicações bem elaboradas e código limpo quando aplicável."
+        ? "Você é uma inteligência artificial completa, brilhante e prestativa, com tom natural, autêntico e variado idêntico ao Gemini e ChatGPT. Adapte-se ao contexto, varie as palavras e estruturas de frases, e forneça soluções detalhadas em português com formatação markdown rica."
         : promptMestre;
 
       let respostaFinal = null;
@@ -1191,7 +1240,7 @@
                 systemInstruction: { parts: [{ text: systemInstructionFinal }] },
                 contents: conversationHistory,
                 generationConfig: { 
-                  temperature: 0.85, 
+                  temperature: 0.9, 
                   topP: 0.95,
                   maxOutputTokens: 8192 
                 }
@@ -1212,10 +1261,11 @@
 
       if (respostaFinal) {
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
-        renderizarMensagem(respostaFinal, false);
+        
+        // Efeito de digitação suave e rápido letra por letra
+        await renderizarMensagemDigitando(respostaFinal, false);
 
-        // SALVA NA MEMÓRIA E GRAVA NO ARQUIVO DO COMPUTADOR EM TEMPO REAL
-        await salvarConhecimento(texto, respostaFinal);
+        salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
           atual.messages.push({ role: "model", content: respostaFinal });
@@ -1224,7 +1274,7 @@
         }
         ultimaMensagemPendente = "";
       } else {
-        renderizarMensagem(
+        renderizarMensagemInstantanea(
           `⚠️ **Houve uma oscilação na conexão do Gemini.**\n\nSua última escolha foi gravada com sucesso. Clique abaixo para avançar sem duplicar mensagens:`,
           false,
           true
@@ -1253,6 +1303,7 @@
     }
 
     function enviarMensagemUsuario() {
+      if (isDigitando) return;
       const input = document.getElementById("userInput");
       const val = input.value.trim();
       if (!val) return;
