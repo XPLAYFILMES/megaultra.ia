@@ -1,0 +1,18 @@
+[
+  {
+    "id": "producao",
+    "nome": "Produção",
+    "icone": "🎬",
+    "arquivo": "prompts/producao.txt",
+    "titulo": "Engine V19.0 Ultra Master",
+    "descricao": "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa."
+  },
+  {
+    "id": "storyboard",
+    "nome": "Storyboard",
+    "icone": "🎨",
+    "arquivo": "prompts/storyboard.txt",
+    "titulo": "Engine de Storyboard Visual",
+    "descricao": "Decupagem de câmera, quadros-chave sequenciais e painéis visuais."
+  }
+]
