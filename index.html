@@ -225,7 +225,6 @@
           </button>
         </div>
 
-        <!-- Botão para Baixar a Memória de Conhecimento Acumulada -->
         <button onclick="baixarBancoConhecimento()" class="w-full py-1.5 px-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition">
           💾 Baixar banco_conhecimento.json (<span id="countMemoria">0</span>)
         </button>
@@ -245,6 +244,11 @@
         </div>
         
         <div class="flex items-center gap-2 shrink-0">
+          <!-- Conectar Pasta de Gravação em Tempo Real no Disco -->
+          <button onclick="conectarPastaStudio()" id="btnDiscoStudio" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition flex items-center gap-1 shadow-sm">
+            <span>📁</span> <span id="labelDiscoStudio">Conectar Pasta</span>
+          </button>
+
           <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
             <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
           </a>
@@ -274,7 +278,7 @@
           <input 
             type="text" 
             id="userInput" 
-            placeholder="Digite sua pergunta ou mensagem livremente..." 
+            placeholder="Pergunte qualquer coisa ou envie comandos..." 
             onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
             class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
@@ -336,16 +340,64 @@
     let currentConversationId = null;
     let conversationHistory = [];
     let ultimaMensagemPendente = "";
+    let pastaStudioHandle = null; // Acesso direto ao disco
 
     let memoryUsers = {};
     let memoryProjects = {};
 
     // =========================================================================
-    // BANCO DE CONHECIMENTO COLETIVO (MEMÓRIA APRENDIDA COM ZERO API)
+    // BANCO DE CONHECIMENTO COLETIVO COM GRAVAÇÃO DIRETA NO COMPUTADOR
     // =========================================================================
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
-    function salvarConhecimento(pergunta, resposta) {
+    async function conectarPastaStudio() {
+      if (!window.showDirectoryPicker) {
+        alert("Seu navegador não suporta a conexão direta de pastas. Recomendamos o Chrome ou Edge.");
+        return;
+      }
+
+      try {
+        pastaStudioHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+
+        // Tenta ler banco_conhecimento.json se já existir na pasta
+        try {
+          const fileHandle = await pastaStudioHandle.getFileHandle("banco_conhecimento.json", { create: true });
+          const file = await fileHandle.getFile();
+          const text = await file.text();
+          if (text.trim()) {
+            bancoConhecimento = JSON.parse(text);
+            localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+          }
+        } catch(e) {}
+
+        const btn = document.getElementById("btnDiscoStudio");
+        const lbl = document.getElementById("labelDiscoStudio");
+        btn.className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition flex items-center gap-1 shadow-sm";
+        lbl.textContent = "Disco Conectado ✓";
+
+        atualizarContadorMemoria();
+        alert("Pasta do computador conectada com sucesso! O arquivo 'banco_conhecimento.json' será atualizado a cada nova conversa.");
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          alert("Não foi possível conectar à pasta: " + err.message);
+        }
+      }
+    }
+
+    async function gravarConhecimentoNoDisco() {
+      if (!pastaStudioHandle) return;
+
+      try {
+        const fileHandle = await pastaStudioHandle.getFileHandle("banco_conhecimento.json", { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(bancoConhecimento, null, 2));
+        await writable.close();
+      } catch (e) {
+        console.warn("Erro ao gravar banco_conhecimento.json no disco:", e);
+      }
+    }
+
+    async function salvarConhecimento(pergunta, resposta) {
       if (!pergunta || !resposta || resposta.length < 10) return;
       const perguntaNormalizada = normalizarTexto(pergunta);
       
@@ -358,6 +410,9 @@
         });
         localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
         atualizarContadorMemoria();
+
+        // Grava no arquivo físico no computador em tempo real
+        await gravarConhecimentoNoDisco();
       }
     }
 
@@ -378,7 +433,6 @@
       return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
     }
 
-    // Busca na memória local para responder sem gastar cota
     function buscarNaMemoriaLocal(perguntaUsuario) {
       const perguntaLimpa = normalizarTexto(perguntaUsuario);
       const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
@@ -398,7 +452,7 @@
         });
 
         const score = matches / palavrasPergunta.length;
-        if (score >= 0.75) {
+        if (score >= 0.8) {
           return item.resposta;
         }
       }
@@ -505,10 +559,15 @@
           return texto;
         }
       } catch (e) {
-        console.warn("Erro ao ler o arquivo .txt da pasta prompts/:", e);
+        console.warn("Erro ao ler arquivo de prompt:", e);
       }
 
-      return "Você é um assistente de IA prestativo e inteligente. Responda em português.";
+      // Prompt Natural Oficial caso não encontre arquivo
+      if (sessaoId === "chat") {
+        return "Você é um assistente de inteligência artificial de ponta, prestativo, perspicaz e altamente capaz, como o Gemini e o ChatGPT. Responda em português com naturalidade, profundidade, exemplos claros e formatação markdown impecável.";
+      }
+
+      return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
     }
 
     async function carregarSessoesDoGithub() {
@@ -524,7 +583,7 @@
           { id: "producao", nome: "Produção", icone: "🎬", arquivo: "prompts/producao.txt", titulo: "Engine V19.0 Ultra Master", descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa." },
           { id: "storyboard", nome: "Storyboard", icone: "🎨", arquivo: "prompts/storyboard.txt", titulo: "Engine de Storyboard Visual", descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais." },
           { id: "gerador", nome: "Gerador de Prompts", icone: "⚡", arquivo: "prompts/gerador.txt", titulo: "Fábrica de Prompts Especializados", descricao: "Criação de mega-prompts estruturados e comandos avançados de IA." },
-          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente Livre", descricao: "Converse livremente como no ChatGPT. O sistema aprende a cada conversa e economiza sua API usando o banco local." }
+          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente Livre", descricao: "Converse normalmente sobre qualquer assunto. A IA responde de forma natural e aprende da memória local." }
         ];
       }
 
@@ -665,7 +724,7 @@
         badge.textContent = "✓ Chave Ativa";
         badge.className = "text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-block";
       } else {
-        badge.textContent = "⚠️ Chave Ausente";
+        badge.textContent = "⚠️️ Chave Ausente";
         badge.className = "text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block";
       }
     }
@@ -877,8 +936,8 @@
       const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || {
         nome: "Chat IA Livre",
         icone: "🧠",
-        titulo: "Chat Inteligente com Aprendizado",
-        descricao: "Faça qualquer pergunta. O sistema responde e memoriza para as próximas consultas com zero consumo de API."
+        titulo: "Chat Inteligente Livre",
+        descricao: "Faça qualquer pergunta. A IA responde com inteligência e memoriza as respostas."
       };
 
       const startDiv = document.createElement("div");
@@ -889,7 +948,7 @@
         </div>
         <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo || sessao.nome}</h2>
         <p class="text-sm text-slate-400 max-w-sm">
-          ${sessao.descricao || "Faça qualquer pergunta para começar."}
+          ${activeSessionId === 'chat' ? 'Pergunte sobre qualquer assunto, peça códigos, ideias ou orientações.' : (sessao.descricao || "Clique no botão abaixo para iniciar.")}
         </p>
         <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
           ${activeSessionId === 'chat' ? 'Abrir Conversa Livre' : 'Iniciar ' + sessao.nome}
@@ -1001,7 +1060,7 @@
     }
 
     // =========================================================================
-    // EXECUÇÃO DO FLUXO: CHAT LIVRE vs MOTORES DE ETAPAS
+    // EXECUÇÃO DO FLUXO: CHAT NATURAL vs MOTORES DE PRODUÇÃO
     // =========================================================================
     async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
       const projs = getStorageProjects(activeUser, activeSessionId);
@@ -1014,9 +1073,9 @@
       const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
       const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      // 1. INICIAL NO CHAT LIVRE (SEM ETAPAS FIXAS, 100% LIVRE ESTILO CHATGPT)
+      // 1. ABERTURA NO CHAT IA LIVRE: Sem etapas, sem questionários (Estilo ChatGPT)
       if (isInicial && activeSessionId === "chat") {
-        const boasVindas = "Olá! Como posso ajudar você hoje? Pode me fazer qualquer pergunta, pedir ideias, códigos, resumos ou explicações!";
+        const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
         conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
         renderizarMensagem(boasVindas, false);
         if (atual) {
@@ -1026,7 +1085,7 @@
         return;
       }
 
-      // 2. INICIAL NAS OUTRAS SESSÕES (PRODUÇÃO, STORYBOARD): Exibe Etapa 1
+      // 2. ABERTURA NAS SESSÕES DE PRODUÇÃO / STORYBOARD: Exibe Etapa 1
       if (isInicial && activeSessionId !== "chat") {
         const primeiraEtapaId = Object.keys(mapaEtapas)[0];
         if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
@@ -1042,7 +1101,7 @@
         }
       }
 
-      // Registra a mensagem digitada pelo usuário
+      // Registra a mensagem do usuário
       if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -1064,7 +1123,7 @@
             detectarEAtualizarTitulo(texto, respostaMemoria, atual, projs);
             saveStorageProjects(activeUser, activeSessionId, projs);
           }
-          return; // Respondido com 0 tokens de API!
+          return; // Concluído com 0 gasto de tokens!
         }
       }
 
@@ -1085,7 +1144,7 @@
         return;
       }
 
-      // 5. PERGUNTA INÉDITA: ACIONA O GEMINI UMA VEZ E APRENDE
+      // 5. ACIONA O GEMINI COM ESCRITA NATURAL, INTELIGENTE E COMPLETA
       const apiKey = obterChaveUsuario();
       if (!apiKey || apiKey.length < 10) {
         abrirModalChave();
@@ -1115,6 +1174,11 @@
         "gemini-2.5-flash"
       ];
 
+      // Se for Chat Livre, instrui a responder naturalmente conforme o comando do usuário
+      const systemInstructionFinal = activeSessionId === "chat"
+        ? "Você é uma inteligência artificial completa, brilhante e prestativa, com tom natural e adaptável idêntico ao Gemini e ChatGPT. Responda fielmente ao comando do usuário em português, usando linguagem rica, explicações bem elaboradas e código limpo quando aplicável."
+        : promptMestre;
+
       let respostaFinal = null;
       for (const modelo of modelosCandidatos) {
         try {
@@ -1124,9 +1188,13 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                systemInstruction: { parts: [{ text: promptMestre }] },
+                systemInstruction: { parts: [{ text: systemInstructionFinal }] },
                 contents: conversationHistory,
-                generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
+                generationConfig: { 
+                  temperature: 0.85, 
+                  topP: 0.95,
+                  maxOutputTokens: 8192 
+                }
               })
             }
           );
@@ -1146,8 +1214,8 @@
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
         renderizarMensagem(respostaFinal, false);
 
-        // SALVA NO BANCO DE CONHECIMENTO COMPARTILHADO
-        salvarConhecimento(texto, respostaFinal);
+        // SALVA NA MEMÓRIA E GRAVA NO ARQUIVO DO COMPUTADOR EM TEMPO REAL
+        await salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
           atual.messages.push({ role: "model", content: respostaFinal });
