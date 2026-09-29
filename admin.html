@@ -14,7 +14,7 @@
 
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- CABEÇALHO COM STATUS DE CONEXÃO AO DISCO EM TEMPO REAL -->
+    <!-- CABEÇALHO ADMIN PROFISSIONAL NA NUVEM -->
     <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold shadow-inner">
@@ -23,28 +23,21 @@
         <div>
           <h1 class="text-xl font-bold text-white flex items-center gap-2">
             Painel de Gestão & Licenças
-            <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Modo Admin Ativo</span>
+            <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Nuvem Global Ativa</span>
           </h1>
-          <p class="text-xs text-slate-400">Gravação em tempo real em arquivos .json no seu computador.</p>
+          <p class="text-xs text-slate-400">Banco central sincronizado em tempo real sem exigir permissões dos clientes.</p>
         </div>
       </div>
 
-      <!-- BOTÃO DE CONEXÃO DIRETA À PASTA DO PC -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div id="statusDiscoBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-          Pasta Local Não Conectada
-        </div>
-
-        <button onclick="conectarPastaLocal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-xl font-semibold transition flex items-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-95 cursor-pointer">
-          📁 Conectar Pasta do PC
+      <div class="flex flex-wrap gap-2">
+        <button onclick="carregarDadosDaNuvem(true)" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs rounded-xl transition font-medium flex items-center gap-1.5">
+          🔄 Atualizar da Nuvem
         </button>
-
-        <button onclick="salvarArquivoManual('cadastro')" title="Baixar cópia manual" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 rounded-xl transition">
-          💾 Baixar Cadastros
+        <button onclick="salvarArquivoNoPC('cadastro')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
+          💾 Baixar banco_cadastros.json
         </button>
-        <button onclick="salvarArquivoManual('teste')" title="Baixar cópia manual" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 rounded-xl transition">
-          💾 Baixar Testes
+        <button onclick="salvarArquivoNoPC('teste')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
+          💾 Baixar banco_teste.json
         </button>
       </div>
     </header>
@@ -84,7 +77,7 @@
       </button>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO -->
+    <!-- FORMULÁRIO DE CADASTRO COM DATA/HORA MANUAIS -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -130,14 +123,14 @@
       </form>
     </div>
 
-    <!-- BUSCA -->
+    <!-- BARRA DE BUSCA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="relative w-full sm:w-80">
         <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contato..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
       </div>
-      <div class="text-xs text-slate-400" id="infoSyncTexto">
-        Sincronização em tempo real pronta.
+      <div class="text-xs text-slate-400">
+        Gravado diretamente na nuvem JSONBin.
       </div>
     </div>
 
@@ -164,85 +157,59 @@
   </div>
 
   <script>
-    let bancoAtual = "cadastro";
-    let pastaDiretorioHandle = null; // Handle da pasta conectada no computador
+    const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
+    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
+    const BIN_TESTE = "6abc21bfac6210605a032f92";
 
+    let bancoAtual = "cadastro";
     let dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
     let dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
 
-    // =========================================================================
-    // GRAVAÇÃO EM TEMPO REAL NOS ARQUIVOS DO COMPUTADOR
-    // =========================================================================
-    async function conectarPastaLocal() {
-      if (!window.showDirectoryPicker) {
-        alert("Seu navegador não suporta a conexão direta de pastas. Use o Chrome ou Edge.");
-        return;
-      }
-
+    async function carregarDadosDaNuvem(comAviso = false) {
       try {
-        pastaDiretorioHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
 
-        // Tenta ler banco_cadastros.json se já existir na pasta
-        try {
-          const fileHandleCad = await pastaDiretorioHandle.getFileHandle("banco_cadastros.json", { create: true });
-          const fileCad = await fileHandleCad.getFile();
-          const textCad = await fileCad.text();
-          if (textCad.trim()) {
-            dbCadastros = JSON.parse(textCad);
-          }
-        } catch(e) {}
+        const resCad = await fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers });
+        const dCad = await resCad.json();
+        dbCadastros = Array.isArray(dCad.record) ? dCad.record : (dCad.record?.usuarios || []);
+        localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
 
-        // Tenta ler banco_teste.json se já existir na pasta
-        try {
-          const fileHandleTest = await pastaDiretorioHandle.getFileHandle("banco_teste.json", { create: true });
-          const fileTest = await fileHandleTest.getFile();
-          const textTest = await fileTest.text();
-          if (textTest.trim()) {
-            dbTeste = JSON.parse(textTest);
-          }
-        } catch(e) {}
+        const resTest = await fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers });
+        const dTest = await resTest.json();
+        dbTeste = Array.isArray(dTest.record) ? dTest.record : (dTest.record?.testes || []);
+        localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
 
-        // Atualiza a interface
-        const badge = document.getElementById("statusDiscoBadge");
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Disco Conectado (Tempo Real)`;
-        badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium";
-
-        document.getElementById("infoSyncTexto").textContent = "✓ Sincronizado diretamente com a pasta do seu computador.";
-
-        salvarBancos();
+        atualizarContadores();
         renderizarTabela();
-        alert("Pasta conectada com sucesso! Todos os registros serão gravados em tempo real nos arquivos .json.");
+        if (comAviso) alert("Dados atualizados com sucesso diretamente da nuvem!");
       } catch (err) {
-        if (err.name !== "AbortError") {
-          alert("Não foi possível conectar à pasta: " + err.message);
-        }
+        console.warn("Erro ao buscar nuvem:", err);
       }
     }
 
-    async function gravarArquivoNoDisco(nomeArquivo, dados) {
-      if (!pastaDiretorioHandle) return;
-
+    async function gravarNuvem(binId, dados, chave) {
       try {
-        const fileHandle = await pastaDiretorioHandle.getFileHandle(nomeArquivo, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(JSON.stringify(dados, null, 2));
-        await writable.close();
+        await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_MASTER_KEY
+          },
+          body: JSON.stringify({ [chave]: dados })
+        });
       } catch (e) {
-        console.warn("Erro ao gravar em tempo real no arquivo:", e);
+        console.warn("Erro ao salvar no JSONBin:", e);
       }
     }
 
     async function salvarBancos() {
-      // 1. Salva no armazenamento do navegador
       localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
       localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
       atualizarContadores();
 
-      // 2. Se a pasta do computador estiver conectada, grava diretamente nos arquivos físicos
-      if (pastaDiretorioHandle) {
-        await gravarArquivoNoDisco("banco_cadastros.json", dbCadastros);
-        await gravarArquivoNoDisco("banco_teste.json", dbTeste);
-      }
+      // Grava em paralelo nos bins da nuvem
+      gravarNuvem(BIN_CADASTROS, dbCadastros, "usuarios");
+      gravarNuvem(BIN_TESTE, dbTeste, "testes");
     }
 
     function atualizarContadores() {
@@ -357,7 +324,7 @@
       definirDataHoraAtual();
       renderizarTabela();
 
-      alert(`Registrado com sucesso no banco [${bancoAtual.toUpperCase()}]!\nGravado em tempo real.`);
+      alert(`Usuário registrado no banco [${bancoAtual.toUpperCase()}] e sincronizado na nuvem!`);
     }
 
     async function ativarPlano30Dias(id) {
@@ -391,7 +358,7 @@
 
       await salvarBancos();
       renderizarTabela();
-      alert(`🎉 Sucesso! ${user.nome} transferido para Assinantes Ativos (30 dias).`);
+      alert(`🎉 Sucesso! ${user.nome} promovido a Assinante Ativo (30 dias).`);
     }
 
     function renderizarTabela() {
@@ -501,7 +468,7 @@
 
       await salvarBancos();
       renderizarTabela();
-      alert(`Acesso de ${user.nome} renovado com sucesso!`);
+      alert(`Acesso renovado com sucesso!`);
     }
 
     async function excluirUsuario(id) {
@@ -515,7 +482,7 @@
       renderizarTabela();
     }
 
-    function salvarArquivoManual(tipo) {
+    function salvarArquivoNoPC(tipo) {
       const dados = tipo === "cadastro" ? dbCadastros : dbTeste;
       const nomeArquivo = tipo === "cadastro" ? "banco_cadastros.json" : "banco_teste.json";
       const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
@@ -527,8 +494,7 @@
 
     window.onload = function() {
       definirDataHoraAtual();
-      salvarBancos();
-      renderizarTabela();
+      carregarDadosDaNuvem(false);
     };
   </script>
 </body>
