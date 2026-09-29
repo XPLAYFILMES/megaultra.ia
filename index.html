@@ -195,7 +195,7 @@
     </form>
   </div>
 
-  <!-- PAINEL PRINCIPAL DO STUDIO -->
+  <!-- PAINEL PRINCIPAL DO STUDIO (INTERFACE LIMPA) -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
     
     <!-- BARRA LATERAL -->
@@ -244,40 +244,12 @@
       </div>
     </aside>
 
-    <!-- ÁREA PRINCIPAL DO CHAT -->
+    <!-- ÁREA PRINCIPAL DO CHAT (CABEÇALHO LIMPO) -->
     <main class="flex-1 flex flex-col h-full bg-slate-900 min-w-0">
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2 truncate">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Nova Conversa</span>
-        </div>
-        
-        <div class="flex items-center gap-2 shrink-0">
-          <!-- Indicador de Nuvem Automática Conectada -->
-          <div class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Nuvem Ativa
-          </div>
-
-          <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
-            <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
-          </a>
-
-          <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
-            ⚠️ Chave Ausente
-          </span>
-          <div class="relative">
-            <input 
-              type="password" 
-              id="geminiKeyInput" 
-              placeholder="Cole sua Gemini API Key aqui" 
-              oninput="autoSalvarChave()"
-              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-56 transition"
-            />
-          </div>
-          <button id="saveKeyBtn" onclick="salvarChaveGemini(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
-            Salvar
-          </button>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[200px] sm:max-w-md">Nova Conversa</span>
         </div>
       </header>
 
@@ -301,51 +273,10 @@
 
   </div>
 
-  <!-- MODAL DA CHAVE GEMINI -->
-  <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-bold">
-          🔑
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
-          <p class="text-xs text-slate-400">Cada usuário insere a sua própria chave gratuita.</p>
-        </div>
-      </div>
-
-      <p class="text-xs text-slate-300 leading-relaxed">
-        Para usar o Studio, você precisa de uma chave gratuita do Google Gemini:
-      </p>
-
-      <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
-        <li>Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 underline font-semibold">Google AI Studio</a>.</li>
-        <li>Clique em <b>Create API key</b> e gere uma chave.</li>
-        <li>Cole no campo abaixo.</li>
-      </ol>
-
-      <div class="space-y-2">
-        <input 
-          type="text" 
-          id="modalKeyInput" 
-          placeholder="Cole sua chave aqui (ex: AIzaSy...)" 
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-        />
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="fecharModalChave()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200 bg-slate-800">Cancelar</button>
-        <button onclick="salvarChaveDoModal()" class="px-5 py-2 rounded-xl text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">Salvar e Começar</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // =========================================================================
-    // CONFIGURAÇÃO DA NUVEM JSONBIN (INTEGRAÇÃO CENTRAL GLOBAL)
-    // =========================================================================
+    // Configurações JSONBin Globais Atualizadas
     const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
+    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8"; // ID Atualizado!
     const BIN_TESTE = "6abc21bfac6210605a032f92";
     const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
 
@@ -363,17 +294,14 @@
     let memoryUsers = {};
     let memoryProjects = {};
 
-    // Cache local sincronizado
     let bancoCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
     let bancoTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
-    // Sincronização de leitura com a nuvem JSONBin
     async function sincronizarComNuvem() {
       try {
         const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
 
-        // Carrega Cadastros
         fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers })
           .then(r => r.json())
           .then(d => {
@@ -384,7 +312,6 @@
             }
           }).catch(()=>{});
 
-        // Carrega Testes
         fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers })
           .then(r => r.json())
           .then(d => {
@@ -395,7 +322,6 @@
             }
           }).catch(()=>{});
 
-        // Carrega Conhecimento Coletivo
         fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
           .then(r => r.json())
           .then(d => {
@@ -405,12 +331,9 @@
               localStorage.setItem("banco_conhecimento_local", JSON.stringify(arr));
             }
           }).catch(()=>{});
-      } catch (e) {
-        console.warn("Sincronização em nuvem:", e);
-      }
+      } catch (e) {}
     }
 
-    // Gravação na nuvem sem requerer permissão local
     async function gravarNuvem(binId, dados, chaveObjeto) {
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
@@ -421,14 +344,9 @@
           },
           body: JSON.stringify({ [chaveObjeto]: dados })
         });
-      } catch (e) {
-        console.warn("Erro ao gravar na nuvem:", e);
-      }
+      } catch (e) {}
     }
 
-    // =========================================================================
-    // BANCO DE CONHECIMENTO COLETIVO COM VARIAÇÃO DINÂMICA
-    // =========================================================================
     function salvarConhecimento(pergunta, resposta) {
       if (!pergunta || !resposta || resposta.length < 10) return;
       const perguntaNormalizada = normalizarTexto(pergunta);
@@ -450,7 +368,6 @@
       }
 
       localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-      // Grava em segundo plano na nuvem global
       gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
     }
 
@@ -565,7 +482,6 @@
       window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
     }
 
-    // AUTENTICAÇÃO COM VERIFICAÇÃO NA NUVEM
     function executarAcesso(e) {
       if (e) e.preventDefault();
 
@@ -627,7 +543,6 @@
         return;
       }
 
-      // CADASTRO NOVO (TESTE DE 6 HORAS)
       const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
       if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
         feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Fale com o suporte para assinar.";
@@ -664,7 +579,6 @@
       localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
       localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
 
-      // Grava direto na nuvem sem precisar de permissões
       gravarNuvem(BIN_TESTE, bancoTeste, "testes");
 
       feedback.textContent = `✨ Conta teste de 6 horas criada com sucesso! Entrando...`;
@@ -714,9 +628,7 @@
           }
           return texto;
         }
-      } catch (e) {
-        console.warn("Erro ao ler arquivo de prompt:", e);
-      }
+      } catch (e) {}
 
       if (sessaoId === "chat") {
         return "Você é uma inteligência artificial completa, prestativa e perspicaz, no mesmo padrão de excelência e naturalidade do Gemini e ChatGPT. Responda com linguagem clara, direta, bem estruturada em parágrafos e código quando solicitado.";
@@ -808,106 +720,12 @@
       }
     }
 
-    function obterChaveUsuario() {
-      if (!activeUser) return "";
-      const input = document.getElementById("geminiKeyInput");
-      const valInput = input ? input.value.trim() : "";
-      if (valInput) return valInput;
-
+    function obterChaveSistema() {
       try {
-        const stored = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase());
-        if (stored) return stored.trim();
+        const k = localStorage.getItem("studio_master_gemini_key");
+        if (k && k.length > 10) return k;
       } catch (e) {}
-
       return "";
-    }
-
-    function autoSalvarChave() {
-      if (!activeUser) return;
-      const input = document.getElementById("geminiKeyInput");
-      const key = input.value.trim();
-      try {
-        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
-      } catch (e) {}
-      atualizarBadgeChave(key);
-    }
-
-    function salvarChaveGemini(mostrarAviso = true) {
-      if (!activeUser) return;
-      const input = document.getElementById("geminiKeyInput");
-      const key = input.value.trim();
-
-      if (!key) {
-        alert("Cole sua chave de API antes de salvar.");
-        input.focus();
-        return;
-      }
-
-      try {
-        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
-      } catch (e) {}
-
-      atualizarBadgeChave(key);
-
-      const btn = document.getElementById("saveKeyBtn");
-      btn.textContent = "Salvo ✓";
-      btn.className = "bg-emerald-600 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm";
-      setTimeout(() => {
-        btn.textContent = "Salvar";
-        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm";
-      }, 1500);
-
-      if (mostrarAviso) {
-        alert("Sua chave foi salva com sucesso no seu perfil!");
-      }
-    }
-
-    function carregarChaveDoUsuario() {
-      if (!activeUser) return;
-      try {
-        const key = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase()) || "";
-        const input = document.getElementById("geminiKeyInput");
-        if (input) input.value = key;
-        atualizarBadgeChave(key);
-      } catch (e) {}
-    }
-
-    function atualizarBadgeChave(key) {
-      const badge = document.getElementById("keyStatusBadge");
-      if (!badge) return;
-      if (key && key.length > 10) {
-        badge.textContent = "✓ Chave Ativa";
-        badge.className = "text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-block";
-      } else {
-        badge.textContent = "⚠️ Chave Ausente";
-        badge.className = "text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block";
-      }
-    }
-
-    function abrirModalChave() {
-      const modal = document.getElementById("keyModal");
-      const modalInp = document.getElementById("modalKeyInput");
-      modalInp.value = obterChaveUsuario();
-      modal.classList.remove("hidden");
-      modalInp.focus();
-    }
-
-    function fecharModalChave() {
-      document.getElementById("keyModal").classList.add("hidden");
-    }
-
-    function salvarChaveDoModal() {
-      const modalInp = document.getElementById("modalKeyInput");
-      const val = modalInp.value.trim();
-      if (!val) {
-        alert("Cole sua chave no campo!");
-        modalInp.focus();
-        return;
-      }
-      document.getElementById("geminiKeyInput").value = val;
-      salvarChaveGemini(false);
-      fecharModalChave();
-      iniciarProducao();
     }
 
     async function abrirStudio(username) {
@@ -933,7 +751,6 @@
       if (tabSalva) activeSessionId = tabSalva;
 
       await carregarSessoesDoGithub();
-      carregarChaveDoUsuario();
       atualizarListaProjetos();
 
       const projs = getStorageProjects(activeUser, activeSessionId);
@@ -1159,7 +976,7 @@
       return marked.parse(formatado);
     }
 
-    function renderizarMensagemInstantanea(texto, isUser, isError = false, viaCacheLocal = false) {
+    function renderizarMensagemInstantanea(texto, isUser, isError = false) {
       const chatArea = document.getElementById("chatArea");
       const div = document.createElement("div");
       div.className = `flex ${isUser ? "justify-end" : "justify-start"} w-full`;
@@ -1179,12 +996,7 @@
             ? "bg-blue-600 text-white font-medium shadow-md"
             : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative"
         }`;
-        
-        let conteudoHtml = isUser ? texto : formatarTextoComOpcoes(texto);
-        if (viaCacheLocal) {
-          conteudoHtml = `<div class="mb-2"><span class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">⚡ Resposta da Memória Local (0 Cota Usada)</span></div>` + conteudoHtml;
-        }
-        bubble.innerHTML = conteudoHtml;
+        bubble.innerHTML = isUser ? texto : formatarTextoComOpcoes(texto);
       }
 
       div.appendChild(bubble);
@@ -1192,7 +1004,7 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    async function renderizarMensagemDigitando(textoCompleto, viaCacheLocal = false) {
+    async function renderizarMensagemDigitando(textoCompleto) {
       isDigitando = true;
       const chatArea = document.getElementById("chatArea");
       const div = document.createElement("div");
@@ -1200,13 +1012,7 @@
       
       const bubble = document.createElement("div");
       bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative typing-cursor";
-      
-      let badgeHtml = "";
-      if (viaCacheLocal) {
-        badgeHtml = `<div class="mb-2"><span class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">⚡ Resposta da Memória Local (0 Cota Usada)</span></div>`;
-      }
-
-      bubble.innerHTML = badgeHtml + "<span></span>";
+      bubble.innerHTML = "<span></span>";
       div.appendChild(bubble);
       chatArea.appendChild(div);
 
@@ -1214,8 +1020,8 @@
 
       let index = 0;
       const tamanhoTotal = textoCompleto.length;
-      const passo = tamanhoTotal > 800 ? 5 : (tamanhoTotal > 300 ? 3 : 2);
-      const velocidadeMs = 12;
+      const passo = tamanhoTotal > 800 ? 6 : (tamanhoTotal > 300 ? 4 : 2);
+      const velocidadeMs = 10;
 
       return new Promise((resolve) => {
         const timer = setInterval(() => {
@@ -1224,7 +1030,7 @@
             index = tamanhoTotal;
             clearInterval(timer);
             bubble.classList.remove("typing-cursor");
-            bubble.innerHTML = badgeHtml + formatarTextoComOpcoes(textoCompleto);
+            bubble.innerHTML = formatarTextoComOpcoes(textoCompleto);
             chatArea.scrollTop = chatArea.scrollHeight;
             isDigitando = false;
             resolve();
@@ -1273,7 +1079,7 @@
       if (isInicial && activeSessionId === "chat") {
         const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
         conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
-        await renderizarMensagemDigitando(boasVindas, false);
+        await renderizarMensagemDigitando(boasVindas);
         if (atual) {
           atual.messages.push({ role: "model", content: boasVindas });
           saveStorageProjects(activeUser, activeSessionId, projs);
@@ -1309,7 +1115,7 @@
         const respostaMemoria = buscarNaMemoriaLocal(texto);
         if (respostaMemoria) {
           conversationHistory.push({ role: "model", parts: [{ text: respostaMemoria }] });
-          await renderizarMensagemDigitando(respostaMemoria, true);
+          await renderizarMensagemDigitando(respostaMemoria);
 
           if (atual) {
             atual.messages.push({ role: "model", content: respostaMemoria });
@@ -1336,9 +1142,9 @@
         return;
       }
 
-      const apiKey = obterChaveUsuario();
+      const apiKey = obterChaveSistema();
       if (!apiKey || apiKey.length < 10) {
-        abrirModalChave();
+        renderizarMensagemInstantanea("⚠️ Chave de API do sistema não configurada. Configure no Painel Admin.", false, true);
         return;
       }
 
@@ -1360,9 +1166,9 @@
       document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
 
       const modelosCandidatos = [
-        "gemini-3.5-flash-lite",
-        "gemini-3.8-flash",
-        "gemini-2.5-flash"
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
       ];
 
       const systemInstructionFinal = activeSessionId === "chat"
@@ -1403,7 +1209,7 @@
       if (respostaFinal) {
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
         
-        await renderizarMensagemDigitando(respostaFinal, false);
+        await renderizarMensagemDigitando(respostaFinal);
         salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
@@ -1414,7 +1220,7 @@
         ultimaMensagemPendente = "";
       } else {
         renderizarMensagemInstantanea(
-          `⚠️ **Houve uma oscilação na conexão do Gemini.**\n\nSua última escolha foi gravada com sucesso. Clique abaixo para avançar sem duplicar mensagens:`,
+          `⚠️ **Houve uma oscilação na conexão com a IA.**\n\nSua última escolha foi gravada. Clique abaixo para tentar novamente:`,
           false,
           true
         );
