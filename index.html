@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  <!-- TELA DE LOGIN / CADASTRO -->
+  <!-- TELA DE LOGIN / CADASTRO COM CAMPOS COMPLETOS -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-5 my-auto max-h-[95vh] overflow-y-auto">
     <div class="text-center space-y-1.5">
       <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mx-auto shadow-inner">
@@ -96,6 +96,7 @@
       </p>
     </div>
 
+    <!-- ABAS ENTRE ENTRAR E NOVO CADASTRO -->
     <div class="flex border-b border-slate-800 text-xs">
       <button id="tabAuthEntrar" onclick="alternarModoAuth('login')" class="flex-1 py-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition">
         Já tenho Acesso
@@ -106,6 +107,7 @@
     </div>
 
     <form onsubmit="executarAcesso(event)" autocomplete="off" class="space-y-3 text-left">
+      <!-- Nome -->
       <div>
         <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
           Nome de Usuário
@@ -120,6 +122,7 @@
         />
       </div>
 
+      <!-- E-mail (Visível no modo cadastro) -->
       <div id="campoEmailWrapper" class="hidden">
         <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
           Seu E-mail
@@ -133,6 +136,7 @@
         />
       </div>
 
+      <!-- Contato (Visível no modo cadastro) -->
       <div id="campoContatoWrapper" class="hidden grid grid-cols-3 gap-2">
         <div class="col-span-1">
           <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Canal</label>
@@ -153,6 +157,7 @@
         </div>
       </div>
 
+      <!-- Senha -->
       <div>
         <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
           Sua Senha
@@ -208,7 +213,7 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário -->
+      <!-- Rodapé do Utilizador com Botão de Ativação -->
       <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5 overflow-hidden">
@@ -216,7 +221,7 @@
               👤
             </div>
             <div class="flex flex-col truncate">
-              <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
+              <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Utilizador</span>
               <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo (30 Dias)</span>
             </div>
           </div>
@@ -291,12 +296,12 @@
         </div>
         <div>
           <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
-          <p class="text-xs text-slate-400">Cada usuário utiliza sua própria chave gratuita.</p>
+          <p class="text-xs text-slate-400">Cada utilizador insere a sua própria chave gratuita.</p>
         </div>
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Para usar o Studio, você precisa de uma chave gratuita do Google Gemini:
+        Para utilizar o Studio, obtenha a sua chave gratuita do Google Gemini:
       </p>
 
       <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
@@ -322,10 +327,9 @@
   </div>
 
   <script>
-    let modoAuthAtual = "login";
+    let modoAuthAtual = "login"; // 'login' ou 'cadastro'
     let sessoesDisponiveis = [];
     let promptsCache = {};
-    let etapasEstaticasCache = {}; // Cache de etapas estáticas extraídas dos arquivos .txt
     let activeUser = null;
     let activeSessionId = "producao";
     let currentConversationId = null;
@@ -392,54 +396,155 @@
       window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
     }
 
-    // =========================================================================
-    // PARSER INTELIGENTE: EXTRAI ETAPAS FIXAS DOS SEUS ARQUIVOS .TXT
-    // =========================================================================
-    function extrairEtapasDoTexto(rawTxt) {
-      const etapas = {};
-      const regexEtapas = /###\s*(ETAPA\s*[\d\.]+:[^\n]+)([\s\S]*?)(?=###\s*ETAPA|---\s*\[FORMATO|---\s*\[INSTRUÇÃO|$)/gi;
-      let match;
+    // VALIDAÇÃO DOS BANCOS POR TOKEN
+    function verificarAcessoPorToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
 
-      while ((match = regexEtapas.exec(rawTxt)) !== null) {
-        const cabecalho = match[1].trim();
-        const conteudo = match[2].trim();
+      if (!token) return false;
 
-        // Se o bloco tiver opções fixas (ex: [0], [1], [2]) e não depender de geração criativa
-        const temOpcoesNumeradas = /\[0\]|\[1\]/.test(conteudo);
-        const ehEtapaCriativa = /opções inéditas|gerar 20 novos|títulos magnéticos|enredo mais envolvente/i.test(conteudo);
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
 
-        const idEtapa = cabecalho.split(":")[0].replace(/\s+/g, "_").toLowerCase();
+      let usuarioEncontrado = dbCadastros.find(u => u.token === token);
+      let tipoBanco = "Ativo (30 Dias)";
 
-        etapas[idEtapa] = {
-          titulo: `### ${cabecalho}`,
-          textoCompleto: `### ${cabecalho}\n\n${conteudo}`,
-          estatica: temOpcoesNumeradas && !ehEtapaCriativa
-        };
+      if (!usuarioEncontrado) {
+        usuarioEncontrado = dbTeste.find(u => u.token === token);
+        tipoBanco = "Teste (6 Horas)";
       }
 
-      return etapas;
+      if (usuarioEncontrado) {
+        const agoraMs = new Date().getTime();
+        const vencMs = new Date(usuarioEncontrado.dataVencimentoIso).getTime();
+
+        if (agoraMs > vencMs) {
+          document.documentElement.className = "estado-expirado";
+          document.getElementById("expiredDescText").textContent = usuarioEncontrado.banco === "cadastro"
+            ? "A sua assinatura de 30 dias expirou. Entre em contato para renovar."
+            : "O seu período de teste gratuito de 6 horas terminou. Solicite o plano de 30 dias para continuar.";
+          return true;
+        }
+
+        activeUser = usuarioEncontrado.nome;
+        localStorage.setItem("studio_active_session", activeUser);
+        localStorage.setItem("studio_user_badge", tipoBanco);
+        document.documentElement.className = "estado-logado";
+        return true;
+      }
+
+      return false;
     }
 
-    async function carregarPromptETratarEtapas(sessaoId) {
-      const sessao = sessoesDisponiveis.find(s => s.id === sessaoId) || sessoesDisponiveis[0];
+    // FLUXO DE LOGIN OU CADASTRO COMPLETO (TESTE 6 HORAS)
+    function executarAcesso(e) {
+      if (e) e.preventDefault();
 
-      if (promptsCache[sessao.id]) {
-        return promptsCache[sessao.id];
+      const userInput = document.getElementById("authUsername");
+      const passInput = document.getElementById("authPassword");
+      const feedback = document.getElementById("loginFeedback");
+
+      const username = (userInput.value || "").trim();
+      const password = (passInput.value || "").trim();
+
+      if (!username || !password) {
+        feedback.textContent = "Preencha todos os campos!";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
       }
 
-      try {
-        const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
-        if (resp.ok) {
-          const texto = await resp.text();
-          promptsCache[sessao.id] = texto;
-          etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
-          return texto;
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      let dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+
+      // 1. MODO ENTRAR / LOGIN
+      if (modoAuthAtual === "login") {
+        // Verifica se é assinante ativo de 30 dias
+        const assinante = dbCadastros.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (assinante) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(assinante.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            return;
+          }
+
+          feedback.textContent = `Assinante reconhecido! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Ativo (30 Dias)");
+          setTimeout(() => abrirStudio(assinante.nome), 200);
+          return;
         }
-      } catch (e) {
-        console.warn("Erro ao ler o arquivo .txt da pasta prompts/:", e);
+
+        // Verifica se é usuário do banco teste
+        const userTeste = dbTeste.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (userTeste) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(userTeste.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            document.getElementById("expiredDescText").textContent = "Seu teste gratuito de 6 horas expirou. Ative o plano de 30 dias para continuar.";
+            return;
+          }
+
+          feedback.textContent = `Acesso de teste ativo! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+          setTimeout(() => abrirStudio(userTeste.nome), 200);
+          return;
+        }
+
+        feedback.textContent = "Usuário não encontrado. Crie uma conta teste na aba ao lado.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
       }
 
-      return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
+      // 2. MODO CADASTRO NOVO (TESTE DE 6 HORAS)
+      const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
+      if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
+        feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Fale com o suporte para assinar.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      const email = document.getElementById("authEmail").value.trim();
+      const tipoContato = document.getElementById("authTipoContato").value;
+      const numeroContato = document.getElementById("authNumeroContato").value.trim();
+
+      const agora = new Date();
+      const vencimento6h = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
+
+      const formatarData = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+      const novoTeste = {
+        id: "usr_" + Date.now(),
+        nome: username,
+        email: email || "Não informado",
+        tipoContato: tipoContato,
+        numero: numeroContato || "Cadastro pelo Site",
+        banco: "teste",
+        dataCadastroIso: agora.toISOString(),
+        dataCadastroFormatada: formatarData(agora),
+        dataVencimentoIso: vencimento6h.toISOString(),
+        dataVencimentoFormatada: formatarData(vencimento6h),
+        token: "tok_" + Date.now()
+      };
+
+      dbTeste.unshift(novoTeste);
+      localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
+      localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
+      localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+
+      feedback.textContent = `✨ Conta teste de 6 horas criada com sucesso! Entrando...`;
+      feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+      feedback.classList.remove("hidden");
+      setTimeout(() => abrirStudio(username), 300);
     }
 
     // =========================================================================
@@ -511,6 +616,27 @@
         btn.onclick = () => mudarSessao(s.id);
         container.appendChild(btn);
       });
+    }
+
+    async function obterPromptAtivo() {
+      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || sessoesDisponiveis[0];
+
+      if (promptsCache[sessao.id]) {
+        return promptsCache[sessao.id];
+      }
+
+      try {
+        const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
+        if (resp.ok) {
+          const texto = await resp.text();
+          promptsCache[sessao.id] = texto;
+          return texto;
+        }
+      } catch (e) {
+        console.warn("Erro ao buscar prompt da sessão:", e);
+      }
+
+      return "Você é um diretor e engenheiro de IA especializado. Apresente exclusivamente a Etapa 1 e aguarde a resposta do usuário.";
     }
 
     function mudarSessao(novaSessaoId) {
@@ -947,10 +1073,14 @@
       }
     }
 
-    // =========================================================================
-    // EXECUÇÃO HÍBRIDA: ETAPAS ESTÁTICAS DIRETO DO .TXT E IA SÓ QUANDO PRECISA
-    // =========================================================================
-    async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
+    async function dispararGemini(texto, isInicial = false, isRetomada = false) {
+      const apiKey = obterChaveUsuario();
+
+      if (!apiKey || apiKey.length < 10) {
+        abrirModalChave();
+        return;
+      }
+
       const projs = getStorageProjects(activeUser, activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
 
@@ -958,27 +1088,8 @@
         document.getElementById("chatArea").innerHTML = "";
       }
 
-      // Garante que o arquivo .txt da pasta prompts/ foi lido
-      const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
-      const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
+      ultimaMensagemPendente = isInicial ? "" : texto;
 
-      // 1. SE FOR INICIAL: Pega direto a Etapa 1 do arquivo .txt sem gastar Gemini!
-      if (isInicial) {
-        const primeiraEtapaId = Object.keys(mapaEtapas)[0];
-        if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
-          const textoEtapa1 = mapaEtapas[primeiraEtapaId].textoCompleto;
-          conversationHistory.push({ role: "model", parts: [{ text: textoEtapa1 }] });
-          renderizarMensagem(textoEtapa1, false);
-
-          if (atual) {
-            atual.messages.push({ role: "model", content: textoEtapa1 });
-            saveStorageProjects(activeUser, activeSessionId, projs);
-          }
-          return; // Concluído com ZERO custo de API!
-        }
-      }
-
-      // Registra a mensagem do usuário
       if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -986,32 +1097,13 @@
           atual.messages.push({ role: "user", content: texto });
           saveStorageProjects(activeUser, activeSessionId, projs);
         }
-      }
-
-      // Conta quantas respostas foram dadas para saber em qual etapa estamos
-      const mensagensModelo = conversationHistory.filter(m => m.role === "model");
-      const indiceProximaEtapa = mensagensModelo.length; // 1 -> quer Etapa 2, 2 -> quer Etapa 3
-      const chavesEtapas = Object.keys(mapaEtapas);
-
-      // 2. SE A PRÓXIMA ETAPA FOR ESTÁTICA (Ex: Etapa 2 ou Etapa 3 do arquivo .txt)
-      if (chavesEtapas[indiceProximaEtapa] && mapaEtapas[chavesEtapas[indiceProximaEtapa]].estatica) {
-        const textoProximaEtapa = mapaEtapas[chavesEtapas[indiceProximaEtapa]].textoCompleto;
-        conversationHistory.push({ role: "model", parts: [{ text: textoProximaEtapa }] });
-        renderizarMensagem(textoProximaEtapa, false);
-
-        if (atual) {
-          atual.messages.push({ role: "model", content: textoProximaEtapa });
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-        return; // Concluído instantaneamente com ZERO consumo de API!
-      }
-
-      // 3. SE A ETAPA EXIGIR CRIATIVIDADE (Histórias inéditas, títulos, personagens ou dossiê final):
-      // Aqui a IA entra em ação usando a chave do Gemini
-      const apiKey = obterChaveUsuario();
-      if (!apiKey || apiKey.length < 10) {
-        abrirModalChave();
-        return;
+      } else if (isInicial) {
+        const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
+        const comandoInicial = `Iniciar motor de ${sessao ? sessao.nome : 'produção'}. Apresente a ETAPA 1 com todas as opções numeradas uma abaixo da outra e aguarde a resposta.`;
+        conversationHistory.push({
+          role: "user",
+          parts: [{ text: comandoInicial }]
+        });
       }
 
       const sendBtn = document.getElementById("sendBtn");
@@ -1025,11 +1117,13 @@
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Diretor Criativo processando etapa...
+          Organizando etapas...
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
       document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
+
+      const promptMestre = await obterPromptAtivo();
 
       const modelosCandidatos = [
         "gemini-3.5-flash-lite",
@@ -1038,6 +1132,8 @@
       ];
 
       let respostaFinal = null;
+      let ultimoErro = null;
+
       for (const modelo of modelosCandidatos) {
         try {
           const resp = await fetch(
@@ -1054,11 +1150,19 @@
           );
 
           const data = await resp.json();
+
+          if (data.error) {
+            ultimoErro = data.error.message || `Código ${data.error.code}`;
+            continue;
+          }
+
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             respostaFinal = data.candidates[0].content.parts[0].text;
             break;
           }
-        } catch (err) {}
+        } catch (err) {
+          ultimoErro = err.message;
+        }
       }
 
       const loadEl = document.getElementById("indicadorCarregando");
@@ -1093,14 +1197,14 @@
       if (erroBox) erroBox.remove();
 
       if (ultimaMensagemPendente) {
-        dispararFluxo(ultimaMensagemPendente, false, true);
+        dispararGemini(ultimaMensagemPendente, false, true);
       } else {
-        dispararFluxo("", true, true);
+        dispararGemini("", true, true);
       }
     }
 
     function iniciarProducao() {
-      dispararFluxo("", true);
+      dispararGemini("", true);
     }
 
     function enviarMensagemUsuario() {
@@ -1108,12 +1212,12 @@
       const val = input.value.trim();
       if (!val) return;
       input.value = "";
-      dispararFluxo(val, false, false);
+      dispararGemini(val, false, false);
     }
 
-    // Inicialização ao carregar
     window.addEventListener("DOMContentLoaded", () => {
       const entrouPorToken = verificarAcessoPorToken();
+
       if (entrouPorToken) {
         abrirStudio(activeUser);
         return;
