@@ -225,6 +225,11 @@
           </button>
         </div>
 
+        <!-- Botão para Baixar a Memória de Conhecimento Acumulada -->
+        <button onclick="baixarBancoConhecimento()" class="w-full py-1.5 px-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1.5 transition">
+          💾 Baixar banco_conhecimento.json (<span id="countMemoria">0</span>)
+        </button>
+
         <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
           <span>💎</span> Quero Ativar 30 Dias
         </button>
@@ -236,7 +241,7 @@
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2 truncate">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Novo Projeto</span>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Nova Conversa</span>
         </div>
         
         <div class="flex items-center gap-2 shrink-0">
@@ -269,7 +274,7 @@
           <input 
             type="text" 
             id="userInput" 
-            placeholder="Digite sua pergunta ou resposta..." 
+            placeholder="Digite sua pergunta ou mensagem livremente..." 
             onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
             class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
@@ -341,10 +346,9 @@
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
     function salvarConhecimento(pergunta, resposta) {
-      if (!pergunta || !resposta || resposta.length < 15) return;
+      if (!pergunta || !resposta || resposta.length < 10) return;
       const perguntaNormalizada = normalizarTexto(pergunta);
       
-      // Evita duplicatas idênticas
       const existe = bancoConhecimento.some(item => normalizarTexto(item.pergunta) === perguntaNormalizada);
       if (!existe) {
         bancoConhecimento.unshift({
@@ -353,45 +357,53 @@
           data: new Date().toISOString()
         });
         localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+        atualizarContadorMemoria();
       }
+    }
+
+    function atualizarContadorMemoria() {
+      const el = document.getElementById("countMemoria");
+      if (el) el.textContent = bancoConhecimento.length;
+    }
+
+    function baixarBancoConhecimento() {
+      const blob = new Blob([JSON.stringify(bancoConhecimento, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "banco_conhecimento.json";
+      a.click();
     }
 
     function normalizarTexto(txt) {
       return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
     }
 
-    // Busca no banco de informações para responder sem usar API
+    // Busca na memória local para responder sem gastar cota
     function buscarNaMemoriaLocal(perguntaUsuario) {
       const perguntaLimpa = normalizarTexto(perguntaUsuario);
       const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
 
       if (palavrasPergunta.length === 0) return null;
 
-      let melhorMatch = null;
-      let maiorScore = 0;
-
       for (const item of bancoConhecimento) {
         const itemPerguntaLimpa = normalizarTexto(item.pergunta);
         
-        // 1. Coincidência exata
         if (itemPerguntaLimpa === perguntaLimpa) {
           return item.resposta;
         }
 
-        // 2. Pontuação por sobreposição de palavras-chave
         let matches = 0;
         palavrasPergunta.forEach(palavra => {
           if (itemPerguntaLimpa.includes(palavra)) matches++;
         });
 
         const score = matches / palavrasPergunta.length;
-        if (score > maiorScore && score >= 0.75) {
-          maiorScore = score;
-          melhorMatch = item.resposta;
+        if (score >= 0.75) {
+          return item.resposta;
         }
       }
 
-      return melhorMatch;
+      return null;
     }
 
     function alternarModoAuth(modo) {
@@ -487,7 +499,9 @@
         if (resp.ok) {
           const texto = await resp.text();
           promptsCache[sessao.id] = texto;
-          etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
+          if (sessaoId !== "chat") {
+            etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
+          }
           return texto;
         }
       } catch (e) {
@@ -510,7 +524,7 @@
           { id: "producao", nome: "Produção", icone: "🎬", arquivo: "prompts/producao.txt", titulo: "Engine V19.0 Ultra Master", descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa." },
           { id: "storyboard", nome: "Storyboard", icone: "🎨", arquivo: "prompts/storyboard.txt", titulo: "Engine de Storyboard Visual", descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais." },
           { id: "gerador", nome: "Gerador de Prompts", icone: "⚡", arquivo: "prompts/gerador.txt", titulo: "Fábrica de Prompts Especializados", descricao: "Criação de mega-prompts estruturados e comandos avançados de IA." },
-          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente com Aprendizado", descricao: "Converse normalmente. Quanto mais você usa, mais ela aprende da memória local." }
+          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente Livre", descricao: "Converse livremente como no ChatGPT. O sistema aprende a cada conversa e economiza sua API usando o banco local." }
         ];
       }
 
@@ -701,6 +715,8 @@
         btnUpgrade.classList.remove("hidden");
       }
 
+      atualizarContadorMemoria();
+
       const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
       if (tabSalva) activeSessionId = tabSalva;
 
@@ -859,10 +875,10 @@
       chatArea.innerHTML = "";
 
       const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || {
-        nome: "Produção",
-        icone: "🎬",
-        titulo: "Pronto para Iniciar",
-        descricao: "Clique no botão abaixo para ativar a inteligência e gerar a primeira etapa."
+        nome: "Chat IA Livre",
+        icone: "🧠",
+        titulo: "Chat Inteligente com Aprendizado",
+        descricao: "Faça qualquer pergunta. O sistema responde e memoriza para as próximas consultas com zero consumo de API."
       };
 
       const startDiv = document.createElement("div");
@@ -873,10 +889,10 @@
         </div>
         <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo || sessao.nome}</h2>
         <p class="text-sm text-slate-400 max-w-sm">
-          ${sessao.descricao || "Clique no botão abaixo para iniciar."}
+          ${sessao.descricao || "Faça qualquer pergunta para começar."}
         </p>
         <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
-          Iniciar ${sessao.nome}
+          ${activeSessionId === 'chat' ? 'Abrir Conversa Livre' : 'Iniciar ' + sessao.nome}
         </button>
       `;
       chatArea.appendChild(startDiv);
@@ -975,7 +991,7 @@
         return;
       }
 
-      if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 4) {
+      if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 3) {
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
         document.getElementById("currentChatTitle").textContent = tituloResumo;
@@ -985,7 +1001,7 @@
     }
 
     // =========================================================================
-    // DISPARO INTELIGENTE: BUSCA NA MEMÓRIA COLETIVA LOCAL ANTES DE USAR API
+    // EXECUÇÃO DO FLUXO: CHAT LIVRE vs MOTORES DE ETAPAS
     // =========================================================================
     async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
       const projs = getStorageProjects(activeUser, activeSessionId);
@@ -998,7 +1014,19 @@
       const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
       const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      // 1. INICIAL EM SESSÕES DE PRODUÇÃO/STORYBOARD: Exibe Etapa 1 sem API
+      // 1. INICIAL NO CHAT LIVRE (SEM ETAPAS FIXAS, 100% LIVRE ESTILO CHATGPT)
+      if (isInicial && activeSessionId === "chat") {
+        const boasVindas = "Olá! Como posso ajudar você hoje? Pode me fazer qualquer pergunta, pedir ideias, códigos, resumos ou explicações!";
+        conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
+        renderizarMensagem(boasVindas, false);
+        if (atual) {
+          atual.messages.push({ role: "model", content: boasVindas });
+          saveStorageProjects(activeUser, activeSessionId, projs);
+        }
+        return;
+      }
+
+      // 2. INICIAL NAS OUTRAS SESSÕES (PRODUÇÃO, STORYBOARD): Exibe Etapa 1
       if (isInicial && activeSessionId !== "chat") {
         const primeiraEtapaId = Object.keys(mapaEtapas)[0];
         if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
@@ -1012,18 +1040,9 @@
           }
           return;
         }
-      } else if (isInicial && activeSessionId === "chat") {
-        const boasVindas = "Olá! Sou seu assistente de inteligência livre. Pode me perguntar qualquer coisa, pedir ideias, códigos ou explicações!";
-        conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
-        renderizarMensagem(boasVindas, false);
-        if (atual) {
-          atual.messages.push({ role: "model", content: boasVindas });
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-        return;
       }
 
-      // Registra a mensagem do usuário
+      // Registra a mensagem digitada pelo usuário
       if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -1033,11 +1052,10 @@
         }
       }
 
-      // 2. SE FOR NA SESSÃO DE CHAT LIVRE: BUSCA PRIMEIRO NA MEMÓRIA COLETIVA LOCAL!
-      if (activeSessionId === "chat" && texto.length > 5) {
+      // 3. NO CHAT LIVRE: BUSCA PRIMEIRO NA MEMÓRIA COLETIVA LOCAL (ZERO API)
+      if (activeSessionId === "chat" && texto.length >= 3) {
         const respostaMemoria = buscarNaMemoriaLocal(texto);
         if (respostaMemoria) {
-          // RESPONDE NA HORA COM ZERO CUSTO DE API
           conversationHistory.push({ role: "model", parts: [{ text: respostaMemoria }] });
           renderizarMensagem(respostaMemoria, false, false, true);
 
@@ -1046,11 +1064,11 @@
             detectarEAtualizarTitulo(texto, respostaMemoria, atual, projs);
             saveStorageProjects(activeUser, activeSessionId, projs);
           }
-          return; // Economia de 100% da chamada da API!
+          return; // Respondido com 0 tokens de API!
         }
       }
 
-      // 3. SE FOR ETAPA ESTÁTICA DAS OUTRAS SESSÕES
+      // 4. SE FOR ETAPA ESTÁTICA DAS OUTRAS SESSÕES
       const mensagensModelo = conversationHistory.filter(m => m.role === "model");
       const indiceProximaEtapa = mensagensModelo.length;
       const chavesEtapas = Object.keys(mapaEtapas);
@@ -1067,7 +1085,7 @@
         return;
       }
 
-      // 4. SE NÃO HOUVER NA MEMÓRIA LOCAL: ACIONA O GEMINI UMA VEZ E APRENDE
+      // 5. PERGUNTA INÉDITA: ACIONA O GEMINI UMA VEZ E APRENDE
       const apiKey = obterChaveUsuario();
       if (!apiKey || apiKey.length < 10) {
         abrirModalChave();
@@ -1085,7 +1103,7 @@
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          ${activeSessionId === 'chat' ? 'Consultando inteligência...' : 'Processando etapa criativa...'}
+          ${activeSessionId === 'chat' ? 'Pensando na resposta...' : 'Processando etapa criativa...'}
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
@@ -1128,10 +1146,8 @@
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
         renderizarMensagem(respostaFinal, false);
 
-        // GRAVAÇÃO NO BANCO DE CONHECIMENTO PARA APRENDER COM O USUÁRIO
-        if (activeSessionId === "chat") {
-          salvarConhecimento(texto, respostaFinal);
-        }
+        // SALVA NO BANCO DE CONHECIMENTO COMPARTILHADO
+        salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
           atual.messages.push({ role: "model", content: respostaFinal });
@@ -1177,8 +1193,25 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      const entrouPorToken = verificarAcessoPorToken();
-      if (entrouPorToken) {
+      atualizarContadorMemoria();
+      const enteredByToken = (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (!token) return false;
+        const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+        const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+        let u = dbCadastros.find(x => x.token === token) || dbTeste.find(x => x.token === token);
+        if (u) {
+          activeUser = u.nome;
+          localStorage.setItem("studio_active_session", activeUser);
+          localStorage.setItem("studio_user_badge", u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+          document.documentElement.className = "estado-logado";
+          return true;
+        }
+        return false;
+      })();
+
+      if (enteredByToken) {
         abrirStudio(activeUser);
         return;
       }
