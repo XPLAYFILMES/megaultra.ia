@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Universal Master Studio AI - v7.0</title>
+  <title>Universal Master Studio AI</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -18,7 +18,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
 
-  <!-- ================= TELA DE CADASTRO / LOGIN ================= -->
+  <!-- TELA DE LOGIN -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
     <div class="text-center space-y-2">
       <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-inner">
@@ -67,18 +67,27 @@
     </div>
   </div>
 
-  <!-- ================= PAINEL DO STUDIO ================= -->
+  <!-- PAINEL PRINCIPAL -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden hidden">
     
     <!-- BARRA LATERAL -->
     <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
       <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
-        <button onclick="criarNovoProjeto()" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
-          <span>+</span> Nova Produção
+        
+        <!-- SELETOR DINÂMICO DE SESSÕES (CARREGADO DO JSON) -->
+        <div>
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Sessão Ativa</label>
+          <div id="sessoesContainer" class="flex flex-wrap gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+            <!-- Botões das sessões renderizados aqui -->
+          </div>
+        </div>
+
+        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
+          <span>+</span> Novo Projeto
         </button>
 
-        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1 shrink-0">
-          Suas Produções
+        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1 shrink-0 flex justify-between items-center">
+          <span id="labelHistorico">Projetos Salvos</span>
         </div>
         
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
@@ -130,16 +139,16 @@
       </header>
 
       <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
-        <!-- Tela de Início (Centralizada) -->
+        <!-- Tela de Início Centralizada -->
         <div id="startScreen" class="h-full flex flex-col items-center justify-center text-center space-y-4">
-          <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
+          <div id="startScreenIcon" class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
             ⚡
           </div>
-          <h2 class="text-lg font-bold text-white">Pronto para a Etapa 1?</h2>
-          <p class="text-sm text-slate-400 max-w-sm">
-            Universal Master Studio OS v7.0 ativo. Clique abaixo para iniciar a produção desta conversa.
+          <h2 id="startScreenTitle" class="text-lg font-bold text-white">Pronto para Iniciar</h2>
+          <p id="startScreenDesc" class="text-sm text-slate-400 max-w-sm">
+            Selecione uma opção ou clique abaixo para iniciar o fluxo.
           </p>
-          <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
+          <button id="startBtnAction" onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95">
             Iniciar Produção
           </button>
         </div>
@@ -163,7 +172,7 @@
 
   </div>
 
-  <!-- MODAL: AJUDA / PEDIDO DE API KEY -->
+  <!-- MODAL DE PEDIDO DE CHAVE GEMINI -->
   <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
       <div class="flex items-center gap-3">
@@ -172,12 +181,12 @@
         </div>
         <div>
           <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
-          <p class="text-xs text-slate-400">Cada usuário precisa de sua própria chave gratuita.</p>
+          <p class="text-xs text-slate-400">Cada usuário utiliza sua própria chave gratuita.</p>
         </div>
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed">
-        Para usar o Universal Master Studio, você precisa de uma chave gratuita do Google Gemini:
+        Para usar o Studio, você precisa de uma chave gratuita do Google Gemini:
       </p>
 
       <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
@@ -202,274 +211,15 @@
     </div>
   </div>
 
-  <!-- ================= LÓGICA DO STUDIO ================= -->
+  <!-- SCRIPT DINÂMICO COM CARREGAMENTO EXTERNO DE PROMPTS -->
   <script>
-    const SYSTEM_PROMPT = `[SISTEMA OPERACIONAL: Universal Master Studio OS - v7.0 Ultimate Omnichannel]
-[COMPATIBILIDADE UNIVERSAL: ChatGPT, Google Gemini, Microsoft Copilot, Meta AI, Claude]
-[FUNÇÃO: Diretor Executivo de Produção Audiovisual, Arquiteto Editorial e Engenheiro de Prompts]
-
-[LEIS ABSOLUTAS DE EXECUÇÃO - LEIA ANTES DE PROCESSAR]
-1. EXECUÇÃO MONOTAREFA ESTRITA: Exiba EXCLUSIVAMENTE a etapa ativa e PARE IMEDIATAMENTE. É terminantemente proibido exibir duas etapas juntas ou antecipar entregas.
-2. TRAVA DE VALIDAÇÃO CONDICIONAL: Nenhuma etapa avança sem resposta válida. Se a mensagem for vaga ou tentar pular, emita: "⚠️ Esta etapa é obrigatória para a consistência da produção. Selecione uma opção, digite sua resposta ou envie [0] para seleção automática estratégica." e repita a pergunta.
-3. PROTOCOLO [0] AUTOMÁTICO: O comando "[0]" aciona a escolha da IA como diretora executiva, escolhendo a opção de maior potencial comercial e retenção, com justificativa em 1 linha.
-4. ISOLAMENTO DE RAMIFICAÇÕES: As perguntas de um nicho jamais aparecem em outro. Cada fluxo segue suas próprias regras e etapas exclusivas.
-5. PRESERVAÇÃO TOTAL DE PROMPTS DE VÍDEO: Em produções audiovisuais, nenhuma cena pode omitir o prompt de movimento de vídeo. Cada cena deve ter impreterivelmente 4 linhas: Imagem + Vídeo + Fala/Texto + Foley/Áudio.
-6. REGRA SERIAL PADRONIZADA: Toda cena usa o prefixo serial rígido: "Scene 01:", "Scene 02:", "Scene 03:" até a conclusão.
-
----
-
-[INÍCIO DO FLUXO - MENU PRINCIPAL]
-
-APRESENTE IMEDIATAMENTE AO INICIAR A ETAPA 1 E AGUARDE A RESPOSTA:
-
-### ETAPA 1: DIRETRIZ MASTER DE PRODUÇÃO
-Selecione o motor de criação que deseja ativar:
-
-- [1] **Produção Audiovisual Studio (Vídeos Dark, Curtas, YouTube, Shorts, TikTok)** -> *(Ativa o Motor Audiovisual Ramificado)*
-- [2] **Fábrica Editorial & Negócios Digitais (Livros, E-books KDP, Apostilas, VSL, Carrosséis)** -> *(Ativa o Motor Editorial Especializado)*
-
-*(Envie [1] ou [2] para iniciar)*
-
----
-
-================================================================================
-RAMIFICAÇÃO 1: MOTOR AUDIOVISUAL STUDIO (VÍDEO COMPLETO)
-================================================================================
-
-#### ETAPA 1.1: SELEÇÃO DO MACRO-NICHO DE CONTEÚDO
-- [0] **Automático / Direção Criativa:** A IA define o nicho de maior rentabilidade atual.
-- [1] **Culinária Artesanal & Confeitaria Cozy (ASMR Gastronômico)** -> *Ativa Fluxo Culinário*
-- [2] **Histórias Bíblicas, Parábolas & Espiritualidade** -> *Ativa Fluxo Bíblico*
-- [3] **Fábulas, Contos Infantis & Lições de Vida com Moral** -> *Ativa Fluxo Fábulas*
-- [4] **Documentários Históricos, Civilizações Antigas & Fatos Reais** -> *Ativa Fluxo Histórico*
-- [5] **Mistérios Não Resolvidos, Curiosidades & Arquivos Secretos** -> *Ativa Fluxo Investigativo*
-- [6] **Terror Cósmico, Lendas Urbanas & Suspense Psicológico** -> *Ativa Fluxo Dark*
-- [7] **Ficção Científica, Cyberpunk & Universos Futuristas** -> *Ativa Fluxo Sci-Fi*
-- [8] **Gaming, Fantasia Medieval, Tavernas & Mundos Voxel (Minecraft)** -> *Ativa Fluxo Gamer*
-- [9] **Desenvolvimento Pessoal, Estoicismo & Filosofia Prática** -> *Ativa Fluxo Mentalidade*
-- [10] **Outro Nicho Livre:** (Digite seu próprio nicho).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.2: MATRIZ DE ESTILO VISUAL & MOTOR DE RENDER
-- [0] **Automático:** A IA seleciona a harmonia estética ideal.
-- [1] **3D Felt Craft / Stop-Motion Artesanal (Original do Vídeo):** Feltro agulhado tátil, microfibras de lã pura visíveis, olhos pretos esféricos de resina com catchlight, 12fps com pausas artesanais, macro tilt-shift acolhedor.
-- [2] **3D Stylized Pixar / Disney (CGI Suave):** Modelagem premium, render Octane / Unreal Engine 5, olhos expressivos ultra-detalhados, iluminação volumétrica mágica.
-- [3] **Live Action Hiper-Realista 8K:** Fotografia de cinema real, lentes macro anamórficas 50mm f/1.8, textura biológica real, iluminação natural de estúdio.
-- [4] **3D Claymation (Massinha de Modelar Clássica):** Textura tátil de argila/plasticina com marcas manuais de digitais, stop-motion estilo estúdio Aardman.
-- [5] **3D Voxel / Pixel Art Diorama:** Micro-blocos isométricos em 3D de alta definição com iluminação ray-tracing e física de luz avançada.
-- [6] **3D Papercraft & Origami Art:** Camadas tridimensionais de papel kraft espesso, recortes manuais geométricos e sombras projetadas.
-- [7] **Aquarela Cinematográfica 2.5D (Estilo Studio Ghibli):** Pintura orgânica em aquarela digital, céus expressivos com iluminação dourada e movimento sutil de vento.
-- [8] **Cyberpunk Neon Noir 3D:** Texturas molhadas, fumaça volumétrica, luzes de neon contrastadas e render futurista.
-- [9] **Pintura a Óleo Renascentista / Barroca:** Claroscuro dramático, pinceladas visíveis, textura de tela e iluminação de velas.
-- [10] **Outro Estilo Visual:** (Descreva a estética desejada).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.3: PERGUNTAS DE PROFUNDIDADE ESPECÍFICAS DO NICHO ESCOLHIDO
-
-*SE O USUÁRIO ESCOLHEU CULINÁRIA (FLUXO 1):*
-1. Qual a receita ou alimento principal trabalhado? (Apresente [0] + 20 opções táteis).
-2. Qual a complexidade da receita? (Simples/Relaxante, Passo a passo minucioso ou Banquete festivo).
-3. Qual a temperatura e som dominante da cozinha? (Forno a lenha estalando, corte crocante de faca, fervura lenta em tacho de cobre).
-
-*SE O USUÁRIO ESCOLHEU BÍBLICO (FLUXO 2):*
-1. Qual a passagem, parábola ou personagem bíblico central? (Apresente [0] + 20 opções sagradas).
-2. Qual o versículo ou mensagem de fé inspiradora que será o pilar do vídeo?
-3. Qual o tom emocional da narrativa? (Esperança e acolhimento, Reverência solene e grandiosa ou Vitória na provação).
-
-*SE O USUÁRIO ESCOLHEU FÁBULAS / INFANTIL (FLUXO 3):*
-1. Qual o conto ou fábula central? (Apresente [0] + 20 opções lúdicas).
-2. Qual a lição de moral e virtude transmitida? (Partilha, coragem, gentileza, perseverança).
-3. Qual a faixa etária principal? (Bebês/Ninar, Crianças 4-8 anos ou Toda a família).
-
-*SE O USUÁRIO ESCOLHEU HISTÓRICO / DOCUMENTAL (FLUXO 4):*
-1. Qual a era ou civilização exata? (Apresente [0] + 20 marcos históricos, ex: Roma Antiga, Egito Ptolemaico, Era Viking, Idade Média feudal).
-2. Qual o foco narrativo? (Acontecimentos militares épicos, a vida cotidiana do cidadão comum ou grandes mistérios de engenharia antiga).
-3. Qual o nível de precisão de figurinos e artefatos? (100% arqueológico e fiel ou Narrativa dramática estilizada).
-
-*SE O USUÁRIO ESCOLHEU INVESTIGATIVO / MISTÉRIO (FLUXO 5):*
-1. Qual o mistério ou fenômeno investigado? (Apresente [0] + 20 arquivos curiosos).
-2. Qual o viés da narração? (Cético-científico com teorias abertas ou Suspense investigativo envolvente).
-
-*SE O USUÁRIO ESCOLHEU TERROR / SCI-FI / GAMER / MENTALIDADE:*
-- A IA aplica 3 perguntas de autoridade técnica ajustadas exclusivamente àquele gênero.
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.4: TÍTULO VIRAL DE ALTO CTR & ÂNCORA EMOCIONAL
-Com base nas respostas anteriores, a IA apresenta:
-- [0] Automático (A IA escolhe o melhor título para viralização).
-- 10 opções de Títulos Clicáveis de Alta Taxa de Cliques (CTR) formulados com gatilhos de curiosidade, contraste e emoção.
-- O usuário escolhe 1 opção numérica ou digita um título próprio.
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.5: CASTING DE PERSONAGENS & FICHA TÉCNICA (ID LOCK)
-1. Quantidade de personagens em cena:
-   - [0] Automático | [A] 1 Personagem Solo | [B] 2 Personagens Interagindo | [C] Grupo / Multidão | [D] Sem Personagens (Foco no ambiente)
-2. Apresente [0] Automático + 20 opções de personagens desenhados no estilo visual escolhido.
-3. *Regra de Engenharia:* Cada personagem recebe uma Ficha Anatômica Completa (Espécie/Raça, Proporções, Textura Têxtil, Cor dos Olhos com reflexo, Figurino detalhado e a tag imutável #Character_ID Lock).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.6: CENÁRIOS, DIRETRIZ DE ILUMINAÇÃO & PALETA TÉCNICA
-1. Apresente [0] Automático + 20 opções de cenários ricos em detalhes tridimensionais compatíveis com o nicho.
-2. Diretriz de Iluminação:
-   - [0] Automático | [1] Luz Dourada Matinal (Golden Hour 2700K) | [2] Tarde Chuvosa Aconchegante | [3] Fogueira e Velas Íntimas | [4] Claroscuro Dramático | [5] Luz Volumétrica de Estúdio
-3. *Paleta HEX:* Definição obrigatória de 4 códigos hexadecimais para guiar o color grading na edição.
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.7: DIRETRIZ SONORA, IDIOMA & VOZ IA
-1. Camada Sonora:
-   - [0] Automático | [1] Narração + Falas Curtas | [2] Apenas Narração Contínua | [3] Sem Voz (ASMR Puro de Alta Fidelidade)
-2. Idioma da Produção: Português, Inglês, Espanhol ou outro solicitado (Padrão: Português).
-3. Perfil da Voz IA (ElevenLabs): Feminina Acolhedora, Masculina Profunda/Sábia, Voz Jovem ou Sussurrada ASMR.
-*Regra de Diálogo:* Se houver múltiplos personagens, as falas individuais nunca ultrapassam 2 linhas por cena.
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 1.8: ESCALA DE PRODUÇÃO & PROPORÇÃO DE TELA
-1. Volume de Cenas:
-   - [0] Automático | [A] 10 Cenas (Shorts/Reels) | [B] 20 Cenas (Vídeo Médio 3 min) | [C] 30 Cenas (Vídeo Longo) | [D] 50 Cenas | [E] 100 Cenas (Long-Form Monstruoso) | [F] Quantidade Personalizada
-2. Proporção de Tela (Aspect Ratio):
-   - [0] Automático | [1] 16:9 (Horizontal/YouTube) com cortes 9:16 indicados | [2] 9:16 (Vertical exclusivo Shorts/TikTok)
-
-*(Aguarde a resposta obrigatória para gerar a Entrega Final)*
-
----
-
-================================================================================
-RAMIFICAÇÃO 2: FÁBRICA EDITORIAL & NEGÓCIOS DIGITAIS (LIVROS, E-BOOKS, KDP)
-================================================================================
-
-#### ETAPA 2.1: FORMATO E MODELO DE PUBLICAÇÃO
-- [0] **Automático:** A IA define o melhor modelo de publicação.
-- [1] **E-book Digital Completo (Formato PDF Interativo com hiperlinks e design moderno)**
-- [2] **Livro Físico / Impresso para Amazon KDP (Capa Aberta com Lombada, Sangria e Margens de Impressão)**
-- [3] **Livro Infantil Ilustrado (Páginas duplas, pouco texto, foco em ilustrações em tela cheia)**
-- [4] **Livro de Colorir (Coloring Book para KDP com traços pretos limpos em vetor sem tons de cinza)**
-- [5] **Guia Prático, Apostila de Estudos ou Infoproduto com Páginas de Exercícios**
-- [6] **Roteiro de VSL (Vídeo de Vendas) de Alta Conversão + Copy de Lançamento**
-- [7] **Outro Formato Editorial:** (Descreva seu projeto).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 2.2: PÚBLICO-ALVO, GÊNERO E TONALIDADE
-1. Qual o gênero da obra? (Ficção, Desenvolvimento Pessoal, Religioso/Devocional, Infantil, Técnico/Negócios).
-2. Para quem é este livro? (Idade, dores centrais, desejos do leitor).
-3. Qual o tom de escrita? (Inspirador, Acadêmico/Autoridade, Afetuoso e Fácil, Divertido/Lúdico).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 2.3: ARQUITETURA DE CONTEÚDO & SUMÁRIO ESTRATÉGICO
-Apresente:
-- [0] Automático (A IA monta a melhor estrutura de capítulos).
-- 3 opções de Títulos Magnéticos para o Livro com subtítulos de alta conversão.
-- Estrutura completa de Capítulos (Introdução, Desenvolvimento em blocos lógicos, Conclusão com chamada de ação).
-
-*(Aguarde a resposta obrigatória para avançar)*
-
----
-
-#### ETAPA 2.4: ESPECIFICAÇÕES DE DIAGRAMAÇÃO E DESIGN VISUAL
-1. Dimensões Físicas / Digitais:
-   - [0] Automático | [1] Amazon KDP Padrão 6x9 polegadas | [2] Quadrado 8.5x8.5 pol (Ideal Infantil) | [3] A4 / Carta (Para PDF/Apostila)
-2. Estilo das Ilustrações Internas:
-   - [1] Felt Craft 3D | [2] Aquarela Suave | [3] Vetorial Flat Design | [4] Fotografia Realista | [5] Traço Preto para Colorir
-3. Requisitos de Capa:
-   - [A] Capa Frontal Digital (E-book)
-   - [B] Capa Aberta Completa (Capa da frente, lombada calculada com base nas páginas e contracapa com código de barras e sinopse)
-
-*(Aguarde a resposta obrigatória para gerar a Entrega Final Editorial)*
-
----
-
-================================================================================
-DIRETRIZES DA ENTREGA FINAL (AUDIOVISUAL OU EDITORIAL)
-================================================================================
-
-[SE A ENTREGA FOR AUDIOVISUAL (FLUXO 1)]
-Entregue o material estritamente nesta ordem, sem omitir prompts de vídeo:
-1. **[FICHA TÉCNICA MASTER]:** Character_ID Lock, Style_ID Lock e Paleta HEX.
-2. **[PROMPTS MESTRES DE REFERÊNCIA] (Em Inglês):**
-   - Personagem isolado em estúdio neutro com macro-texturas.
-   - Turnaround Sheet 360° (Frente, Perfil, 3/4 e Costas).
-   - Cenário Amplo com iluminação em Kelvin e arquitetura.
-   - Selo PNG Redondo Anti-Marca D'Água do rosto do personagem.
-3. **[THUMBNAIL DE ALTO CTR & TEXTOS DE CAPA] (Em Inglês):** Prompt de capa com primeiro plano expressivo + 3 opções de texto de capa (máximo 4 palavras).
-4. **[DIRETRIZ DE VOZ IA & PROMPTS DE ÁUDIO]:**
-   - Configurações ElevenLabs (Stability, Similarity).
-   - Prompt de Trilha Sonora Instrumental (Suno/Udio com BPM e instrumentos).
-   - Prompt de Efeitos Sonoros Táteis (ElevenLabs SFX).
-5. **[COMANDO EM LOTE (BATCH PROMPT DE IMAGEM)]:**
-   > "Gere todas as imagens a seguir mantendo rigorosamente a consistência visual dos personagens (#Character_ID) e do cenário mestre. Mantenha os prefixos 'Scene 01:', 'Scene 02:' em cada imagem para correta ordenação."
-6. **[CRONOGRAMA DE PRODUÇÃO DE CENAS E MOVIMENTOS - SEM OMISSÕES]:**
-   *Cena 01 obrigatoriamente contém Visual Hook.*
-   *A cada 5 cenas, ocorre uma Quebra de Padrão (Pattern Interrupt).*
-   *Cena Final desenhada para Seamless Loop.*
-   Para CADA UMA das cenas solicitadas, entregue rigorosamente:
-   - **Scene [XX] - Visual (Imagem):** Scene [XX]: [Prompt cinematográfico completo em inglês para gerador de imagem, incluindo enquadramento de lentes reais, micro-expressão, iluminação em Kelvin, interação com objetos, proporção (--ar) e parâmetros negativos (--no)]
-   - **Scene [XX] - Motion (Vídeo OBRIGATÓRIO):** Scene [XX] Motion: [Prompt em inglês direto para IA de vídeo (Pavo/Agnes/Kling/Runway), especificando movimentos de câmera lentos, micro-gestos e velocidade de quadros coerente com o estilo]
-   - **Scene [XX] - Diálogo / Narração:** Falas curtas dos personagens ou texto exato da locução.
-   - **Scene [XX] - Sound Design & Foley:** Descrição do som real tátil e decibéis sugeridos.
-7. **[TABELA BATCH EXPORT (INDEXADA POR CENA)]:**
-   | Cena # | Identificador de Arquivo | Prompt de Imagem Resumido | Prompt de Vídeo | Foley & Áudio |
-8. **[BLOCO DE EXPORTAÇÃO JSON UNIVERSAL (AUTOMATION READY)]:**
-   Bloco único de código JSON limpo com todo o cronograma para planilhas ou automações.
-9. **[PACOTE DE SEO & ESTRATÉGIA]:**
-   Título escolhido, descrição com timestamps, 15 tags de alta busca e pergunta estratégica para Comentário Fixado.
-10. **[GUIA RÁPIDO DE MONTAGEM NO CAPCUT]:**
-    Importação dos arquivos serializados, balanceamento sonoro (Voz: -3dB, Foley: -14dB, Trilha: -22dB) e aplicação da máscara anti-marca d'água.
-
----
-
-[SE A ENTREGA FOR EDITORIAL (FLUXO 2)]
-Entregue o material estritamente nesta ordem:
-1. **[FICHA TÉCNICA DO PROJETO EDITORIAL]:** Título, subtítulo, público-alvo, dimensões de página e margens.
-2. **[PROMPTS MESTRES DE CAPA E CONTRACAPA] (Em Inglês):**
-   - Prompt da Capa Frontal de Alto Impacto.
-   - Prompt da Capa Aberta Completa KDP (com espaço para código de barras, lombada e sinopse).
-3. **[PROMPTS DAS ILUSTRAÇÕES DE CAPÍTULO] (Em Inglês):**
-   - Prompts visuais com consistência de estilo para cada abertura de capítulo.
-4. **[TEXTO INTEGRAL DOS CAPÍTULOS]:**
-   - Redação completa, polida e diagramada de cada capítulo, com títulos, subtítulos, caixas de destaque e exercícios práticos.
-5. **[GUIA DE DIAGRAMAÇÃO & EXPORTAÇÃO (CANVA / INDESIGN / KDP)]:**
-   - Fontes recomendadas (título e corpo), tamanho de margens de segurança para sangria e checklist de aprovação do KDP.
-
----
-
-[MENU DE CONTINUIDADE OBRIGATÓRIO (ENCERRAMENTO DE QUALQUER FLUXO)]
-Ao finalizar a entrega do dossiê (Audiovisual ou Editorial), encerre obrigatoriamente com:
-"Projeto concluído com sucesso! Como deseja prosseguir?
-[1] Produzir o PRÓXIMO EPISÓDIO ou CAPÍTULO 2 (mantendo a mesma identidade visual e personagens já salvos)
-[2] Fazer ajustes específicos nas cenas/páginas geradas
-[3] Voltar ao Menu Principal (iniciar novo projeto do zero)
-[4] Alternar entre Vídeo e Livro"
-
----
-
-COMANDO DE INICIALIZAÇÃO IMEDIATA:
-Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e aguarde a resposta obrigatória do usuário.`;
+    let sessoesDisponiveis = [];
+    let promptsCache = {};
+    let activeUser = null;
+    let activeSessionId = "producao";
+    let currentConversationId = null;
+    let conversationHistory = [];
+    let ultimaMensagemPendente = "";
 
     let memoryUsers = {};
     let memoryProjects = {};
@@ -486,28 +236,122 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
     }
 
-    function getStorageProjects(user) {
-      const key = "studio_proj_" + user.toLowerCase();
+    function getStorageProjects(user, sessao) {
+      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       try {
         const p = localStorage.getItem(key);
         return p ? JSON.parse(p) : (memoryProjects[key] || []);
       } catch (e) { return memoryProjects[key] || []; }
     }
 
-    function saveStorageProjects(user, projs) {
-      const key = "studio_proj_" + user.toLowerCase();
+    function saveStorageProjects(user, sessao, projs) {
+      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       memoryProjects[key] = projs;
       try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
     }
 
-    let activeUser = null;
-    let currentConversationId = null;
-    let conversationHistory = [];
-    let ultimaMensagemPendente = "";
+    // =========================================================================
+    // CARREGADOR DINÂMICO DE SESSÕES E PROMPTS DO GITHUB
+    // =========================================================================
+    async function carregarSessoesDoGithub() {
+      try {
+        // Tenta buscar o arquivo de sessões no repositório
+        const resp = await fetch("prompts/sessoes.json?t=" + Date.now());
+        if (resp.ok) {
+          sessoesDisponiveis = await resp.json();
+        } else {
+          throw new Error("Arquivo prompts/sessoes.json não encontrado");
+        }
+      } catch (e) {
+        // Fallback caso ainda não tenha subido o JSON
+        sessoesDisponiveis = [
+          {
+            id: "producao",
+            nome: "Produção",
+            icone: "🎬",
+            arquivo: "prompts/producao.txt",
+            titulo: "Engine V19.0 Ultra Master",
+            descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa."
+          },
+          {
+            id: "storyboard",
+            nome: "Storyboard",
+            icone: "🎨",
+            arquivo: "prompts/storyboard.txt",
+            titulo: "Engine de Storyboard Visual",
+            descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais."
+          }
+        ];
+      }
 
-    // ==========================================
+      renderizarBotoesSessoes();
+    }
+
+    function renderizarBotoesSessoes() {
+      const container = document.getElementById("sessoesContainer");
+      container.innerHTML = "";
+
+      sessoesDisponiveis.forEach(s => {
+        const btn = document.createElement("button");
+        btn.id = "btn_sessao_" + s.id;
+        const isActive = (s.id === activeSessionId);
+        btn.className = `flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center transition flex items-center justify-center gap-1.5 ${
+          isActive ? "bg-blue-600 text-white shadow-sm" : "text-slate-400 hover:text-white"
+        }`;
+        btn.innerHTML = `<span>${s.icone}</span> ${s.nome}`;
+        btn.onclick = () => mudarSessao(s.id);
+        container.appendChild(btn);
+      });
+    }
+
+    async function obterPromptAtivo() {
+      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || sessoesDisponiveis[0];
+
+      if (promptsCache[sessao.id]) {
+        return promptsCache[sessao.id];
+      }
+
+      try {
+        const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
+        if (resp.ok) {
+          const texto = await resp.text();
+          promptsCache[sessao.id] = texto;
+          return texto;
+        }
+      } catch (e) {
+        console.warn("Erro ao buscar prompt externo:", e);
+      }
+
+      return "Você é um assistente especializado de IA. Apresente a etapa 1 e aguarde a resposta do usuário.";
+    }
+
+    function mudarSessao(novaSessaoId) {
+      activeSessionId = novaSessaoId;
+      renderizarBotoesSessoes();
+
+      const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
+      if (sessao) {
+        document.getElementById("btnNovaAcao").innerHTML = `<span>+</span> Nova ${sessao.nome}`;
+        document.getElementById("labelHistorico").textContent = `Projetos de ${sessao.nome}`;
+        document.getElementById("startScreenIcon").innerHTML = sessao.icone;
+        document.getElementById("startScreenTitle").textContent = sessao.titulo || sessao.nome;
+        document.getElementById("startScreenDesc").textContent = sessao.descricao || "Clique abaixo para iniciar.";
+        document.getElementById("startBtnAction").textContent = `Iniciar ${sessao.nome}`;
+      }
+
+      atualizarListaProjetos();
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      if (projs.length > 0) {
+        selecionarProjeto(projs[0].id);
+      } else {
+        criarNovoProjeto();
+      }
+    }
+
+    // =========================================================================
     // CHAVE GEMINI INDIVIDUAL POR USUÁRIO
-    // ==========================================
+    // =========================================================================
     function obterChaveUsuario() {
       if (!activeUser) return "";
       const input = document.getElementById("geminiKeyInput");
@@ -610,9 +454,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       iniciarProducao();
     }
 
-    // ==========================================
-    // AUTENTICAÇÃO
-    // ==========================================
+    // =========================================================================
+    // AUTENTICAÇÃO SIMPLES
+    // =========================================================================
     function executarAcesso() {
       const userInput = document.getElementById("authUsername");
       const passInput = document.getElementById("authPassword");
@@ -653,7 +497,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }
     }
 
-    function abrirStudio(username) {
+    async function abrirStudio(username) {
       activeUser = username;
       try { localStorage.setItem("studio_active_session", username); } catch(e){}
 
@@ -661,12 +505,12 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       document.getElementById("appScreen").classList.remove("hidden");
       document.getElementById("userNameDisplay").textContent = username;
 
+      await carregarSessoesDoGithub();
       carregarChaveDoUsuario();
       atualizarListaProjetos();
 
-      const projs = getStorageProjects(activeUser);
-      // Lembrar a última conversa aberta pelo usuário
-      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase());
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
       const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
 
       if (chatParaAbrir) {
@@ -684,9 +528,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       window.location.reload();
     }
 
-    // ==========================================
+    // =========================================================================
     // MENU DE 3 PONTINHOS (FIXAR, RENOMEAR, EXCLUIR)
-    // ==========================================
+    // =========================================================================
     function fecharMenusAbertos(e) {
       if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
         document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
@@ -706,11 +550,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     function alternarFixarProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (proj) {
         proj.pinned = !proj.pinned;
-        saveStorageProjects(activeUser, projs);
+        saveStorageProjects(activeUser, activeSessionId, projs);
         atualizarListaProjetos();
       }
     }
@@ -718,14 +562,14 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     function renomearProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
-      const novoNome = prompt("Digite o novo nome para esta produção:", proj.title);
+      const novoNome = prompt("Digite o novo nome para este projeto:", proj.title);
       if (novoNome && novoNome.trim()) {
         proj.title = novoNome.trim();
-        saveStorageProjects(activeUser, projs);
+        saveStorageProjects(activeUser, activeSessionId, projs);
         if (currentConversationId === id) {
           document.getElementById("currentChatTitle").textContent = proj.title;
         }
@@ -733,12 +577,11 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }
     }
 
-    // EXCLUSÃO RÁPIDA E LIMPA
     function excluirProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
 
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
@@ -746,7 +589,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       if (!confirmar) return;
 
       const filtrados = projs.filter(p => p.id !== id);
-      saveStorageProjects(activeUser, filtrados);
+      saveStorageProjects(activeUser, activeSessionId, filtrados);
 
       if (currentConversationId === id) {
         if (filtrados.length > 0) {
@@ -759,12 +602,10 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       }
     }
 
-    // LISTAGEM COM RESPEITO TOTAL AOS ITENS FIXADOS
     function atualizarListaProjetos() {
       if (!activeUser) return;
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       
-      // Fixados sempre no topo de forma persistente
       projs.sort((a, b) => {
         if (Boolean(a.pinned) === Boolean(b.pinned)) return 0;
         return a.pinned ? -1 : 1;
@@ -786,7 +627,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
         wrapper.innerHTML = `
           <div class="flex items-center gap-2 truncate pr-2">
             ${p.pinned ? '<span class="text-amber-400 text-[10px]" title="Fixado">📌</span>' : ''}
-            <span class="truncate">${p.title || "Nova Produção"}</span>
+            <span class="truncate">${p.title || "Novo Projeto"}</span>
           </div>
 
           <button 
@@ -813,18 +654,18 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       });
     }
 
-    // CRIAÇÃO DE NOVA PRODUÇÃO COM BOTÃO CENTRAL IMEDIATO
     function criarNovoProjeto() {
       if (!activeUser) return;
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
       const novo = {
         id: "proj_" + Date.now(),
-        title: "Nova Produção",
+        title: sessao ? `Novo ${sessao.nome}` : "Novo Projeto",
         pinned: false,
         messages: []
       };
       projs.unshift(novo);
-      saveStorageProjects(activeUser, projs);
+      saveStorageProjects(activeUser, activeSessionId, projs);
       atualizarListaProjetos();
       selecionarProjeto(novo.id);
     }
@@ -833,10 +674,10 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       if (!activeUser) return;
       currentConversationId = id;
       try {
-        localStorage.setItem("studio_last_chat_" + activeUser.toLowerCase(), id);
+        localStorage.setItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId, id);
       } catch (e) {}
 
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
@@ -846,7 +687,6 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       chatArea.innerHTML = "";
       conversationHistory = [];
 
-      // SE NÃO HOUVER MENSAGENS, EXIBE O PAINEL CENTRAL COM O BOTÃO INICIAR PRODUÇÃO
       if (!proj.messages || proj.messages.length === 0) {
         chatArea.appendChild(startScreen);
         startScreen.classList.remove("hidden");
@@ -888,9 +728,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // ==========================================
-    // CHAMADA MULTI-MODELO COM CONTINUIDADE E RECUPERAÇÃO DE ERRO
-    // ==========================================
+    // =========================================================================
+    // EXECUÇÃO DO GEMINI COM O PROMPT CARREGADO DA PASTA PROMPTS/
+    // =========================================================================
     async function dispararGemini(texto, isInicial = false) {
       const apiKey = obterChaveUsuario();
 
@@ -901,10 +741,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
       document.getElementById("startScreen").classList.add("hidden");
 
-      const projs = getStorageProjects(activeUser);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
 
-      // Salva a tentativa para poder tentar de novo se der erro
       ultimaMensagemPendente = isInicial ? "" : texto;
 
       if (!isInicial) {
@@ -912,12 +751,14 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
         if (atual) {
           atual.messages.push({ role: "user", content: texto });
-          saveStorageProjects(activeUser, projs);
+          saveStorageProjects(activeUser, activeSessionId, projs);
         }
       } else {
+        const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
+        const mensagemInicial = `Iniciar motor de ${sessao ? sessao.nome : 'produção'}. Apresente a ETAPA 1 do menu.`;
         conversationHistory.push({
           role: "user",
-          parts: [{ text: "Iniciar motor de produção. Apresente a ETAPA 1 do menu principal." }]
+          parts: [{ text: mensagemInicial }]
         });
       }
 
@@ -932,17 +773,19 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Diretor de Produção formulando etapa...
+          Processando solicitação...
         </div>
       `;
       chatArea.appendChild(indicador);
       chatArea.scrollTop = chatArea.scrollHeight;
 
-      // Modelos ordenados por velocidade e disponibilidade
+      // Busca o prompt do arquivo no GitHub
+      const promptMestre = await obterPromptAtivo();
+
       const modelosCandidatos = [
-        "gemini-3.5-flash-lite",
-        "gemini-3.6-flash",
-        "gemini-3.7-flash",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.5-flash",
         "gemini-3.8-flash"
       ];
 
@@ -957,9 +800,9 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                systemInstruction: { parts: [{ text: promptMestre }] },
                 contents: conversationHistory,
-                generationConfig: { maxOutputTokens: 8192 }
+                generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
               })
             }
           );
@@ -968,7 +811,7 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
 
           if (data.error) {
             ultimoErro = data.error.message || `Código ${data.error.code}`;
-            continue; // Se o modelo estiver sobrecarregado, salta para o próximo
+            continue;
           }
 
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
@@ -993,18 +836,17 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
             atual.title = texto.length > 25 ? texto.substring(0, 25) + "..." : texto;
             document.getElementById("currentChatTitle").textContent = atual.title;
           }
-          saveStorageProjects(activeUser, projs);
+          saveStorageProjects(activeUser, activeSessionId, projs);
           atualizarListaProjetos();
         }
         ultimaMensagemPendente = "";
       } else {
-        // EM CASO DE ERRO: Remove a última pergunta do histórico para não corromper o contexto
         if (conversationHistory.length > 0) {
           conversationHistory.pop();
         }
         if (atual && atual.messages.length > 0 && !isInicial) {
           atual.messages.pop();
-          saveStorageProjects(activeUser, projs);
+          saveStorageProjects(activeUser, activeSessionId, projs);
         }
 
         renderizarMensagem(
@@ -1020,7 +862,6 @@ Exiba agora unicamente o [INÍCIO DO FLUXO - MENU PRINCIPAL] com a ETAPA 1 e agu
     }
 
     function tentarNovamente() {
-      // Remove o balão de erro visual
       const erroBox = chatArea.lastElementChild;
       if (erroBox) erroBox.remove();
 
