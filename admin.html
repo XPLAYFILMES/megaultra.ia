@@ -14,10 +14,10 @@
 
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- CABEÇALHO ADMIN -->
+    <!-- CABEÇALHO ADMIN PROFISSIONAL -->
     <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold">
+        <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold shadow-inner">
           🛡️
         </div>
         <div>
@@ -25,17 +25,17 @@
             Painel de Gestão & Licenças
             <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Modo Admin Ativo</span>
           </h1>
-          <p class="text-xs text-slate-400">Ativos: 30 Dias | Testes: 6 Horas (Apenas 1 teste por dispositivo)</p>
+          <p class="text-xs text-slate-400">Controlo de acessos, assinaturas de 30 dias e testes de 6 horas.</p>
         </div>
       </div>
 
-      <!-- BOTÕES DE CÓPIA DE SEGURANÇA LOCAL -->
+      <!-- BOTÕES DE BACKUP DOS BANCOS NO COMPUTADOR -->
       <div class="flex flex-wrap gap-2">
         <button onclick="salvarArquivoNoPC('cadastro')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Salvar banco_cadastros.json
+          💾 Baixar banco_cadastros.json
         </button>
         <button onclick="salvarArquivoNoPC('teste')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Salvar banco_teste.json
+          💾 Baixar banco_teste.json
         </button>
         <button onclick="document.getElementById('fileInputImport').click()" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs rounded-xl transition font-medium">
           📂 Carregar do PC
@@ -43,6 +43,31 @@
         <input type="file" id="fileInputImport" class="hidden" accept=".json" onchange="importarArquivoPC(event)" />
       </div>
     </header>
+
+    <!-- CARDS DE MÉTRICAS RÁPIDAS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Assinantes Ativos (30d)</span>
+          <h3 id="statAtivos" class="text-xl font-bold text-blue-400 mt-0.5">0</h3>
+        </div>
+        <div class="text-2xl">💎</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Cadastros Teste (6h)</span>
+          <h3 id="statTestes" class="text-xl font-bold text-purple-400 mt-0.5">0</h3>
+        </div>
+        <div class="text-2xl">🧪</div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Licenças Expiradas</span>
+          <h3 id="statExpirados" class="text-xl font-bold text-rose-400 mt-0.5">0</h3>
+        </div>
+        <div class="text-2xl">⏳</div>
+      </div>
+    </div>
 
     <!-- ABAS DO BANCO DE DADOS -->
     <div class="flex border-b border-slate-800 gap-2">
@@ -54,7 +79,7 @@
       </button>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO COM DATA E HORA MANUAIS -->
+    <!-- FORMULÁRIO DE CADASTRO COM DATA/HORA MANUAIS -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -65,11 +90,11 @@
         </span>
       </div>
 
-      <form id="formNovoUsuario" onsubmit="cadastrarUsuario(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <form id="formNovoUsuario" onsubmit="cadastrarUsuario(event)" autocomplete="off" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Nome -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome do Utilizador</label>
-          <input type="text" id="cadNome" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+          <input type="text" id="cadNome" required autocomplete="off" placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
         <!-- Tipo de Contato -->
@@ -84,10 +109,10 @@
         <!-- Número -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Número com DDD / @Utilizador</label>
-          <input type="text" id="cadNumero" required placeholder="Ex: 5548999999999 ou @utilizador" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+          <input type="text" id="cadNumero" required autocomplete="off" placeholder="Ex: 5548999999999 ou @utilizador" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
-        <!-- Data e Hora do Cadastro Manual -->
+        <!-- Data e Hora -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Data e Hora de Início</label>
@@ -96,7 +121,7 @@
           <input type="datetime-local" id="cadDataHora" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" />
         </div>
 
-        <!-- Botão de Criação -->
+        <!-- Botão Cadastrar -->
         <div class="lg:col-span-4 flex justify-end pt-2">
           <button type="submit" id="btnSubmitCad" class="py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer">
             Gerar Acesso de 30 Dias
@@ -108,7 +133,7 @@
     <!-- BARRA DE BUSCA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="relative w-full sm:w-80">
-        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou número..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contacto..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
       </div>
       <div class="text-xs text-slate-400">
@@ -128,7 +153,7 @@
               <th class="p-3.5">Data/Hora Vencimento</th>
               <th class="p-3.5">Estado</th>
               <th class="p-3.5">Link de Acesso Único</th>
-              <th class="p-3.5 text-right">Ações</th>
+              <th class="p-3.5 text-right">Ações Rápidas</th>
             </tr>
           </thead>
           <tbody id="tabelaUsuariosCorpo" class="divide-y divide-slate-800"></tbody>
@@ -153,11 +178,20 @@
     function atualizarContadores() {
       document.getElementById("countCadastro").textContent = dbCadastros.length;
       document.getElementById("countTeste").textContent = dbTeste.length;
+
+      const agora = new Date().getTime();
+      let totalExpirados = 0;
+
+      dbCadastros.forEach(u => { if (agora > new Date(u.dataVencimentoIso).getTime()) totalExpirados++; });
+      dbTeste.forEach(u => { if (agora > new Date(u.dataVencimentoIso).getTime()) totalExpirados++; });
+
+      document.getElementById("statAtivos").textContent = dbCadastros.length;
+      document.getElementById("statTestes").textContent = dbTeste.length;
+      document.getElementById("statExpirados").textContent = totalExpirados;
     }
 
     function definirDataHoraAtual() {
       const agora = new Date();
-      // Formata para YYYY-MM-DDTHH:MM
       const ano = agora.getFullYear();
       const mes = String(agora.getMonth() + 1).padStart(2, '0');
       const dia = String(agora.getDate()).padStart(2, '0');
@@ -206,7 +240,6 @@
       return `${d}/${m}/${a} às ${h}:${min}`;
     }
 
-    // CADASTRO COM CÁLCULO BASEADO NA DATA E HORA SELECIONADA
     function cadastrarUsuario(e) {
       e.preventDefault();
 
@@ -219,10 +252,8 @@
       let dataVencimento;
 
       if (bancoAtual === "cadastro") {
-        // Exatamente 30 dias a partir da data/hora digitada
         dataVencimento = new Date(dataInicio.getTime() + (30 * 24 * 60 * 60 * 1000));
       } else {
-        // Exatamente 6 horas a partir da data/hora digitada
         dataVencimento = new Date(dataInicio.getTime() + (6 * 60 * 60 * 1000));
       }
 
@@ -257,6 +288,42 @@
       renderizarTabela();
 
       alert(`Utilizador registado com sucesso no banco [${bancoAtual.toUpperCase()}]!\nInício: ${formatarDataHora(dataInicio)}\nVencimento: ${formatarDataHora(dataVencimento)}`);
+    }
+
+    // ATIVAÇÃO DIRETA DO TESTE PARA 30 DIAS
+    function ativarPlano30Dias(id) {
+      const indexTeste = dbTeste.findIndex(u => u.id === id);
+      if (indexTeste === -1) return;
+
+      const user = dbTeste[indexTeste];
+      if (!confirm(`Deseja ativar a assinatura de 30 DIAS para ${user.nome}? Ele será transferido para os Assinantes Ativos.`)) return;
+
+      const agora = new Date();
+      const novoVenc = new Date(agora.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      const novoToken = btoa(JSON.stringify({
+        id: user.id,
+        tipo: "cadastro",
+        exp: novoVenc.getTime()
+      })).replace(/=/g, '');
+
+      const userAtivado = {
+        ...user,
+        banco: "cadastro",
+        dataCadastroIso: agora.toISOString(),
+        dataCadastroFormatada: formatarDataHora(agora),
+        dataVencimentoIso: novoVenc.toISOString(),
+        dataVencimentoFormatada: formatarDataHora(novoVenc),
+        token: novoToken
+      };
+
+      // Remove do banco teste e adiciona no banco de assinantes ativos
+      dbTeste.splice(indexTeste, 1);
+      dbCadastros.unshift(userAtivado);
+
+      salvarBancos();
+      renderizarTabela();
+      alert(`🎉 Parabéns! ${user.nome} agora é um Assinante Ativo com 30 dias de acesso!\nVencimento: ${userAtivado.dataVencimentoFormatada}`);
     }
 
     function renderizarTabela() {
@@ -312,11 +379,19 @@
               <button onclick="enviarMensagem('${u.tipoContato}', '${u.numero}', '${u.nome}', '${linkAcesso}', '${u.dataVencimentoFormatada}', '${u.banco}')" title="Enviar Acesso" class="p-1 hover:text-white text-emerald-400 bg-slate-800 rounded border border-slate-700">🚀</button>
             </div>
           </td>
-          <td class="p-3.5 text-right space-x-1">
-            <button onclick="renovarPeriodo('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded text-[11px] transition">
-              ${u.banco === 'cadastro' ? '+30 Dias' : '+6 Horas'}
+          <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+            ${u.banco === 'teste' ? `
+              <button onclick="ativarPlano30Dias('${u.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-semibold transition shadow-sm">
+                💎 Ativar 30 Dias
+              </button>
+            ` : `
+              <button onclick="renovarPeriodo('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded text-[11px] transition">
+                +30 Dias
+              </button>
+            `}
+            <button onclick="excluirUsuario('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-rose-950/40 text-rose-400 rounded text-[11px] transition">
+              Excluir
             </button>
-            <button onclick="excluirUsuario('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-rose-950/40 text-rose-400 rounded text-[11px] transition">Excluir</button>
           </td>
         `;
         corpo.appendChild(tr);
@@ -329,7 +404,7 @@
     }
 
     function enviarMensagem(tipo, numero, nome, link, vencimento, banco) {
-      const duracao = banco === "cadastro" ? "30 dias" : "6 horas (teste de demonstração)";
+      const duracao = banco === "cadastro" ? "30 dias (Assinatura Completa)" : "6 horas (Teste de Demonstração)";
       const msg = encodeURIComponent(`Olá ${nome}!\n\nSeu acesso ao Universal Master Studio foi gerado com sucesso (${duracao}).\n\n🔗 Link único de acesso:\n${link}\n\n⏳ Validade até: ${vencimento}\n\nBom trabalho!`);
       if (tipo === "whatsapp") {
         const numLimpo = numero.replace(/\D/g, '');
