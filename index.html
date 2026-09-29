@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Universal Master Studio AI</title>
   
-  <!-- Anti-Flash: Evita que a tela de login pisque ao dar F5 -->
   <style>
     body {
       background-color: #020617;
@@ -14,7 +13,7 @@
       overflow: hidden;
     }
 
-    #authScreen, #appScreen {
+    #authScreen, #appScreen, #expiredScreen {
       display: none !important;
       opacity: 0;
       transition: opacity 0.15s ease-in;
@@ -26,6 +25,11 @@
     }
 
     html.estado-logado #appScreen {
+      display: flex !important;
+      opacity: 1;
+    }
+
+    html.estado-expirado #expiredScreen {
       display: flex !important;
       opacity: 1;
     }
@@ -57,23 +61,24 @@
     .prose hr { border-color: #334155; margin: 1.5rem 0; }
   </style>
 
-  <script>
-    try {
-      const sessaoAtiva = localStorage.getItem("studio_active_session");
-      if (sessaoAtiva) {
-        document.documentElement.className = "estado-logado";
-      } else {
-        document.documentElement.className = "estado-deslogado";
-      }
-    } catch (e) {
-      document.documentElement.className = "estado-deslogado";
-    }
-  </script>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
+
+  <!-- TELA DE ACESSO EXPIRADO (SE PASSOU DOS 30 DIAS) -->
+  <div id="expiredScreen" class="w-full max-w-md bg-slate-900 border border-rose-500/30 p-8 rounded-2xl shadow-2xl text-center space-y-4">
+    <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-3xl mx-auto">
+      ⏳
+    </div>
+    <h1 class="text-xl font-bold text-white">Acesso Expirado</h1>
+    <p class="text-xs text-slate-400 leading-relaxed">
+      O período de validade de 30 dias desta licença foi encerrado. Entre em contato com o suporte para renovar sua chave e continuar seus projetos.
+    </p>
+    <a href="admin.html" class="inline-block px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl font-medium transition border border-slate-700">
+      Acessar Painel Admin
+    </a>
+  </div>
 
   <!-- TELA DE LOGIN / CADASTRO -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl space-y-6">
@@ -83,7 +88,7 @@
       </div>
       <h1 class="text-2xl font-bold text-white tracking-tight">Universal Master Studio</h1>
       <p class="text-xs text-slate-400">
-        Digite seu nome e senha para acessar ou criar sua conta na hora.
+        Digite seu nome e senha ou acesse através do link único enviado pelo suporte.
       </p>
     </div>
 
@@ -121,6 +126,10 @@
         class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer">
         Entrar / Cadastrar Conta
       </button>
+
+      <div class="pt-2 text-center">
+        <a href="admin.html" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Painel Administrativo 🛡️</a>
+      </div>
     </div>
   </div>
 
@@ -131,15 +140,13 @@
     <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
       <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
         
-        <!-- SELETOR DINÂMICO DE SESSÕES (EM LISTA / CARDS MODERNOS) -->
+        <!-- SELETOR DINÂMICO DE SESSÕES -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos & Motores</label>
             <span id="sessionCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">3 sessões</span>
           </div>
-          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 max-h-48 overflow-y-auto">
-            <!-- Botões das sessões gerados dinamicamente via JS -->
-          </div>
+          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 max-h-48 overflow-y-auto"></div>
         </div>
 
         <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
@@ -161,7 +168,7 @@
           </div>
           <div class="flex flex-col truncate">
             <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
-            <span class="text-[10px] text-emerald-400 font-medium">Reconhecido</span>
+            <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo</span>
           </div>
         </div>
         <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
@@ -258,7 +265,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT DEFINITIVO DE ISOLAMENTO E CARREGAMENTO DE ETAPAS -->
+  <!-- SCRIPT DEFINITIVO DE VALIDAÇÃO DE TOKEN E AMBOS OS BANCOS -->
   <script>
     let sessoesDisponiveis = [];
     let promptsCache = {};
@@ -283,7 +290,6 @@
       try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
     }
 
-    // ISOLAMENTO TOTAL POR USUÁRIO E POR SESSÃO
     function getStorageProjects(user, sessao) {
       const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       try {
@@ -296,6 +302,48 @@
       const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
       memoryProjects[key] = projs;
       try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
+    }
+
+    // =========================================================================
+    // VALIDAÇÃO DOS DOIS BANCOS DE DADOS (CADASTRO ATIVO VS TESTE COM PRAZO DE 30 DIAS)
+    // =========================================================================
+    function verificarAcessoPorToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+
+      if (!token) return false;
+
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+
+      // Procura primeiro no banco de cadastros ativos, depois no banco teste
+      let usuarioEncontrado = dbCadastros.find(u => u.token === token);
+      let tipoBanco = "Ativo (Completo)";
+
+      if (!usuarioEncontrado) {
+        usuarioEncontrado = dbTeste.find(u => u.token === token);
+        tipoBanco = "Teste (Demonstração)";
+      }
+
+      if (usuarioEncontrado) {
+        const agoraMs = new Date().getTime();
+        const vencMs = new Date(usuarioEncontrado.dataVencimentoIso).getTime();
+
+        // Se expirou os 30 dias
+        if (agoraMs > vencMs) {
+          document.documentElement.className = "estado-expirado";
+          return true;
+        }
+
+        // Acesso liberado dentro dos 30 dias
+        activeUser = usuarioEncontrado.nome;
+        localStorage.setItem("studio_active_session", activeUser);
+        localStorage.setItem("studio_user_badge", tipoBanco);
+        document.documentElement.className = "estado-logado";
+        return true;
+      }
+
+      return false;
     }
 
     // =========================================================================
@@ -531,7 +579,7 @@
     }
 
     // =========================================================================
-    // AUTENTICAÇÃO
+    // AUTENTICAÇÃO MANUAL
     // =========================================================================
     function executarAcesso() {
       const userInput = document.getElementById("authUsername");
@@ -581,6 +629,9 @@
       } catch(e) {}
 
       document.getElementById("userNameDisplay").textContent = username;
+      const badgeBadge = localStorage.getItem("studio_user_badge") || "Ativo";
+      const badgeEl = document.getElementById("licencaBadge");
+      if (badgeEl) badgeEl.textContent = badgeBadge;
 
       const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
       if (tabSalva) activeSessionId = tabSalva;
@@ -605,10 +656,11 @@
     function fazerLogout() {
       try { 
         localStorage.removeItem("studio_active_session");
+        localStorage.removeItem("studio_user_badge");
         document.documentElement.className = "estado-deslogado";
       } catch(e) {}
       activeUser = null;
-      window.location.reload();
+      window.location.href = window.location.pathname; // recarrega sem parâmetros de token
     }
 
     // =========================================================================
@@ -845,9 +897,8 @@
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // DETECÇÃO AUTOMÁTICA DE TÍTULO PARA RENOMEAR A PRODUÇÃO / STORYBOARD
+    // DETECÇÃO AUTOMÁTICA DE TÍTULO PARA RENOMEAR O PROJETO
     function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
-      // 1. Procura se a resposta da IA confirmou um título formal
       const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
       if (matchTitulo && matchTitulo[1]) {
         const tituloLimpo = matchTitulo[1].replace(/[*#]/g, '').trim();
@@ -858,7 +909,7 @@
         return;
       }
 
-      // 2. Se a mensagem do usuário for um título descritivo (e não um número simples como [1])
+      // Se o usuário digitou um texto com mais de 3 letras que não seja comando numérico
       if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 4) {
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
@@ -869,7 +920,7 @@
     }
 
     // =========================================================================
-    // EXECUÇÃO DO GEMINI COM RETOMADA LIMPA (SEM DUPLICAR BALÕES)
+    // EXECUÇÃO DO GEMINI COM MODELOS ESTÁVEIS E SEM DUPLICAR BALÕES
     // =========================================================================
     async function dispararGemini(texto, isInicial = false, isRetomada = false) {
       const apiKey = obterChaveUsuario();
@@ -888,7 +939,7 @@
 
       ultimaMensagemPendente = isInicial ? "" : texto;
 
-      // Se for envio novo (NÃO for uma retomada de erro), renderiza o balão do usuário
+      // Se for um envio normal novo, renderiza o balão; se for retomada de erro, NÃO duplica!
       if (!isInicial && !isRetomada) {
         renderizarMensagem(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -916,7 +967,7 @@
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Processando solicitação...
+          Organizando etapas...
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
@@ -924,7 +975,7 @@
 
       const promptMestre = await obterPromptAtivo();
 
-      // MODELOS VIGENTES COM ALTA DISPONIBILIDADE
+      // MODELOS OFICIAIS ATIVOS (sem endpoints descontinuados)
       const modelosCandidatos = [
         "gemini-3.5-flash-lite",
         "gemini-3.8-flash",
@@ -991,7 +1042,7 @@
       userInput.focus();
     }
 
-    // RETOMADA INTELIGENTE: Remove o bloco de erro e prossegue sem duplicar a mensagem do usuário
+    // CONTINUAÇÃO SEM DUPLICAÇÃO DE NÚMEROS/MENSAGENS
     function tentarNovamente() {
       const chatArea = document.getElementById("chatArea");
       const erroBox = chatArea.lastElementChild;
@@ -1016,7 +1067,15 @@
       dispararGemini(val, false, false);
     }
 
+    // INICIALIZAÇÃO COM VERIFICAÇÃO DE TOKEN (30 DIAS)
     window.addEventListener("DOMContentLoaded", () => {
+      const entrouPorToken = verificarAcessoPorToken();
+
+      if (entrouPorToken) {
+        abrirStudio(activeUser);
+        return;
+      }
+
       try {
         const sessao = localStorage.getItem("studio_active_session");
         if (sessao) {
