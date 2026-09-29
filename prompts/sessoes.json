@@ -21,6 +21,14 @@
     "icone": "⚡",
     "arquivo": "prompts/gerador.txt",
     "titulo": "Fábrica de Prompts Especializados",
-    "descricao": "Criação de mega-prompts estruturados e prompts para outras inteligências artificiais."
+    "descricao": "Criação de mega-prompts estruturados e comandos avançados de IA."
+  },
+  {
+    "id": "chat",
+    "nome": "Chat IA Livre",
+    "icone": "🧠",
+    "arquivo": "prompts/chat.txt",
+    "titulo": "Chat Inteligente com Aprendizado Contínuo",
+    "descricao": "Converse livremente como no ChatGPT. O sistema aprende a cada conversa e economiza sua API usando o banco local acumulado."
   }
 ]
