@@ -14,7 +14,7 @@
 
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- CABEÇALHO ADMIN PROFISSIONAL -->
+    <!-- CABEÇALHO COM STATUS DE CONEXÃO AO DISCO EM TEMPO REAL -->
     <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold shadow-inner">
@@ -25,26 +25,31 @@
             Painel de Gestão & Licenças
             <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Modo Admin Ativo</span>
           </h1>
-          <p class="text-xs text-slate-400">Controlo de acessos, assinaturas de 30 dias e testes de 6 horas.</p>
+          <p class="text-xs text-slate-400">Gravação em tempo real em arquivos .json no seu computador.</p>
         </div>
       </div>
 
-      <!-- BOTÕES DE BACKUP DOS BANCOS NO COMPUTADOR -->
-      <div class="flex flex-wrap gap-2">
-        <button onclick="salvarArquivoNoPC('cadastro')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Baixar banco_cadastros.json
+      <!-- BOTÃO DE CONEXÃO DIRETA À PASTA DO PC -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div id="statusDiscoBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          Pasta Local Não Conectada
+        </div>
+
+        <button onclick="conectarPastaLocal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-xl font-semibold transition flex items-center gap-1.5 shadow-md shadow-blue-600/25 active:scale-95 cursor-pointer">
+          📁 Conectar Pasta do PC
         </button>
-        <button onclick="salvarArquivoNoPC('teste')" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 rounded-xl transition flex items-center gap-1.5 font-medium shadow-sm">
-          💾 Baixar banco_teste.json
+
+        <button onclick="salvarArquivoManual('cadastro')" title="Baixar cópia manual" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 rounded-xl transition">
+          💾 Baixar Cadastros
         </button>
-        <button onclick="document.getElementById('fileInputImport').click()" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs rounded-xl transition font-medium">
-          📂 Carregar do PC
+        <button onclick="salvarArquivoManual('teste')" title="Baixar cópia manual" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 rounded-xl transition">
+          💾 Baixar Testes
         </button>
-        <input type="file" id="fileInputImport" class="hidden" accept=".json" onchange="importarArquivoPC(event)" />
       </div>
     </header>
 
-    <!-- CARDS DE MÉTRICAS RÁPIDAS -->
+    <!-- CARDS DE MÉTRICAS -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
@@ -79,7 +84,7 @@
       </button>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO COM DATA/HORA MANUAIS -->
+    <!-- FORMULÁRIO DE CADASTRO -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
@@ -91,28 +96,24 @@
       </div>
 
       <form id="formNovoUsuario" onsubmit="cadastrarUsuario(event)" autocomplete="off" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Nome -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome do Utilizador</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome do Usuário</label>
           <input type="text" id="cadNome" required autocomplete="off" placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
-        <!-- Tipo de Contato -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Canal de Contacto</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Canal de Contato</label>
           <select id="cadTipoContato" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
             <option value="whatsapp">WhatsApp</option>
             <option value="telegram">Telegram</option>
           </select>
         </div>
 
-        <!-- Número -->
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Número com DDD / @Utilizador</label>
-          <input type="text" id="cadNumero" required autocomplete="off" placeholder="Ex: 5548999999999 ou @utilizador" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Número com DDD / @Usuário</label>
+          <input type="text" id="cadNumero" required autocomplete="off" placeholder="Ex: 5548999999999 ou @usuario" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
-        <!-- Data e Hora -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Data e Hora de Início</label>
@@ -121,7 +122,6 @@
           <input type="datetime-local" id="cadDataHora" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" />
         </div>
 
-        <!-- Botão Cadastrar -->
         <div class="lg:col-span-4 flex justify-end pt-2">
           <button type="submit" id="btnSubmitCad" class="py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer">
             Gerar Acesso de 30 Dias
@@ -130,14 +130,14 @@
       </form>
     </div>
 
-    <!-- BARRA DE BUSCA -->
+    <!-- BUSCA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3">
       <div class="relative w-full sm:w-80">
-        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contacto..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contato..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
       </div>
-      <div class="text-xs text-slate-400">
-        Controlo dinâmico de expiração em tempo real.
+      <div class="text-xs text-slate-400" id="infoSyncTexto">
+        Sincronização em tempo real pronta.
       </div>
     </div>
 
@@ -147,11 +147,11 @@
         <table class="w-full text-left text-xs text-slate-300">
           <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
             <tr>
-              <th class="p-3.5">Utilizador</th>
-              <th class="p-3.5">Contacto</th>
-              <th class="p-3.5">Data/Hora Registo</th>
+              <th class="p-3.5">Usuário</th>
+              <th class="p-3.5">Contato</th>
+              <th class="p-3.5">Data/Hora Registro</th>
               <th class="p-3.5">Data/Hora Vencimento</th>
-              <th class="p-3.5">Estado</th>
+              <th class="p-3.5">Status</th>
               <th class="p-3.5">Link de Acesso Único</th>
               <th class="p-3.5 text-right">Ações Rápidas</th>
             </tr>
@@ -165,14 +165,84 @@
 
   <script>
     let bancoAtual = "cadastro";
+    let pastaDiretorioHandle = null; // Handle da pasta conectada no computador
 
     let dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
     let dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
 
-    function salvarBancos() {
+    // =========================================================================
+    // GRAVAÇÃO EM TEMPO REAL NOS ARQUIVOS DO COMPUTADOR
+    // =========================================================================
+    async function conectarPastaLocal() {
+      if (!window.showDirectoryPicker) {
+        alert("Seu navegador não suporta a conexão direta de pastas. Use o Chrome ou Edge.");
+        return;
+      }
+
+      try {
+        pastaDiretorioHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+
+        // Tenta ler banco_cadastros.json se já existir na pasta
+        try {
+          const fileHandleCad = await pastaDiretorioHandle.getFileHandle("banco_cadastros.json", { create: true });
+          const fileCad = await fileHandleCad.getFile();
+          const textCad = await fileCad.text();
+          if (textCad.trim()) {
+            dbCadastros = JSON.parse(textCad);
+          }
+        } catch(e) {}
+
+        // Tenta ler banco_teste.json se já existir na pasta
+        try {
+          const fileHandleTest = await pastaDiretorioHandle.getFileHandle("banco_teste.json", { create: true });
+          const fileTest = await fileHandleTest.getFile();
+          const textTest = await fileTest.text();
+          if (textTest.trim()) {
+            dbTeste = JSON.parse(textTest);
+          }
+        } catch(e) {}
+
+        // Atualiza a interface
+        const badge = document.getElementById("statusDiscoBadge");
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Disco Conectado (Tempo Real)`;
+        badge.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium";
+
+        document.getElementById("infoSyncTexto").textContent = "✓ Sincronizado diretamente com a pasta do seu computador.";
+
+        salvarBancos();
+        renderizarTabela();
+        alert("Pasta conectada com sucesso! Todos os registros serão gravados em tempo real nos arquivos .json.");
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          alert("Não foi possível conectar à pasta: " + err.message);
+        }
+      }
+    }
+
+    async function gravarArquivoNoDisco(nomeArquivo, dados) {
+      if (!pastaDiretorioHandle) return;
+
+      try {
+        const fileHandle = await pastaDiretorioHandle.getFileHandle(nomeArquivo, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(dados, null, 2));
+        await writable.close();
+      } catch (e) {
+        console.warn("Erro ao gravar em tempo real no arquivo:", e);
+      }
+    }
+
+    async function salvarBancos() {
+      // 1. Salva no armazenamento do navegador
       localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
       localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
       atualizarContadores();
+
+      // 2. Se a pasta do computador estiver conectada, grava diretamente nos arquivos físicos
+      if (pastaDiretorioHandle) {
+        await gravarArquivoNoDisco("banco_cadastros.json", dbCadastros);
+        await gravarArquivoNoDisco("banco_teste.json", dbTeste);
+      }
     }
 
     function atualizarContadores() {
@@ -240,7 +310,7 @@
       return `${d}/${m}/${a} às ${h}:${min}`;
     }
 
-    function cadastrarUsuario(e) {
+    async function cadastrarUsuario(e) {
       e.preventDefault();
 
       const nome = document.getElementById("cadNome").value.trim();
@@ -282,16 +352,15 @@
         dbTeste.unshift(novoRegistro);
       }
 
-      salvarBancos();
+      await salvarBancos();
       document.getElementById("formNovoUsuario").reset();
       definirDataHoraAtual();
       renderizarTabela();
 
-      alert(`Utilizador registado com sucesso no banco [${bancoAtual.toUpperCase()}]!\nInício: ${formatarDataHora(dataInicio)}\nVencimento: ${formatarDataHora(dataVencimento)}`);
+      alert(`Registrado com sucesso no banco [${bancoAtual.toUpperCase()}]!\nGravado em tempo real.`);
     }
 
-    // ATIVAÇÃO DIRETA DO TESTE PARA 30 DIAS
-    function ativarPlano30Dias(id) {
+    async function ativarPlano30Dias(id) {
       const indexTeste = dbTeste.findIndex(u => u.id === id);
       if (indexTeste === -1) return;
 
@@ -317,13 +386,12 @@
         token: novoToken
       };
 
-      // Remove do banco teste e adiciona no banco de assinantes ativos
       dbTeste.splice(indexTeste, 1);
       dbCadastros.unshift(userAtivado);
 
-      salvarBancos();
+      await salvarBancos();
       renderizarTabela();
-      alert(`🎉 Parabéns! ${user.nome} agora é um Assinante Ativo com 30 dias de acesso!\nVencimento: ${userAtivado.dataVencimentoFormatada}`);
+      alert(`🎉 Sucesso! ${user.nome} transferido para Assinantes Ativos (30 dias).`);
     }
 
     function renderizarTabela() {
@@ -342,7 +410,7 @@
         corpo.innerHTML = `
           <tr>
             <td colspan="7" class="p-8 text-center text-slate-500 text-xs">
-              Nenhum utilizador encontrado neste banco de dados.
+              Nenhum usuário encontrado neste banco de dados.
             </td>
           </tr>
         `;
@@ -400,7 +468,7 @@
 
     function copiarLink(link) {
       navigator.clipboard.writeText(link);
-      alert("Link único copiado para a área de transferência!");
+      alert("Link copiado com sucesso!");
     }
 
     function enviarMensagem(tipo, numero, nome, link, vencimento, banco) {
@@ -414,7 +482,7 @@
       }
     }
 
-    function renovarPeriodo(id) {
+    async function renovarPeriodo(id) {
       const lista = bancoAtual === "cadastro" ? dbCadastros : dbTeste;
       const user = lista.find(u => u.id === id);
       if (!user) return;
@@ -431,23 +499,23 @@
       user.dataVencimentoIso = novoVenc.toISOString();
       user.dataVencimentoFormatada = formatarDataHora(novoVenc);
 
-      salvarBancos();
+      await salvarBancos();
       renderizarTabela();
-      alert(`Acesso de ${user.nome} renovado!\nNovo vencimento: ${user.dataVencimentoFormatada}`);
+      alert(`Acesso de ${user.nome} renovado com sucesso!`);
     }
 
-    function excluirUsuario(id) {
-      if (!confirm("Tem a certeza que deseja revogar e excluir este registo?")) return;
+    async function excluirUsuario(id) {
+      if (!confirm("Tem certeza que deseja excluir este registro?")) return;
       if (bancoAtual === "cadastro") {
         dbCadastros = dbCadastros.filter(u => u.id !== id);
       } else {
         dbTeste = dbTeste.filter(u => u.id !== id);
       }
-      salvarBancos();
+      await salvarBancos();
       renderizarTabela();
     }
 
-    function salvarArquivoNoPC(tipo) {
+    function salvarArquivoManual(tipo) {
       const dados = tipo === "cadastro" ? dbCadastros : dbTeste;
       const nomeArquivo = tipo === "cadastro" ? "banco_cadastros.json" : "banco_teste.json";
       const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
@@ -455,32 +523,6 @@
       a.href = URL.createObjectURL(blob);
       a.download = nomeArquivo;
       a.click();
-    }
-
-    function importarArquivoPC(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const importados = JSON.parse(evt.target.result);
-          if (!Array.isArray(importados)) throw new Error("Formato inválido.");
-
-          if (file.name.includes("teste")) {
-            dbTeste = importados;
-            alert(`Sucesso: ${importados.length} registos carregados para o Banco de Teste!`);
-          } else {
-            dbCadastros = importados;
-            alert(`Sucesso: ${importados.length} registos carregados para o Banco de Cadastros!`);
-          }
-          salvarBancos();
-          renderizarTabela();
-        } catch (err) {
-          alert("Erro ao ler o ficheiro JSON: " + err.message);
-        }
-      };
-      reader.readAsText(file);
     }
 
     window.onload = function() {
