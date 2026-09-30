@@ -83,13 +83,13 @@
     <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-3xl mx-auto">
       ⏳
     </div>
-    <h1 class="text-xl font-bold text-white">Acesso Expirado</h1>
-    <p class="text-xs text-slate-400 leading-relaxed">
-      Seu período de acesso encerrou. Clique no botão abaixo para renovar sua licença no suporte.
+    <h1 class="text-xl font-bold text-white">Período de Acesso Expirado</h1>
+    <p class="text-xs text-slate-400 leading-relaxed" id="expiredDescText">
+      O período de acesso foi concluído. Clique no botão abaixo para ativar a sua assinatura completa de 30 dias diretamente com o suporte.
     </p>
     <div class="pt-2 flex flex-col gap-2">
-      <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer">
-        <span>💬</span> Renovar Assinatura no WhatsApp
+      <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
+        <span>💬</span> Ativar Assinatura 30 Dias no WhatsApp
       </button>
       <a href="admin.html" class="inline-block px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-xl transition border border-slate-700">
         Painel Administrativo 🛡️
@@ -97,31 +97,96 @@
     </div>
   </div>
 
-  <!-- TELA DE LOGIN -->
+  <!-- TELA DE LOGIN / CADASTRO -->
   <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-5 my-auto max-h-[95vh] overflow-y-auto">
     <div class="text-center space-y-1.5">
       <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mx-auto shadow-inner">
         🎬
       </div>
       <h1 class="text-xl font-bold text-white tracking-tight">Universal Master Studio</h1>
-      <p class="text-xs text-slate-400">Insira suas credenciais para entrar no estúdio.</p>
+      <p class="text-xs text-slate-400">
+        Novos cadastros liberam <b class="text-purple-400">teste de 6 horas</b> (1 vez por aparelho).
+      </p>
     </div>
 
-    <form onsubmit="executarLogin(event)" autocomplete="off" class="space-y-3 text-left">
+    <div class="flex border-b border-slate-800 text-xs">
+      <button id="tabAuthEntrar" onclick="alternarModoAuth('login')" class="flex-1 py-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition">
+        Já tenho Acesso
+      </button>
+      <button id="tabAuthCadastrar" onclick="alternarModoAuth('cadastro')" class="flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition">
+        Criar Conta Teste (6h)
+      </button>
+    </div>
+
+    <form onsubmit="executarAcesso(event)" autocomplete="off" class="space-y-3 text-left">
       <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Nome de Usuário</label>
-        <input type="text" id="authUsername" required placeholder="Digite seu usuário" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
+          Nome de Usuário
+        </label>
+        <input 
+          type="text" 
+          id="authUsername" 
+          required
+          autocomplete="off"
+          placeholder="Ex: alex" 
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+        />
+      </div>
+
+      <div id="campoEmailWrapper" class="hidden">
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
+          Seu E-mail
+        </label>
+        <input 
+          type="email" 
+          id="authEmail" 
+          autocomplete="off"
+          placeholder="Ex: seuemail@gmail.com" 
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+        />
+      </div>
+
+      <div id="campoContatoWrapper" class="hidden grid grid-cols-3 gap-2">
+        <div class="col-span-1">
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Canal</label>
+          <select id="authTipoContato" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="telegram">Telegram</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Número / @Usuário</label>
+          <input 
+            type="text" 
+            id="authNumeroContato" 
+            autocomplete="off"
+            placeholder="Ex: 5548999999999" 
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+          />
+        </div>
       </div>
 
       <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Sua Senha</label>
-        <input type="password" id="authPassword" required placeholder="Digite sua senha" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono" />
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
+          Sua Senha
+        </label>
+        <input 
+          type="password" 
+          id="authPassword" 
+          required
+          autocomplete="off"
+          placeholder="Digite sua senha" 
+          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+        />
       </div>
 
       <div id="loginFeedback" class="text-xs py-2 px-3 rounded-lg hidden font-medium"></div>
 
-      <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2">
-        Entrar no Estúdio
+      <button 
+        type="submit" 
+        id="btnAuthSubmit"
+        class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2">
+        Entrar na Conta
       </button>
 
       <div class="pt-2 text-center">
@@ -130,7 +195,7 @@
     </form>
   </div>
 
-  <!-- PAINEL PRINCIPAL DO STUDIO -->
+  <!-- PAINEL PRINCIPAL DO STUDIO (INTERFACE LIMPA) -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
     
     <!-- BARRA LATERAL -->
@@ -139,13 +204,13 @@
         
         <div>
           <div class="flex justify-between items-center mb-1.5">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Motores do Estúdio</label>
-            <span class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">3 motores</span>
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos & Motores</label>
+            <span id="sessionCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">4 sessões</span>
           </div>
-          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800"></div>
+          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 max-h-48 overflow-y-auto"></div>
         </div>
 
-        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0 cursor-pointer">
+        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
           <span>+</span> Novo Projeto
         </button>
 
@@ -156,55 +221,35 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário com Configuração e Ativação da Chave API no Site -->
-      <div class="p-3 border-t border-slate-800 flex flex-col gap-2.5 bg-slate-950/80 shrink-0">
+      <!-- Rodapé do Usuário -->
+      <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 overflow-hidden">
-            <div class="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
               👤
             </div>
             <div class="flex flex-col truncate">
               <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
-              <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo</span>
+              <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo (30 Dias)</span>
             </div>
           </div>
-          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded transition cursor-pointer">
+          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
             Sair
           </button>
         </div>
 
-        <!-- CAMPO DA CHAVE GEMINI API -->
-        <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chave Gemini API</span>
-            <span id="keyStatusBadge" class="text-[10px] font-medium text-amber-400">⚠️ Ausente</span>
-          </div>
-          <div class="flex gap-1.5">
-            <input 
-              type="password" 
-              id="geminiKeyInput" 
-              placeholder="Cole sua API Key aqui" 
-              oninput="autoSalvarChave()"
-              class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
-            />
-            <button onclick="salvarChaveGemini(true)" id="saveKeyBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0">
-              Salvar
-            </button>
-          </div>
-        </div>
-
-        <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer">
-          <span>💎</span> Suporte & Licenças
+        <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
+          <span>💎</span> Quero Ativar 30 Dias
         </button>
       </div>
     </aside>
 
-    <!-- ÁREA PRINCIPAL DO CHAT -->
+    <!-- ÁREA PRINCIPAL DO CHAT (CABEÇALHO LIMPO) -->
     <main class="flex-1 flex flex-col h-full bg-slate-900 min-w-0">
       <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
         <div class="flex items-center gap-2 truncate">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[200px] sm:max-w-md">Novo Projeto</span>
+          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[200px] sm:max-w-md">Nova Conversa</span>
         </div>
       </header>
 
@@ -215,11 +260,11 @@
           <input 
             type="text" 
             id="userInput" 
-            placeholder="Digite o número da opção (ex: [1], [0]) ou sua resposta..." 
+            placeholder="Pergunte qualquer coisa ou envie comandos..." 
             onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
             class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
-          <button onclick="enviarMensagemUsuario()" id="sendBtn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm transition disabled:opacity-40 cursor-pointer">
+          <button onclick="enviarMensagemUsuario()" id="sendBtn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm transition disabled:opacity-40">
             Enviar
           </button>
         </div>
@@ -229,184 +274,379 @@
   </div>
 
   <script>
-    const sessoesDisponiveis = [
-      {
-        id: "producao",
-        nome: "Produção",
-        icone: "🎬",
-        arquivo: "prompts/producao.txt",
-        titulo: "Engine V19.0 Ultra Master",
-        descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa."
-      },
-      {
-        id: "storyboard",
-        nome: "Storyboard",
-        icone: "🎨",
-        arquivo: "prompts/storyboard.txt",
-        titulo: "Engine de Storyboard Visual",
-        descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais."
-      },
-      {
-        id: "gerador",
-        nome: "Gerador de Prompts",
-        icone: "⚡",
-        arquivo: "prompts/gerador.txt",
-        titulo: "Fábrica de Prompts Especializados",
-        descricao: "Criação de mega-prompts estruturados e comandos avançados de IA."
-      }
-    ];
+    const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
+    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8";
+    const BIN_TESTE = "6abc21bfac6210605a032f92";
+    const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
 
+    let modoAuthAtual = "login";
+    let sessoesDisponiveis = [];
+    let promptsCache = {};
+    let etapasEstaticasCache = {};
     let activeUser = null;
     let activeSessionId = "producao";
     let currentConversationId = null;
     let conversationHistory = [];
-    let promptsCache = {};
+    let ultimaMensagemPendente = "";
     let isDigitando = false;
 
-    function getStorageProjects(sessao) {
-      const key = "studio_projs_v3_" + (activeUser ? activeUser.toLowerCase() : "anon") + "_" + sessao;
-      try {
-        const p = localStorage.getItem(key);
-        return p ? JSON.parse(p) : [];
-      } catch (e) { return []; }
-    }
+    let memoryUsers = {};
+    let memoryProjects = {};
 
-    function saveStorageProjects(sessao, projs) {
-      const key = "studio_projs_v3_" + (activeUser ? activeUser.toLowerCase() : "anon") + "_" + sessao;
-      try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
-    }
+    let bancoCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+    let bancoTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+    let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
-    function obterChaveGemini() {
-      const input = document.getElementById("geminiKeyInput");
-      const val = input ? input.value.trim() : "";
-      if (val) return val;
-      return localStorage.getItem("studio_gemini_key") || localStorage.getItem("studio_master_gemini_key") || "";
-    }
+    // Sincronização inteligente: SÓ EXECUTA UMA VEZ A CADA 15 MINUTOS NO APARELHO!
+    async function sincronizarComNuvemEconomico() {
+      const ultimoSync = parseInt(localStorage.getItem("ultimo_sync_nuvem") || "0");
+      const agora = Date.now();
 
-    function autoSalvarChave() {
-      const input = document.getElementById("geminiKeyInput");
-      const val = input ? input.value.trim() : "";
-      localStorage.setItem("studio_gemini_key", val);
-      atualizarBadgeChave(val);
-    }
-
-    function salvarChaveGemini(mostrarAviso = true) {
-      const input = document.getElementById("geminiKeyInput");
-      const val = input ? input.value.trim() : "";
-      if (!val) {
-        alert("Cole sua chave de API do Gemini antes de salvar.");
-        if (input) input.focus();
+      // Se já sincronizou há menos de 15 minutos, não gasta requisição
+      if (agora - ultimoSync < 15 * 60 * 1000 && bancoCadastros.length > 0) {
         return;
       }
-      localStorage.setItem("studio_gemini_key", val);
-      atualizarBadgeChave(val);
 
-      const btn = document.getElementById("saveKeyBtn");
-      btn.textContent = "Salvo ✓";
-      btn.className = "bg-emerald-600 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0";
-      setTimeout(() => {
-        btn.textContent = "Salvar";
-        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0";
-      }, 1500);
+      try {
+        const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
 
-      if (mostrarAviso) alert("Chave de API ativada com sucesso!");
+        const [rCad, rTest, rCon] = await Promise.all([
+          fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers }),
+          fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers }),
+          fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
+        ]);
+
+        const dCad = await rCad.json();
+        const dTest = await rTest.json();
+        const dCon = await rCon.json();
+
+        bancoCadastros = Array.isArray(dCad.record) ? dCad.record : (dCad.record?.usuarios || []);
+        bancoTeste = Array.isArray(dTest.record) ? dTest.record : (dTest.record?.testes || []);
+        bancoConhecimento = Array.isArray(dCon.record) ? dCon.record : (dCon.record?.conhecimento || []);
+
+        localStorage.setItem("db_cadastros_completo", JSON.stringify(bancoCadastros));
+        localStorage.setItem("db_cadastros_teste", JSON.stringify(bancoTeste));
+        localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+        localStorage.setItem("ultimo_sync_nuvem", agora.toString());
+      } catch (e) {}
     }
 
-    function carregarChaveNaInterface() {
-      const key = obterChaveGemini();
-      const input = document.getElementById("geminiKeyInput");
-      if (input) input.value = key;
-      atualizarBadgeChave(key);
+    async function gravarNuvem(binId, dados, chaveObjeto) {
+      try {
+        await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_MASTER_KEY
+          },
+          body: JSON.stringify({ [chaveObjeto]: dados })
+        });
+      } catch (e) {}
     }
 
-    function atualizarBadgeChave(key) {
-      const badge = document.getElementById("keyStatusBadge");
-      if (!badge) return;
-      if (key && key.length > 10) {
-        badge.textContent = "✓ Chave Ativa";
-        badge.className = "text-[10px] font-semibold text-emerald-400";
-      } else {
-        badge.textContent = "⚠️ Ausente";
-        badge.className = "text-[10px] font-medium text-amber-400";
+    function salvarConhecimento(pergunta, resposta) {
+      if (!pergunta || !resposta || resposta.length < 10) return;
+      const perguntaNormalizada = normalizarTexto(pergunta);
+      
+      const index = bancoConhecimento.findIndex(item => normalizarTexto(item.pergunta) === perguntaNormalizada);
+      if (index === -1) {
+        bancoConhecimento.unshift({
+          pergunta: pergunta.trim(),
+          respostas: [resposta.trim()],
+          data: new Date().toISOString()
+        });
+        localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+        gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
       }
+    }
+
+    function normalizarTexto(txt) {
+      return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
+    }
+
+    const variacoesAbertura = [
+      "Com certeza! ",
+      "Aqui está: ",
+      "Entendido! ",
+      "Perfeito. ",
+      "Claro, veja a seguir: ",
+      "Com base no que você precisa: ",
+      "Sem problemas! "
+    ];
+
+    function variarResposta(textoBase) {
+      let texto = textoBase;
+      variacoesAbertura.forEach(ab => {
+        if (texto.startsWith(ab)) texto = texto.substring(ab.length);
+      });
+      const aberturaSorteada = variacoesAbertura[Math.floor(Math.random() * variacoesAbertura.length)];
+      return aberturaSorteada + texto;
+    }
+
+    function buscarNaMemoriaLocal(perguntaUsuario) {
+      const perguntaLimpa = normalizarTexto(perguntaUsuario);
+      const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
+
+      if (palavrasPergunta.length === 0) return null;
+
+      for (const item of bancoConhecimento) {
+        const itemPerguntaLimpa = normalizarTexto(item.pergunta);
+        
+        let match = false;
+        if (itemPerguntaLimpa === perguntaLimpa) {
+          match = true;
+        } else {
+          let matches = 0;
+          palavrasPergunta.forEach(palavra => {
+            if (itemPerguntaLimpa.includes(palavra)) matches++;
+          });
+          const score = matches / palavrasPergunta.length;
+          if (score >= 0.85) match = true;
+        }
+
+        if (match) {
+          const listaRespostas = item.respostas || [item.resposta];
+          const respostaEscolhida = listaRespostas[Math.floor(Math.random() * listaRespostas.length)];
+          return variarResposta(respostaEscolhida);
+        }
+      }
+
+      return null;
+    }
+
+    function alternarModoAuth(modo) {
+      modoAuthAtual = modo;
+      const tabLogin = document.getElementById("tabAuthEntrar");
+      const tabCad = document.getElementById("tabAuthCadastrar");
+      const campoEmail = document.getElementById("campoEmailWrapper");
+      const campoContato = document.getElementById("campoContatoWrapper");
+      const btnSubmit = document.getElementById("btnAuthSubmit");
+
+      if (modo === "login") {
+        tabLogin.className = "flex-1 py-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition";
+        tabCad.className = "flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition";
+        campoEmail.classList.add("hidden");
+        campoContato.classList.add("hidden");
+        btnSubmit.textContent = "Entrar na Conta";
+        btnSubmit.className = "w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2";
+      } else {
+        tabCad.className = "flex-1 py-2 font-semibold text-purple-400 border-b-2 border-purple-500 transition";
+        tabLogin.className = "flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition";
+        campoEmail.classList.remove("hidden");
+        campoContato.classList.remove("hidden");
+        btnSubmit.textContent = "Criar Conta & Iniciar Teste (6h)";
+        btnSubmit.className = "w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-purple-600/25 active:scale-[0.98] cursor-pointer mt-2";
+      }
+    }
+
+    function getStorageUsers() {
+      try {
+        const u = localStorage.getItem("studio_final_users");
+        return u ? JSON.parse(u) : memoryUsers;
+      } catch (e) { return memoryUsers; }
+    }
+
+    function saveStorageUsers(users) {
+      memoryUsers = users;
+      try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
+    }
+
+    function getStorageProjects(user, sessao) {
+      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
+      try {
+        const p = localStorage.getItem(key);
+        return p ? JSON.parse(p) : (memoryProjects[key] || []);
+      } catch (e) { return memoryProjects[key] || []; }
+    }
+
+    function saveStorageProjects(user, sessao, projs) {
+      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
+      memoryProjects[key] = projs;
+      try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
     }
 
     function solicitarAtivacaoWhatsapp() {
       const nome = activeUser || "Cliente";
-      const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio e gostaria de falar sobre minha licença.\nUsuário: ${nome}`);
+      const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio como teste e desejo ativar meu plano de 30 DIAS completo!\n\nNome do usuário: ${nome}`);
       window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
     }
 
-    function executarLogin(e) {
-      e.preventDefault();
-      const uNome = document.getElementById("authUsername").value.trim();
-      const uSenha = document.getElementById("authPassword").value.trim();
+    function executarAcesso(e) {
+      if (e) e.preventDefault();
+
+      const userInput = document.getElementById("authUsername");
+      const passInput = document.getElementById("authPassword");
       const feedback = document.getElementById("loginFeedback");
 
-      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
-      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
-      const todos = [...dbCadastros, ...dbTeste];
+      const username = (userInput.value || "").trim();
+      const password = (passInput.value || "").trim();
 
-      const user = todos.find(x => x.nome.toLowerCase() === uNome.toLowerCase() && (x.senha === uSenha || !x.senha));
-
-      if (!user) {
-        feedback.textContent = "Usuário ou senha incorretos.";
+      if (!username || !password) {
+        feedback.textContent = "Preencha todos os campos!";
         feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
         feedback.classList.remove("hidden");
         return;
       }
 
-      const agoraMs = new Date().getTime();
-      const vencMs = new Date(user.dataVencimentoIso).getTime();
+      if (modoAuthAtual === "login") {
+        const assinante = bancoCadastros.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (assinante) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(assinante.dataVencimentoIso).getTime();
 
-      if (agoraMs > vencMs) {
-        document.documentElement.className = "estado-expirado";
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            return;
+          }
+
+          feedback.textContent = `Assinante reconhecido! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Ativo (30 Dias)");
+          setTimeout(() => abrirStudio(assinante.nome), 200);
+          return;
+        }
+
+        const userTeste = bancoTeste.find(u => u.nome.toLowerCase() === username.toLowerCase());
+        if (userTeste) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(userTeste.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            document.getElementById("expiredDescText").textContent = "Seu teste gratuito de 6 horas expirou. Ative o plano de 30 dias para continuar.";
+            return;
+          }
+
+          feedback.textContent = `Acesso de teste ativo! Entrando...`;
+          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+          feedback.classList.remove("hidden");
+          localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+          setTimeout(() => abrirStudio(userTeste.nome), 200);
+          return;
+        }
+
+        feedback.textContent = "Usuário não encontrado. Crie uma conta teste na aba ao lado.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
         return;
       }
 
-      abrirStudio(user.nome, user.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+      const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
+      if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
+        feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Fale com o suporte para assinar.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      const email = document.getElementById("authEmail").value.trim();
+      const tipoContato = document.getElementById("authTipoContato").value;
+      const numeroContato = document.getElementById("authNumeroContato").value.trim();
+
+      const agora = new Date();
+      const vencimento6h = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
+
+      const formatarData = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+      const novoTeste = {
+        id: "usr_" + Date.now(),
+        nome: username,
+        email: email || "Não informado",
+        tipoContato: tipoContato,
+        numero: numeroContato || "Cadastro pelo Site",
+        banco: "teste",
+        dataCadastroIso: agora.toISOString(),
+        dataCadastroFormatada: formatarData(agora),
+        dataVencimentoIso: vencimento6h.toISOString(),
+        dataVencimentoFormatada: formatarData(vencimento6h),
+        token: "tok_" + Date.now()
+      };
+
+      bancoTeste.unshift(novoTeste);
+      localStorage.setItem("db_cadastros_teste", JSON.stringify(bancoTeste));
+      localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
+      localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
+
+      gravarNuvem(BIN_TESTE, bancoTeste, "testes");
+
+      feedback.textContent = `✨ Conta teste de 6 horas criada com sucesso! Entrando...`;
+      feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
+      feedback.classList.remove("hidden");
+      setTimeout(() => abrirStudio(username), 300);
     }
 
-    function abrirStudio(username, badge) {
-      activeUser = username;
-      localStorage.setItem("studio_active_session", username);
-      localStorage.setItem("studio_user_badge", badge || "Ativo");
-      document.documentElement.className = "estado-logado";
+    function extrairEtapasDoTexto(rawTxt) {
+      const etapas = {};
+      const regexEtapas = /###\s*(ETAPA\s*[\d\.]+:[^\n]+)([\s\S]*?)(?=###\s*ETAPA|---\s*\[FORMATO|---\s*\[INSTRUÇÃO|$)/gi;
+      let match;
 
-      document.getElementById("userNameDisplay").textContent = username;
-      document.getElementById("licencaBadge").textContent = badge || "Ativo";
+      while ((match = regexEtapas.exec(rawTxt)) !== null) {
+        const cabecalho = match[1].trim();
+        const conteudo = match[2].trim();
 
-      carregarChaveNaInterface();
-      renderizarBotoesSessoes();
-      atualizarListaProjetos();
+        const temOpcoesNumeradas = /\[0\]|\[1\]/.test(conteudo);
+        const ehEtapaCriativa = /opções inéditas|gerar 20 novos|títulos magnéticos|enredo mais envolvente/i.test(conteudo);
 
-      const projs = getStorageProjects(activeSessionId);
-      if (projs.length > 0) selecionarProjeto(projs[0].id);
-      else criarNovoProjeto();
+        const idEtapa = cabecalho.split(":")[0].replace(/\s+/g, "_").toLowerCase();
+
+        etapas[idEtapa] = {
+          titulo: `### ${cabecalho}`,
+          textoCompleto: `### ${cabecalho}\n\n${conteudo}`,
+          estatica: temOpcoesNumeradas && !ehEtapaCriativa
+        };
+      }
+
+      return etapas;
     }
 
-    function fazerLogout() {
-      localStorage.removeItem("studio_active_session");
-      document.documentElement.className = "estado-deslogado";
-      activeUser = null;
-    }
-
-    async function carregarPromptMestre(sessaoId) {
+    async function carregarPromptETratarEtapas(sessaoId) {
       const sessao = sessoesDisponiveis.find(s => s.id === sessaoId) || sessoesDisponiveis[0];
-      if (promptsCache[sessao.id]) return promptsCache[sessao.id];
+
+      if (promptsCache[sessao.id]) {
+        return promptsCache[sessao.id];
+      }
 
       try {
         const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
         if (resp.ok) {
           const texto = await resp.text();
-          if (texto && texto.length > 20) {
-            promptsCache[sessao.id] = texto;
-            return texto;
+          promptsCache[sessao.id] = texto;
+          if (sessaoId !== "chat") {
+            etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
           }
+          return texto;
         }
       } catch (e) {}
 
-      return "Você é um diretor e engenheiro de IA especializado. Conduza o projeto etapa por etapa.";
+      if (sessaoId === "chat") {
+        return "Você é uma inteligência artificial completa, prestativa e perspicaz, no mesmo padrão de excelência e naturalidade do Gemini e ChatGPT. Responda com linguagem clara, direta, bem estruturada em parágrafos e código quando solicitado.";
+      }
+
+      return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
+    }
+
+    async function carregarSessoesDoGithub() {
+      try {
+        const resp = await fetch("prompts/sessoes.json?t=" + Date.now());
+        if (resp.ok) {
+          sessoesDisponiveis = await resp.json();
+        } else {
+          throw new Error("sessoes.json não localizado");
+        }
+      } catch (e) {
+        sessoesDisponiveis = [
+          { id: "producao", nome: "Produção", icone: "🎬", arquivo: "prompts/producao.txt", titulo: "Engine V19.0 Ultra Master", descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa." },
+          { id: "storyboard", nome: "Storyboard", icone: "🎨", arquivo: "prompts/storyboard.txt", titulo: "Engine de Storyboard Visual", descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais." },
+          { id: "gerador", nome: "Gerador de Prompts", icone: "⚡", arquivo: "prompts/gerador.txt", titulo: "Fábrica de Prompts Especializados", descricao: "Criação de mega-prompts estruturados e comandos avançados de IA." },
+          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente Livre", descricao: "Converse normalmente sobre qualquer assunto. A IA responde de forma natural e aprende da memória local." }
+        ];
+      }
+
+      const countBadge = document.getElementById("sessionCountBadge");
+      if (countBadge) countBadge.textContent = `${sessoesDisponiveis.length} sessões`;
+
+      renderizarBotoesSessoes();
     }
 
     function renderizarBotoesSessoes() {
@@ -415,12 +655,18 @@
 
       sessoesDisponiveis.forEach(s => {
         const btn = document.createElement("button");
+        btn.id = "btn_sessao_" + s.id;
         const isActive = (s.id === activeSessionId);
-        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between cursor-pointer ${
-          isActive ? "bg-blue-600 text-white shadow-md" : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
+        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
+          isActive 
+            ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" 
+            : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
         }`;
         btn.innerHTML = `
-          <div class="flex items-center gap-2"><span>${s.icone}</span> <span>${s.nome}</span></div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm">${s.icone}</span> 
+            <span>${s.nome}</span>
+          </div>
           ${isActive ? '<span class="text-[10px] bg-blue-500/40 px-1.5 py-0.5 rounded text-blue-100">Ativa</span>' : ''}
         `;
         btn.onclick = () => mudarSessao(s.id);
@@ -430,21 +676,93 @@
 
     function mudarSessao(novaSessaoId) {
       if (activeSessionId === novaSessaoId && currentConversationId) return;
+
       activeSessionId = novaSessaoId;
       currentConversationId = null;
       conversationHistory = [];
+      ultimaMensagemPendente = "";
+      
+      try {
+        localStorage.setItem("studio_active_tab_" + activeUser.toLowerCase(), novaSessaoId);
+      } catch(e) {}
+
       renderizarBotoesSessoes();
 
       const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
       if (sessao) {
-        document.getElementById("btnNovaAcao").innerHTML = `<span>+</span> Novo Projeto (${sessao.nome})`;
-        document.getElementById("labelHistorico").textContent = `Projetos de ${sessao.nome}`;
+        document.getElementById("btnNovaAcao").innerHTML = `<span>+</span> Nova Conversa (${sessao.nome})`;
+        document.getElementById("labelHistorico").textContent = `Histórico de ${sessao.nome}`;
       }
 
       atualizarListaProjetos();
-      const projs = getStorageProjects(activeSessionId);
-      if (projs.length > 0) selecionarProjeto(projs[0].id);
-      else criarNovoProjeto();
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
+      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
+
+      if (chatParaAbrir) {
+        selecionarProjeto(chatParaAbrir.id);
+      } else if (projs.length > 0) {
+        selecionarProjeto(projs[0].id);
+      } else {
+        criarNovoProjeto();
+      }
+    }
+
+    function obterChaveSistema() {
+      try {
+        const k = localStorage.getItem("studio_master_gemini_key");
+        if (k && k.length > 10) return k;
+      } catch (e) {}
+      return "";
+    }
+
+    async function abrirStudio(username) {
+      activeUser = username;
+      try { 
+        localStorage.setItem("studio_active_session", username);
+        document.documentElement.className = "estado-logado";
+      } catch(e) {}
+
+      document.getElementById("userNameDisplay").textContent = username;
+      const badgeBadge = localStorage.getItem("studio_user_badge") || "Ativo";
+      const badgeEl = document.getElementById("licencaBadge");
+      if (badgeEl) badgeEl.textContent = badgeBadge;
+
+      const btnUpgrade = document.getElementById("btnUpgrade30Dias");
+      if (badgeBadge.includes("30 Dias")) {
+        btnUpgrade.classList.add("hidden");
+      } else {
+        btnUpgrade.classList.remove("hidden");
+      }
+
+      const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
+      if (tabSalva) activeSessionId = tabSalva;
+
+      await carregarSessoesDoGithub();
+      atualizarListaProjetos();
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
+      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
+
+      if (chatParaAbrir) {
+        selecionarProjeto(chatParaAbrir.id);
+      } else if (projs.length > 0) {
+        selecionarProjeto(projs[0].id);
+      } else {
+        criarNovoProjeto();
+      }
+    }
+
+    function fazerLogout() {
+      try { 
+        localStorage.removeItem("studio_active_session");
+        localStorage.removeItem("studio_user_badge");
+        document.documentElement.className = "estado-deslogado";
+      } catch(e) {}
+      activeUser = null;
+      window.location.href = window.location.pathname;
     }
 
     function fecharMenusAbertos(e) {
@@ -458,17 +776,19 @@
       const menu = document.getElementById("dropdown_" + id);
       const estaAberto = !menu.classList.contains("hidden");
       document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
-      if (!estaAberto) menu.classList.remove("hidden");
+      if (!estaAberto) {
+        menu.classList.remove("hidden");
+      }
     }
 
     function alternarFixarProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeSessionId);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (proj) {
         proj.pinned = !proj.pinned;
-        saveStorageProjects(activeSessionId, projs);
+        saveStorageProjects(activeUser, activeSessionId, projs);
         atualizarListaProjetos();
       }
     }
@@ -476,15 +796,17 @@
     function renomearProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeSessionId);
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
-      const novoNome = prompt("Digite o novo nome para este projeto:", proj.title);
+      const novoNome = prompt("Digite o novo nome:", proj.title);
       if (novoNome && novoNome.trim()) {
         proj.title = novoNome.trim();
-        saveStorageProjects(activeSessionId, projs);
-        if (currentConversationId === id) document.getElementById("currentChatTitle").textContent = proj.title;
+        saveStorageProjects(activeUser, activeSessionId, projs);
+        if (currentConversationId === id) {
+          document.getElementById("currentChatTitle").textContent = proj.title;
+        }
         atualizarListaProjetos();
       }
     }
@@ -492,21 +814,36 @@
     function excluirProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeSessionId);
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      const proj = projs.find(p => p.id === id);
+      if (!proj) return;
+
+      const confirmar = confirm(`Excluir "${proj.title}"?`);
+      if (!confirmar) return;
+
       const filtrados = projs.filter(p => p.id !== id);
-      saveStorageProjects(activeSessionId, filtrados);
+      saveStorageProjects(activeUser, activeSessionId, filtrados);
 
       if (currentConversationId === id) {
-        if (filtrados.length > 0) selecionarProjeto(filtrados[0].id);
-        else criarNovoProjeto();
+        if (filtrados.length > 0) {
+          selecionarProjeto(filtrados[0].id);
+        } else {
+          criarNovoProjeto();
+        }
       } else {
         atualizarListaProjetos();
       }
     }
 
     function atualizarListaProjetos() {
-      const projs = getStorageProjects(activeSessionId);
-      projs.sort((a, b) => (Boolean(a.pinned) === Boolean(b.pinned) ? 0 : a.pinned ? -1 : 1));
+      if (!activeUser) return;
+      const projs = getStorageProjects(activeUser, activeSessionId);
+      
+      projs.sort((a, b) => {
+        if (Boolean(a.pinned) === Boolean(b.pinned)) return 0;
+        return a.pinned ? -1 : 1;
+      });
 
       const listEl = document.getElementById("conversationsList");
       listEl.innerHTML = "";
@@ -514,23 +851,39 @@
       projs.forEach(p => {
         const wrapper = document.createElement("div");
         wrapper.className = `relative group flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-          p.id === currentConversationId ? "bg-slate-800 text-blue-400 font-semibold" : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
+          p.id === currentConversationId
+            ? "bg-slate-800 text-blue-400 font-semibold"
+            : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
         } ${p.pinned ? "border-l-2 border-amber-400 bg-slate-900/40" : ""}`;
 
         wrapper.onclick = () => selecionarProjeto(p.id);
 
         wrapper.innerHTML = `
           <div class="flex items-center gap-2 truncate pr-2">
-            ${p.pinned ? '<span class="text-amber-400 text-[10px]">📌</span>' : ''}
-            <span class="truncate">${p.title || "Novo Projeto"}</span>
+            ${p.pinned ? '<span class="text-amber-400 text-[10px]" title="Fixado">📌</span>' : ''}
+            <span class="truncate">${p.title || "Nova Conversa"}</span>
           </div>
-          <button type="button" onclick="toggleMenu(event, '${p.id}')" class="menu-btn p-1 rounded-md text-slate-400 hover:text-white transition">⋮</button>
+
+          <button 
+            type="button" 
+            onclick="toggleMenu(event, '${p.id}')"
+            class="menu-btn p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/60 transition opacity-80 group-hover:opacity-100">
+            ⋮
+          </button>
+
           <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
-            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 text-xs">📌 ${p.pinned ? 'Desafixar' : 'Fixar'}</button>
-            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 text-xs">✏️ Renomear</button>
-            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 text-xs border-t border-slate-800">🗑️ Excluir</button>
+            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
+              <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
+            </button>
+            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
+              <span>✏️</span> Renomear
+            </button>
+            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
+              <span>🗑️</span> Excluir
+            </button>
           </div>
         `;
+
         listEl.appendChild(wrapper);
       });
     }
@@ -538,39 +891,55 @@
     function exibirPainelInicialCentral() {
       const chatArea = document.getElementById("chatArea");
       chatArea.innerHTML = "";
-      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || sessoesDisponiveis[0];
+
+      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || {
+        nome: "Chat IA Livre",
+        icone: "🧠",
+        titulo: "Chat Inteligente Livre",
+        descricao: "Faça qualquer pergunta. A IA responde com inteligência e memoriza as respostas."
+      };
 
       const startDiv = document.createElement("div");
       startDiv.className = "h-full flex flex-col items-center justify-center text-center space-y-4 py-12";
       startDiv.innerHTML = `
-        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold">${sessao.icone}</div>
-        <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo}</h2>
-        <p class="text-sm text-slate-400 max-w-sm">${sessao.descricao}</p>
-        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 cursor-pointer">
-          Iniciar ${sessao.nome}
+        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold shadow-inner">
+          ${sessao.icone}
+        </div>
+        <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo || sessao.nome}</h2>
+        <p class="text-sm text-slate-400 max-w-sm">
+          ${activeSessionId === 'chat' ? 'Pergunte sobre qualquer assunto, peça códigos, ideias ou orientações.' : (sessao.descricao || "Clique no botão abaixo para iniciar.")}
+        </p>
+        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
+          ${activeSessionId === 'chat' ? 'Abrir Conversa Livre' : 'Iniciar ' + sessao.nome}
         </button>
       `;
       chatArea.appendChild(startDiv);
     }
 
     function criarNovoProjeto() {
-      const projs = getStorageProjects(activeSessionId);
+      if (!activeUser) return;
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
       const novo = {
         id: "proj_" + Date.now(),
-        title: sessao ? `Novo ${sessao.nome}` : "Novo Projeto",
+        title: sessao ? `Novo ${sessao.nome}` : "Nova Conversa",
         pinned: false,
         messages: []
       };
       projs.unshift(novo);
-      saveStorageProjects(activeSessionId, projs);
+      saveStorageProjects(activeUser, activeSessionId, projs);
       atualizarListaProjetos();
       selecionarProjeto(novo.id);
     }
 
     function selecionarProjeto(id) {
+      if (!activeUser) return;
       currentConversationId = id;
-      const projs = getStorageProjects(activeSessionId);
+      try {
+        localStorage.setItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId, id);
+      } catch (e) {}
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
 
@@ -591,7 +960,8 @@
     }
 
     function formatarTextoComOpcoes(rawText) {
-      let formatado = rawText.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
+      let formatado = rawText;
+      formatado = formatado.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
       return marked.parse(formatado);
     }
 
@@ -604,11 +974,17 @@
       if (isError) {
         bubble.className = "max-w-[85%] rounded-2xl p-4 text-sm bg-rose-500/10 border border-rose-500/30 text-rose-200 space-y-3";
         bubble.innerHTML = `
-          <div>${texto}</div>
-          <button onclick="tentarNovamente()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer">Tentar Novamente</button>
+          <div class="leading-relaxed">${texto}</div>
+          <button onclick="tentarNovamente()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-emerald-600/30 cursor-pointer">
+            <span>▶</span> Continuar de Onde Parou
+          </button>
         `;
       } else {
-        bubble.className = `max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${isUser ? "bg-blue-600 text-white font-medium shadow-md" : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md"}`;
+        bubble.className = `max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${
+          isUser
+            ? "bg-blue-600 text-white font-medium shadow-md"
+            : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative"
+        }`;
         bubble.innerHTML = isUser ? texto : formatarTextoComOpcoes(texto);
       }
 
@@ -624,20 +1000,23 @@
       div.className = "flex justify-start w-full";
       
       const bubble = document.createElement("div");
-      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md typing-cursor";
+      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative typing-cursor";
       bubble.innerHTML = "<span></span>";
       div.appendChild(bubble);
       chatArea.appendChild(div);
 
-      const span = bubble.querySelector("span");
+      const spanConteudo = bubble.querySelector("span");
+
       let index = 0;
-      const total = textoCompleto.length;
-      const passo = total > 600 ? 5 : 3;
+      const tamanhoTotal = textoCompleto.length;
+      const passo = tamanhoTotal > 800 ? 6 : (tamanhoTotal > 300 ? 4 : 2);
+      const velocidadeMs = 10;
 
       return new Promise((resolve) => {
         const timer = setInterval(() => {
           index += passo;
-          if (index >= total) {
+          if (index >= tamanhoTotal) {
+            index = tamanhoTotal;
             clearInterval(timer);
             bubble.classList.remove("typing-cursor");
             bubble.innerHTML = formatarTextoComOpcoes(textoCompleto);
@@ -645,10 +1024,11 @@
             isDigitando = false;
             resolve();
           } else {
-            span.innerHTML = formatarTextoComOpcoes(textoCompleto.substring(0, index));
+            const textoParcial = textoCompleto.substring(0, index);
+            spanConteudo.innerHTML = formatarTextoComOpcoes(textoParcial);
             chatArea.scrollTop = chatArea.scrollHeight;
           }
-        }, 12);
+        }, velocidadeMs);
       });
     }
 
@@ -658,7 +1038,7 @@
         const tituloLimpo = matchTitulo[1].replace(/[*#]/g, '').trim();
         projetoAtual.title = tituloLimpo;
         document.getElementById("currentChatTitle").textContent = tituloLimpo;
-        saveStorageProjects(activeSessionId, todosProjetos);
+        saveStorageProjects(activeUser, activeSessionId, todosProjetos);
         atualizarListaProjetos();
         return;
       }
@@ -667,41 +1047,94 @@
         const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
         projetoAtual.title = tituloResumo;
         document.getElementById("currentChatTitle").textContent = tituloResumo;
-        saveStorageProjects(activeSessionId, todosProjetos);
+        saveStorageProjects(activeUser, activeSessionId, todosProjetos);
         atualizarListaProjetos();
       }
     }
 
-    async function dispararFluxo(texto, isInicial = false) {
+    async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
       if (isDigitando) return;
-      const projs = getStorageProjects(activeSessionId);
+
+      const projs = getStorageProjects(activeUser, activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
 
       if (isInicial && (!atual.messages || atual.messages.length === 0)) {
         document.getElementById("chatArea").innerHTML = "";
       }
 
-      const promptMestre = await carregarPromptMestre(activeSessionId);
+      const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
+      const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      const apiKey = obterChaveGemini();
-      if (!apiKey || apiKey.length < 10) {
-        renderizarMensagemInstantanea("⚠️ Chave de API do Gemini ausente. Insira sua chave no rodapé da barra lateral e clique em 'Salvar' para ativar.", false, true);
-        const inputKey = document.getElementById("geminiKeyInput");
-        if (inputKey) inputKey.focus();
+      if (isInicial && activeSessionId === "chat") {
+        const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
+        conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
+        await renderizarMensagemDigitando(boasVindas);
+        if (atual) {
+          atual.messages.push({ role: "model", content: boasVindas });
+          saveStorageProjects(activeUser, activeSessionId, projs);
+        }
         return;
       }
 
-      if (isInicial) {
-        conversationHistory = [
-          { role: "user", parts: [{ text: "Olá! Vamos iniciar o projeto. Por favor, apresente a ETAPA 1 com todas as opções exatamente conforme o roteiro instruído." }] }
-        ];
-      } else {
+      if (isInicial && activeSessionId !== "chat") {
+        const primeiraEtapaId = Object.keys(mapaEtapas)[0];
+        if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
+          const textoEtapa1 = mapaEtapas[primeiraEtapaId].textoCompleto;
+          conversationHistory.push({ role: "model", parts: [{ text: textoEtapa1 }] });
+          renderizarMensagemInstantanea(textoEtapa1, false);
+
+          if (atual) {
+            atual.messages.push({ role: "model", content: textoEtapa1 });
+            saveStorageProjects(activeUser, activeSessionId, projs);
+          }
+          return;
+        }
+      }
+
+      if (!isInicial && !isRetomada) {
         renderizarMensagemInstantanea(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
         if (atual) {
           atual.messages.push({ role: "user", content: texto });
-          saveStorageProjects(activeSessionId, projs);
+          saveStorageProjects(activeUser, activeSessionId, projs);
         }
+      }
+
+      if (activeSessionId === "chat" && texto.length >= 3) {
+        const respostaMemoria = buscarNaMemoriaLocal(texto);
+        if (respostaMemoria) {
+          conversationHistory.push({ role: "model", parts: [{ text: respostaMemoria }] });
+          await renderizarMensagemDigitando(respostaMemoria);
+
+          if (atual) {
+            atual.messages.push({ role: "model", content: respostaMemoria });
+            detectarEAtualizarTitulo(texto, respostaMemoria, atual, projs);
+            saveStorageProjects(activeUser, activeSessionId, projs);
+          }
+          return;
+        }
+      }
+
+      const mensagensModelo = conversationHistory.filter(m => m.role === "model");
+      const indiceProximaEtapa = mensagensModelo.length;
+      const chavesEtapas = Object.keys(mapaEtapas);
+
+      if (activeSessionId !== "chat" && chavesEtapas[indiceProximaEtapa] && mapaEtapas[chavesEtapas[indiceProximaEtapa]].estatica) {
+        const textoProximaEtapa = mapaEtapas[chavesEtapas[indiceProximaEtapa]].textoCompleto;
+        conversationHistory.push({ role: "model", parts: [{ text: textoProximaEtapa }] });
+        renderizarMensagemInstantanea(textoProximaEtapa, false);
+
+        if (atual) {
+          atual.messages.push({ role: "model", content: textoProximaEtapa });
+          saveStorageProjects(activeUser, activeSessionId, projs);
+        }
+        return;
+      }
+
+      const apiKey = obterChaveSistema();
+      if (!apiKey || apiKey.length < 10) {
+        renderizarMensagemInstantanea("⚠️ Chave de API do sistema não configurada. Configure no Painel Admin.", false, true);
+        return;
       }
 
       const sendBtn = document.getElementById("sendBtn");
@@ -714,45 +1147,49 @@
       indicador.className = "flex justify-start w-full";
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Processando etapa com o Gemini...
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+          ${activeSessionId === 'chat' ? 'Pensando na resposta...' : 'Processando etapa criativa...'}
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
       document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
 
-      let respostaFinal = null;
-      let erroDetalhe = "";
-
-      // Modelos compatíveis com generateContent no Google AI Studio
-      const modelos = [
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro-latest",
-        "gemini-1.5-pro"
+      const modelosCandidatos = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
       ];
 
-      for (const mod of modelos) {
+      const systemInstructionFinal = activeSessionId === "chat"
+        ? "Você é uma inteligência artificial completa, brilhante e prestativa, com tom natural, autêntico e variado idêntico ao Gemini e ChatGPT. Adapte-se ao contexto, varie as palavras e estruturas de frases, e forneça soluções detalhadas em português com formatação markdown rica."
+        : promptMestre;
+
+      let respostaFinal = null;
+      for (const modelo of modelosCandidatos) {
         try {
-          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${apiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: promptMestre }] },
-              contents: conversationHistory,
-              generationConfig: { temperature: 0.7, maxOutputTokens: 8192 }
-            })
-          });
+          const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                systemInstruction: { parts: [{ text: systemInstructionFinal }] },
+                contents: conversationHistory,
+                generationConfig: { 
+                  temperature: 0.9, 
+                  topP: 0.95,
+                  maxOutputTokens: 8192 
+                }
+              })
+            }
+          );
 
           const data = await resp.json();
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             respostaFinal = data.candidates[0].content.parts[0].text;
             break;
-          } else if (data.error) {
-            erroDetalhe = data.error.message || JSON.stringify(data.error);
           }
-        } catch (e) {
-          erroDetalhe = e.message;
-        }
+        } catch (err) {}
       }
 
       const loadEl = document.getElementById("indicadorCarregando");
@@ -760,18 +1197,22 @@
 
       if (respostaFinal) {
         conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
+        
         await renderizarMensagemDigitando(respostaFinal);
+        salvarConhecimento(texto, respostaFinal);
 
         if (atual) {
           atual.messages.push({ role: "model", content: respostaFinal });
           detectarEAtualizarTitulo(texto, respostaFinal, atual, projs);
-          saveStorageProjects(activeSessionId, projs);
+          saveStorageProjects(activeUser, activeSessionId, projs);
         }
+        ultimaMensagemPendente = "";
       } else {
-        const msgAviso = erroDetalhe.includes("API_KEY_INVALID") || erroDetalhe.includes("key not valid")
-          ? "⚠️ **Sua Chave de API do Gemini é inválida ou expirou.** Por favor, confira a chave colada no rodapé da barra lateral."
-          : `⚠️ **Houve uma oscilação na conexão com a IA.** (${erroDetalhe || "Sem resposta do modelo"}). Clique no botão abaixo para tentar novamente:`;
-        renderizarMensagemInstantanea(msgAviso, false, true);
+        renderizarMensagemInstantanea(
+          `⚠️ **Houve uma oscilação na conexão com a IA.**\n\nSua última escolha foi gravada. Clique abaixo para tentar novamente:`,
+          false,
+          true
+        );
       }
 
       sendBtn.disabled = false;
@@ -781,12 +1222,13 @@
 
     function tentarNovamente() {
       const chatArea = document.getElementById("chatArea");
-      if (chatArea.lastElementChild) chatArea.lastElementChild.remove();
-      const ultimaMsg = conversationHistory[conversationHistory.length - 1];
-      if (ultimaMsg && ultimaMsg.role === "user" && conversationHistory.length > 1) {
-        dispararFluxo(ultimaMsg.parts[0].text, false);
+      const erroBox = chatArea.lastElementChild;
+      if (erroBox) erroBox.remove();
+
+      if (ultimaMensagemPendente) {
+        dispararFluxo(ultimaMensagemPendente, false, true);
       } else {
-        dispararFluxo("", true);
+        dispararFluxo("", true, true);
       }
     }
 
@@ -800,51 +1242,42 @@
       const val = input.value.trim();
       if (!val) return;
       input.value = "";
-      dispararFluxo(val, false);
+      dispararFluxo(val, false, false);
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      carregarChaveNaInterface();
+      sincronizarComNuvemEconomico();
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get("token");
-
-      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
-      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
-      const todos = [...dbCadastros, ...dbTeste];
-
-      if (token) {
-        const u = todos.find(x => x.token === token);
+      const enteredByToken = (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (!token) return false;
+        let u = bancoCadastros.find(x => x.token === token) || bancoTeste.find(x => x.token === token);
         if (u) {
-          const agoraMs = new Date().getTime();
-          const vencMs = new Date(u.dataVencimentoIso).getTime();
-
-          if (agoraMs > vencMs) {
-            document.documentElement.className = "estado-expirado";
-            return;
-          }
-
-          abrirStudio(u.nome, u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
-          return;
+          activeUser = u.nome;
+          localStorage.setItem("studio_active_session", activeUser);
+          localStorage.setItem("studio_user_badge", u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+          document.documentElement.className = "estado-logado";
+          return true;
         }
+        return false;
+      })();
+
+      if (enteredByToken) {
+        abrirStudio(activeUser);
+        return;
       }
 
-      const sessaoAtiva = localStorage.getItem("studio_active_session");
-      if (sessaoAtiva) {
-        const u = todos.find(x => x.nome.toLowerCase() === sessaoAtiva.toLowerCase());
-        if (u) {
-          const agoraMs = new Date().getTime();
-          const vencMs = new Date(u.dataVencimentoIso).getTime();
-          if (agoraMs > vencMs) {
-            document.documentElement.className = "estado-expirado";
-            return;
-          }
-          abrirStudio(u.nome, u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
-          return;
+      try {
+        const sessao = localStorage.getItem("studio_active_session");
+        if (sessao) {
+          abrirStudio(sessao);
+        } else {
+          document.documentElement.className = "estado-deslogado";
         }
+      } catch (e) {
+        document.documentElement.className = "estado-deslogado";
       }
-
-      document.documentElement.className = "estado-deslogado";
     });
   </script>
 </body>
