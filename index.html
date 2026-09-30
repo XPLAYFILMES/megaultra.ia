@@ -85,7 +85,7 @@
     </div>
     <h1 class="text-xl font-bold text-white">Acesso Expirado</h1>
     <p class="text-xs text-slate-400 leading-relaxed">
-      Seu período de acesso encerrou. Clique no botão abaixo para renovar sua licença.
+      Seu período de acesso encerrou. Clique no botão abaixo para renovar sua licença no suporte.
     </p>
     <div class="pt-2 flex flex-col gap-2">
       <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer">
@@ -125,7 +125,7 @@
       </button>
 
       <div class="pt-2 text-center">
-        <a href="admin.html" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Painel Administrativo 🛡️️</a>
+        <a href="admin.html" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Painel Administrativo 🛡️</a>
       </div>
     </form>
   </div>
@@ -156,7 +156,7 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário -->
+      <!-- Rodapé do Usuário com Configuração e Ativação da Chave API no Site -->
       <div class="p-3 border-t border-slate-800 flex flex-col gap-2.5 bg-slate-950/80 shrink-0">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2 overflow-hidden">
@@ -215,7 +215,7 @@
           <input 
             type="text" 
             id="userInput" 
-            placeholder="Digite o número correspondente (ex: [1], [0]) ou responda à pergunta..." 
+            placeholder="Digite o número da opção (ex: [1], [0]) ou sua resposta..." 
             onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
             class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
@@ -406,7 +406,7 @@
         }
       } catch (e) {}
 
-      return "Você é um diretor de produção audiovisual monotarefa. Apresente rigorosamente a Etapa 1 e aguarde.";
+      return "Você é um diretor e engenheiro de IA especializado. Conduza o projeto etapa por etapa.";
     }
 
     function renderizarBotoesSessoes() {
@@ -693,7 +693,7 @@
 
       if (isInicial) {
         conversationHistory = [
-          { role: "user", parts: [{ text: "Iniciar motor de produção. Apresente a ETAPA 1 rigorosamente conforme instruído nas suas diretrizes." }] }
+          { role: "user", parts: [{ text: "Olá! Vamos iniciar o projeto. Por favor, apresente a ETAPA 1 com todas as opções exatamente conforme o roteiro instruído." }] }
         ];
       } else {
         renderizarMensagemInstantanea(texto, true);
@@ -714,7 +714,7 @@
       indicador.className = "flex justify-start w-full";
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Processando etapa conforme o prompt de produção...
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Processando etapa com o Gemini...
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
@@ -723,11 +723,12 @@
       let respostaFinal = null;
       let erroDetalhe = "";
 
-      // Modelos estáveis oficiais da API Google Gemini
+      // Modelos compatíveis com generateContent no Google AI Studio
       const modelos = [
+        "gemini-1.5-flash-latest",
         "gemini-1.5-flash",
-        "gemini-1.5-pro",
-        "gemini-1.0-pro"
+        "gemini-1.5-pro-latest",
+        "gemini-1.5-pro"
       ];
 
       for (const mod of modelos) {
@@ -768,7 +769,7 @@
         }
       } else {
         const msgAviso = erroDetalhe.includes("API_KEY_INVALID") || erroDetalhe.includes("key not valid")
-          ? "⚠️ **Sua Chave de API do Gemini é inválida ou expirou.** Por favor, confira a chave colada no rodapé esquerdo."
+          ? "⚠️ **Sua Chave de API do Gemini é inválida ou expirou.** Por favor, confira a chave colada no rodapé da barra lateral."
           : `⚠️ **Houve uma oscilação na conexão com a IA.** (${erroDetalhe || "Sem resposta do modelo"}). Clique no botão abaixo para tentar novamente:`;
         renderizarMensagemInstantanea(msgAviso, false, true);
       }
@@ -782,7 +783,7 @@
       const chatArea = document.getElementById("chatArea");
       if (chatArea.lastElementChild) chatArea.lastElementChild.remove();
       const ultimaMsg = conversationHistory[conversationHistory.length - 1];
-      if (ultimaMsg && ultimaMsg.role === "user") {
+      if (ultimaMsg && ultimaMsg.role === "user" && conversationHistory.length > 1) {
         dispararFluxo(ultimaMsg.parts[0].text, false);
       } else {
         dispararFluxo("", true);
