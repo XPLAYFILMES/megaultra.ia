@@ -12,9 +12,9 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen p-4 sm:p-8 font-sans">
 
-  <div class="max-w-6xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-6">
 
-    <!-- CABEÇALHO ADMIN PROFISSIONAL ECONÔMICO -->
+    <!-- CABEÇALHO ADMIN CENTRAL -->
     <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-2xl font-bold shadow-inner">
@@ -22,86 +22,90 @@
         </div>
         <div>
           <h1 class="text-xl font-bold text-white flex items-center gap-2">
-            Painel de Gestão & Licenças
-            <span class="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-normal">Nuvem Conectada</span>
+            Central de Licenças & Usuários
           </h1>
-          <p class="text-xs text-slate-400">Modo econômico ativo (zero consumo ocioso de requisições).</p>
+          <p class="text-xs text-slate-400">Controle de acessos, tokens criptográficos e gestão de assinaturas.</p>
         </div>
       </div>
 
-      <!-- Configuração da Chave Gemini Central do Sistema -->
+      <!-- Configuração da Chave Gemini do Sistema -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="relative">
-          <input 
-            type="password" 
-            id="adminMasterKeyInput" 
-            placeholder="Gemini API Key do Sistema" 
-            class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-44 sm:w-56"
-          />
-        </div>
-        <button onclick="salvarChaveSistemaAdmin()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl transition cursor-pointer">
+        <input 
+          type="password" 
+          id="adminMasterKeyInput" 
+          placeholder="Gemini API Key do Sistema" 
+          class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-52 sm:w-64"
+        />
+        <button onclick="salvarChaveSistemaAdmin()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl transition cursor-pointer">
           Salvar Chave
-        </button>
-        <button onclick="carregarDadosDaNuvem(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs rounded-xl transition cursor-pointer">
-          🔄 Atualizar Agora
         </button>
       </div>
     </header>
 
     <!-- CARDS DE MÉTRICAS -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-[11px] text-slate-400 uppercase font-semibold">Assinantes Ativos (30d)</span>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Assinantes Ativos</span>
           <h3 id="statAtivos" class="text-xl font-bold text-blue-400 mt-0.5">0</h3>
         </div>
         <div class="text-2xl">💎</div>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-[11px] text-slate-400 uppercase font-semibold">Cadastros Teste (6h)</span>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Testes (6h)</span>
           <h3 id="statTestes" class="text-xl font-bold text-purple-400 mt-0.5">0</h3>
         </div>
         <div class="text-2xl">🧪</div>
       </div>
+      <div class="bg-slate-900 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] text-amber-400 uppercase font-semibold">Vencendo (≤ 2 dias)</span>
+          <h3 id="statVencendo" class="text-xl font-bold text-amber-400 mt-0.5">0</h3>
+        </div>
+        <div class="text-2xl">⚠️</div>
+      </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <span class="text-[11px] text-slate-400 uppercase font-semibold">Licenças Expiradas</span>
+          <span class="text-[11px] text-slate-400 uppercase font-semibold">Expirados</span>
           <h3 id="statExpirados" class="text-xl font-bold text-rose-400 mt-0.5">0</h3>
         </div>
         <div class="text-2xl">⏳</div>
       </div>
     </div>
 
-    <!-- ABAS DO BANCO DE DADOS -->
-    <div class="flex border-b border-slate-800 gap-2">
-      <button id="tabBtnCadastro" onclick="trocarBancoVisual('cadastro')" class="py-2.5 px-5 font-semibold text-xs border-b-2 border-blue-500 text-blue-400 transition flex items-center gap-2">
-        <span>💎</span> Assinantes Ativos (30 Dias) (<span id="countCadastro">0</span>)
+    <!-- ABAS PRINCIPAIS -->
+    <div class="flex border-b border-slate-800 gap-2 overflow-x-auto">
+      <button id="tabBtnTodos" onclick="trocarAba('todos')" class="py-2.5 px-5 font-semibold text-xs border-b-2 border-blue-500 text-blue-400 transition flex items-center gap-2 whitespace-nowrap">
+        <span>👥</span> Todos os Usuários (<span id="countTodos">0</span>)
       </button>
-      <button id="tabBtnTeste" onclick="trocarBancoVisual('teste')" class="py-2.5 px-5 font-semibold text-xs text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-2">
-        <span>🧪</span> Cadastros Teste (6 Horas) (<span id="countTeste">0</span>)
+      <button id="tabBtnCadastro" onclick="trocarAba('cadastro')" class="py-2.5 px-5 font-semibold text-xs text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+        <span>💎</span> Assinantes Ativos (<span id="countCadastro">0</span>)
+      </button>
+      <button id="tabBtnTeste" onclick="trocarAba('teste')" class="py-2.5 px-5 font-semibold text-xs text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-2 whitespace-nowrap">
+        <span>🧪</span> Cadastros Teste (<span id="countTeste">0</span>)
       </button>
     </div>
 
-    <!-- FORMULÁRIO DE CADASTRO -->
+    <!-- FORMULÁRIO DE CADASTRO COM GERADOR DE SENHA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-          <span>➕</span> Cadastrar no <span id="labelNomeBancoAtivo" class="text-blue-400">Banco de Cadastros (Ativos - 30 Dias)</span>
+          <span>➕</span> Cadastrar Novo Usuário
         </h2>
         <span id="badgeDuracaoCalculada" class="text-xs px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
-          Duração: 30 Dias
+          Assinatura Padrão: 30 Dias
         </span>
       </div>
 
-      <form id="formNovoUsuario" onsubmit="cadastrarUsuario(event)" autocomplete="off" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <form id="formNovoUsuario" onsubmit="cadastrarUsuario(event)" autocomplete="off" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Nome do Usuário</label>
-          <input type="text" id="cadNome" required autocomplete="off" placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+          <input type="text" id="cadNome" required placeholder="Ex: Carlos Silva" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Canal de Contato</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Canal</label>
           <select id="cadTipoContato" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
             <option value="whatsapp">WhatsApp</option>
             <option value="telegram">Telegram</option>
@@ -109,50 +113,63 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Número com DDD / @Usuário</label>
-          <input type="text" id="cadNumero" required autocomplete="off" placeholder="Ex: 5548999999999 ou @usuario" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Número / @Contato</label>
+          <input type="text" id="cadNumero" required placeholder="Ex: 5548999999999" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-1.5">
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Data e Hora de Início</label>
-            <button type="button" onclick="definirDataHoraAtual()" class="text-[10px] text-blue-400 hover:underline">Usar Agora</button>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Senha Única (12 carac.)</label>
+            <button type="button" onclick="gerarSenhaAutomatica()" class="text-[10px] text-blue-400 hover:underline">🎲 Gerar</button>
           </div>
-          <input type="datetime-local" id="cadDataHora" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition" />
+          <input type="text" id="cadSenha" required placeholder="Ex: 9A8f7xK2mP4q" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono transition" />
         </div>
 
-        <div class="lg:col-span-4 flex justify-end pt-2">
-          <button type="submit" id="btnSubmitCad" class="py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer">
-            Gerar Acesso de 30 Dias
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">Plano</label>
+          <select id="cadPlano" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+            <option value="cadastro">Assinatura (30 Dias)</option>
+            <option value="teste">Teste Gratuito (6 Horas)</option>
+          </select>
+        </div>
+
+        <div class="lg:col-span-5 flex justify-end pt-2">
+          <button type="submit" class="py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer">
+            Gerar Acesso & Link Único
           </button>
         </div>
       </form>
     </div>
 
-    <!-- BUSCA -->
+    <!-- BARRA DE FILTROS E BUSCA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3">
-      <div class="relative w-full sm:w-80">
-        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome ou contato..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
-        <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
+      <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <span class="text-xs text-slate-400 font-semibold uppercase mr-1">Filtro:</span>
+        <button onclick="definirSubFiltro('todos')" id="subFiltro_todos" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">Todos</button>
+        <button onclick="definirSubFiltro('ativos')" id="subFiltro_ativos" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition">Ativos</button>
+        <button onclick="definirSubFiltro('vencendo')" id="subFiltro_vencendo" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-amber-400 hover:bg-amber-500/20 transition">⚠️ Vencendo (≤ 2 dias)</button>
+        <button onclick="definirSubFiltro('expirados')" id="subFiltro_expirados" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-rose-400 hover:bg-rose-500/20 transition">Expirados</button>
       </div>
-      <div class="text-xs text-slate-400">
-        Clique em <b>🔄 Atualizar Agora</b> para buscar alterações recentes.
+
+      <div class="relative w-full sm:w-72">
+        <input type="text" id="inputBusca" oninput="renderizarTabela()" placeholder="Buscar por nome, contato ou senha..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+        <span class="absolute left-3 top-2.5 text-slate-500 text-xs">🔍</span>
       </div>
     </div>
 
-    <!-- TABELA DE USUÁRIOS -->
+    <!-- TABELA DE USUÁRIOS COMPLETA -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-slate-300">
           <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
             <tr>
-              <th class="p-3.5">Usuário</th>
+              <th class="p-3.5">Usuário & Senha</th>
               <th class="p-3.5">Contato</th>
-              <th class="p-3.5">Data/Hora Registro</th>
-              <th class="p-3.5">Data/Hora Vencimento</th>
+              <th class="p-3.5">Data Registro</th>
+              <th class="p-3.5">Vencimento</th>
               <th class="p-3.5">Status</th>
               <th class="p-3.5">Link de Acesso Único</th>
-              <th class="p-3.5 text-right">Ações Rápidas</th>
+              <th class="p-3.5 text-right">Ações</th>
             </tr>
           </thead>
           <tbody id="tabelaUsuariosCorpo" class="divide-y divide-slate-800"></tbody>
@@ -162,14 +179,46 @@
 
   </div>
 
-  <script>
-    const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8";
-    const BIN_TESTE = "6abc21bfac6210605a032f92";
+  <!-- MODAL DE EDIÇÃO DE USUÁRIO -->
+  <div id="modalEdicao" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <h3 class="text-base font-bold text-white">Editar Usuário</h3>
+      
+      <input type="hidden" id="editUserId" />
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Nome</label>
+        <input type="text" id="editNome" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white" />
+      </div>
 
-    let bancoAtual = "cadastro";
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Contato</label>
+        <input type="text" id="editNumero" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white" />
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Senha (12 caracteres)</label>
+        <input type="text" id="editSenha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono" />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="fecharModalEdicao()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs">Cancelar</button>
+        <button onclick="salvarEdicaoUsuario()" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let abaAtual = "todos";
+    let subFiltro = "todos";
+
     let dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
     let dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+
+    function salvarBancosLocais() {
+      localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
+      localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
+      atualizarContadores();
+    }
 
     function salvarChaveSistemaAdmin() {
       const val = document.getElementById("adminMasterKeyInput").value.trim();
@@ -178,105 +227,41 @@
         return;
       }
       localStorage.setItem("studio_master_gemini_key", val);
-      alert("Chave do sistema salva com sucesso!");
+      alert("Chave mestra do Gemini salva com sucesso!");
     }
 
-    async function carregarDadosDaNuvem(comAviso = false) {
-      try {
-        const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
-
-        const resCad = await fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers });
-        const dCad = await resCad.json();
-        dbCadastros = Array.isArray(dCad.record) ? dCad.record : (dCad.record?.usuarios || []);
-        localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
-
-        const resTest = await fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers });
-        const dTest = await resTest.json();
-        dbTeste = Array.isArray(dTest.record) ? dTest.record : (dTest.record?.testes || []);
-        localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
-
-        atualizarContadores();
-        renderizarTabela();
-        if (comAviso) alert("Dados atualizados da nuvem com sucesso!");
-      } catch (err) {}
+    function gerarStringAleatoria(tamanho = 12) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+      let resultado = "";
+      for (let i = 0; i < tamanho; i++) {
+        resultado += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return resultado;
     }
 
-    async function gravarNuvem(binId, dados, chave) {
-      try {
-        await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": JSONBIN_MASTER_KEY
-          },
-          body: JSON.stringify({ [chave]: dados })
-        });
-      } catch (e) {}
-    }
+    function gerarSenhaAutomatica() {
+      let senha = "";
+      const todosUsuarios = [...dbCadastros, ...dbTeste];
+      let repetida = true;
 
-    async function salvarBancos() {
-      localStorage.setItem("db_cadastros_completo", JSON.stringify(dbCadastros));
-      localStorage.setItem("db_cadastros_teste", JSON.stringify(dbTeste));
-      atualizarContadores();
-
-      gravarNuvem(BIN_CADASTROS, dbCadastros, "usuarios");
-      gravarNuvem(BIN_TESTE, dbTeste, "testes");
-    }
-
-    function atualizarContadores() {
-      document.getElementById("countCadastro").textContent = dbCadastros.length;
-      document.getElementById("countTeste").textContent = dbTeste.length;
-
-      const agora = new Date().getTime();
-      let totalExpirados = 0;
-
-      dbCadastros.forEach(u => { if (agora > new Date(u.dataVencimentoIso).getTime()) totalExpirados++; });
-      dbTeste.forEach(u => { if (agora > new Date(u.dataVencimentoIso).getTime()) totalExpirados++; });
-
-      document.getElementById("statAtivos").textContent = dbCadastros.length;
-      document.getElementById("statTestes").textContent = dbTeste.length;
-      document.getElementById("statExpirados").textContent = totalExpirados;
-    }
-
-    function definirDataHoraAtual() {
-      const agora = new Date();
-      const ano = agora.getFullYear();
-      const mes = String(agora.getMonth() + 1).padStart(2, '0');
-      const dia = String(agora.getDate()).padStart(2, '0');
-      const hora = String(agora.getHours()).padStart(2, '0');
-      const min = String(agora.getMinutes()).padStart(2, '0');
-      document.getElementById("cadDataHora").value = `${ano}-${mes}-${dia}T${hora}:${min}`;
-    }
-
-    function trocarBancoVisual(tipo) {
-      bancoAtual = tipo;
-      const tabCad = document.getElementById("tabBtnCadastro");
-      const tabTest = document.getElementById("tabBtnTeste");
-      const lbl = document.getElementById("labelNomeBancoAtivo");
-      const badgeDur = document.getElementById("badgeDuracaoCalculada");
-      const btnSubmit = document.getElementById("btnSubmitCad");
-
-      if (tipo === "cadastro") {
-        tabCad.className = "py-2.5 px-5 font-semibold text-xs border-b-2 border-blue-500 text-blue-400 transition flex items-center gap-2";
-        tabTest.className = "py-2.5 px-5 font-semibold text-xs text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-2";
-        lbl.textContent = "Banco de Cadastros (Ativos - 30 Dias)";
-        lbl.className = "text-blue-400";
-        badgeDur.textContent = "Duração: 30 Dias";
-        badgeDur.className = "text-xs px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium";
-        btnSubmit.textContent = "Gerar Acesso de 30 Dias";
-        btnSubmit.className = "py-2.5 px-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-95 cursor-pointer";
-      } else {
-        tabTest.className = "py-2.5 px-5 font-semibold text-xs border-b-2 border-purple-500 text-purple-400 transition flex items-center gap-2";
-        tabCad.className = "py-2.5 px-5 font-semibold text-xs text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition flex items-center gap-2";
-        lbl.textContent = "Banco de Teste (Demonstração - 6 Horas)";
-        lbl.className = "text-purple-400";
-        badgeDur.textContent = "Duração: 6 Horas";
-        badgeDur.className = "text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium";
-        btnSubmit.textContent = "Gerar Acesso Teste de 6 Horas";
-        btnSubmit.className = "py-2.5 px-6 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-purple-600/25 active:scale-95 cursor-pointer";
+      while (repetida) {
+        senha = gerarStringAleatoria(12);
+        repetida = todosUsuarios.some(u => u.senha === senha);
       }
 
-      renderizarTabela();
+      document.getElementById("cadSenha").value = senha;
+    }
+
+    function gerarTokenUnico() {
+      let token = "";
+      const todosUsuarios = [...dbCadastros, ...dbTeste];
+      let repetido = true;
+
+      while (repetido) {
+        token = "tok_" + gerarStringAleatoria(20);
+        repetido = todosUsuarios.some(u => u.token === token);
+      }
+      return token;
     }
 
     function formatarDataHora(date) {
@@ -288,155 +273,283 @@
       return `${d}/${m}/${a} às ${h}:${min}`;
     }
 
-    async function cadastrarUsuario(e) {
+    function atualizarContadores() {
+      const agora = new Date().getTime();
+      const doisDiasMs = 2 * 24 * 60 * 60 * 1000;
+
+      const todos = [...dbCadastros, ...dbTeste];
+
+      let ativos = 0;
+      let vencendo = 0;
+      let expirados = 0;
+
+      todos.forEach(u => {
+        const vencMs = new Date(u.dataVencimentoIso).getTime();
+        const diff = vencMs - agora;
+
+        if (diff <= 0) {
+          expirados++;
+        } else {
+          ativos++;
+          if (diff <= doisDiasMs) {
+            vencendo++;
+          }
+        }
+      });
+
+      document.getElementById("statAtivos").textContent = dbCadastros.length;
+      document.getElementById("statTestes").textContent = dbTeste.length;
+      document.getElementById("statVencendo").textContent = vencendo;
+      document.getElementById("statExpirados").textContent = expirados;
+
+      document.getElementById("countTodos").textContent = todos.length;
+      document.getElementById("countCadastro").textContent = dbCadastros.length;
+      document.getElementById("countTeste").textContent = dbTeste.length;
+    }
+
+    function trocarAba(aba) {
+      abaAtual = aba;
+      document.getElementById("tabBtnTodos").className = `py-2.5 px-5 font-semibold text-xs border-b-2 ${aba === 'todos' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'} transition`;
+      document.getElementById("tabBtnCadastro").className = `py-2.5 px-5 font-semibold text-xs border-b-2 ${aba === 'cadastro' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400'} transition`;
+      document.getElementById("tabBtnTeste").className = `py-2.5 px-5 font-semibold text-xs border-b-2 ${aba === 'teste' ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-400'} transition`;
+      renderizarTabela();
+    }
+
+    function definirSubFiltro(tipo) {
+      subFiltro = tipo;
+      ['todos', 'ativos', 'vencendo', 'expirados'].forEach(f => {
+        const btn = document.getElementById("subFiltro_" + f);
+        if (f === tipo) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white transition";
+        }
+      });
+      renderizarTabela();
+    }
+
+    function cadastrarUsuario(e) {
       e.preventDefault();
 
       const nome = document.getElementById("cadNome").value.trim();
       const tipoContato = document.getElementById("cadTipoContato").value;
       const numero = document.getElementById("cadNumero").value.trim();
-      const dataHoraInput = document.getElementById("cadDataHora").value;
+      const senha = document.getElementById("cadSenha").value.trim();
+      const plano = document.getElementById("cadPlano").value;
 
-      const dataInicio = new Date(dataHoraInput);
-      let dataVencimento;
+      const agora = new Date();
+      let vencimento;
 
-      if (bancoAtual === "cadastro") {
-        dataVencimento = new Date(dataInicio.getTime() + (30 * 24 * 60 * 60 * 1000));
+      if (plano === "cadastro") {
+        vencimento = new Date(agora.getTime() + (30 * 24 * 60 * 60 * 1000));
       } else {
-        dataVencimento = new Date(dataInicio.getTime() + (6 * 60 * 60 * 1000));
+        vencimento = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
       }
 
-      const tokenUnico = btoa(JSON.stringify({
-        id: "usr_" + Date.now(),
-        tipo: bancoAtual,
-        exp: dataVencimento.getTime()
-      })).replace(/=/g, '');
-
-      const novoRegistro = {
+      const novoUsuario = {
         id: "usr_" + Date.now(),
         nome: nome,
         tipoContato: tipoContato,
         numero: numero,
-        banco: bancoAtual,
-        dataCadastroIso: dataInicio.toISOString(),
-        dataCadastroFormatada: formatarDataHora(dataInicio),
-        dataVencimentoIso: dataVencimento.toISOString(),
-        dataVencimentoFormatada: formatarDataHora(dataVencimento),
-        token: tokenUnico
+        senha: senha,
+        banco: plano,
+        token: gerarTokenUnico(),
+        dataCadastroIso: agora.toISOString(),
+        dataCadastroFormatada: formatarDataHora(agora),
+        dataVencimentoIso: vencimento.toISOString(),
+        dataVencimentoFormatada: formatarDataHora(vencimento)
       };
 
-      if (bancoAtual === "cadastro") {
-        dbCadastros.unshift(novoRegistro);
+      if (plano === "cadastro") {
+        dbCadastros.unshift(novoUsuario);
       } else {
-        dbTeste.unshift(novoRegistro);
+        dbTeste.unshift(novoUsuario);
       }
 
-      await salvarBancos();
+      salvarBancosLocais();
       document.getElementById("formNovoUsuario").reset();
-      definirDataHoraAtual();
+      gerarSenhaAutomatica();
       renderizarTabela();
-
-      alert(`Usuário registrado e salvo na nuvem com sucesso!`);
+      alert(`Usuário cadastrado com sucesso! Link e senha gerados.`);
     }
 
-    async function ativarPlano30Dias(id) {
+    function ativarPlano30Dias(id) {
       const indexTeste = dbTeste.findIndex(u => u.id === id);
       if (indexTeste === -1) return;
 
       const user = dbTeste[indexTeste];
-      if (!confirm(`Deseja ativar a assinatura de 30 DIAS para ${user.nome}?`)) return;
+      if (!confirm(`Deseja ativar a assinatura de 30 DIAS para ${user.nome}? O link e a senha permanecerão os mesmos!`)) return;
 
       const agora = new Date();
       const novoVenc = new Date(agora.getTime() + (30 * 24 * 60 * 60 * 1000));
 
-      const novoToken = btoa(JSON.stringify({
-        id: user.id,
-        tipo: "cadastro",
-        exp: novoVenc.getTime()
-      })).replace(/=/g, '');
-
       const userAtivado = {
         ...user,
         banco: "cadastro",
-        dataCadastroIso: agora.toISOString(),
-        dataCadastroFormatada: formatarDataHora(agora),
         dataVencimentoIso: novoVenc.toISOString(),
-        dataVencimentoFormatada: formatarDataHora(novoVenc),
-        token: novoToken
+        dataVencimentoFormatada: formatarDataHora(novoVenc)
       };
 
       dbTeste.splice(indexTeste, 1);
       dbCadastros.unshift(userAtivado);
 
-      await salvarBancos();
+      salvarBancosLocais();
       renderizarTabela();
-      alert(`🎉 Sucesso! ${user.nome} ativado por 30 dias na nuvem.`);
+      alert(`🎉 ${user.nome} ativado com sucesso por 30 dias!`);
+    }
+
+    function renovarPeriodo(id) {
+      let user = dbCadastros.find(u => u.id === id) || dbTeste.find(u => u.id === id);
+      if (!user) return;
+
+      const diasStr = prompt(`Quantos dias deseja adicionar para ${user.nome}?`, "30");
+      if (!diasStr) return;
+      const dias = parseInt(diasStr);
+      if (isNaN(dias) || dias <= 0) return;
+
+      const agora = new Date();
+      const vencAtual = new Date(user.dataVencimentoIso);
+      const baseCalc = vencAtual > agora ? vencAtual : agora;
+      const novoVenc = new Date(baseCalc.getTime() + (dias * 24 * 60 * 60 * 1000));
+
+      user.dataVencimentoIso = novoVenc.toISOString();
+      user.dataVencimentoFormatada = formatarDataHora(novoVenc);
+
+      salvarBancosLocais();
+      renderizarTabela();
+      alert(`Acesso de ${user.nome} renovado por mais ${dias} dias!`);
+    }
+
+    function abrirModalEdicao(id) {
+      const user = dbCadastros.find(u => u.id === id) || dbTeste.find(u => u.id === id);
+      if (!user) return;
+
+      document.getElementById("editUserId").value = user.id;
+      document.getElementById("editNome").value = user.nome;
+      document.getElementById("editNumero").value = user.numero;
+      document.getElementById("editSenha").value = user.senha || "";
+      document.getElementById("modalEdicao").classList.remove("hidden");
+    }
+
+    function fecharModalEdicao() {
+      document.getElementById("modalEdicao").classList.add("hidden");
+    }
+
+    function salvarEdicaoUsuario() {
+      const id = document.getElementById("editUserId").value;
+      const user = dbCadastros.find(u => u.id === id) || dbTeste.find(u => u.id === id);
+      if (!user) return;
+
+      user.nome = document.getElementById("editNome").value.trim();
+      user.numero = document.getElementById("editNumero").value.trim();
+      user.senha = document.getElementById("editSenha").value.trim();
+
+      salvarBancosLocais();
+      fecharModalEdicao();
+      renderizarTabela();
+      alert("Dados do usuário atualizados com sucesso!");
+    }
+
+    function excluirUsuario(id) {
+      if (!confirm("Tem certeza que deseja excluir permanentemente este usuário?")) return;
+      dbCadastros = dbCadastros.filter(u => u.id !== id);
+      dbTeste = dbTeste.filter(u => u.id !== id);
+      salvarBancosLocais();
+      renderizarTabela();
     }
 
     function renderizarTabela() {
       const corpo = document.getElementById("tabelaUsuariosCorpo");
       const filtro = document.getElementById("inputBusca").value.toLowerCase();
-      const lista = bancoAtual === "cadastro" ? dbCadastros : dbTeste;
 
-      const filtrados = lista.filter(u => 
-        u.nome.toLowerCase().includes(filtro) || 
-        u.numero.toLowerCase().includes(filtro)
+      let listaBase = [];
+      if (abaAtual === "todos") listaBase = [...dbCadastros, ...dbTeste];
+      else if (abaAtual === "cadastro") listaBase = [...dbCadastros];
+      else listaBase = [...dbTeste];
+
+      const agoraMs = new Date().getTime();
+      const doisDiasMs = 2 * 24 * 60 * 60 * 1000;
+
+      // Aplica sub-filtro de status
+      let listaFiltrada = listaBase.filter(u => {
+        const vencMs = new Date(u.dataVencimentoIso).getTime();
+        const diff = vencMs - agoraMs;
+
+        if (subFiltro === "ativos") return diff > 0;
+        if (subFiltro === "expirados") return diff <= 0;
+        if (subFiltro === "vencendo") return diff > 0 && diff <= doisDiasMs;
+        return true;
+      });
+
+      // Aplica busca por texto
+      listaFiltrada = listaFiltrada.filter(u => 
+        u.nome.toLowerCase().includes(filtro) ||
+        u.numero.toLowerCase().includes(filtro) ||
+        (u.senha && u.senha.toLowerCase().includes(filtro))
       );
 
       corpo.innerHTML = "";
 
-      if (filtrados.length === 0) {
-        corpo.innerHTML = `
-          <tr>
-            <td colspan="7" class="p-8 text-center text-slate-500 text-xs">
-              Nenhum usuário encontrado neste banco de dados.
-            </td>
-          </tr>
-        `;
+      if (listaFiltrada.length === 0) {
+        corpo.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 text-xs">Nenhum usuário encontrado.</td></tr>`;
         return;
       }
 
-      const agoraMs = new Date().getTime();
-
-      filtrados.forEach(u => {
+      listaFiltrada.forEach(u => {
         const vencMs = new Date(u.dataVencimentoIso).getTime();
-        const expirado = agoraMs > vencMs;
+        const diff = vencMs - agoraMs;
+        const expirado = diff <= 0;
+        const vencendoEmBreve = diff > 0 && diff <= doisDiasMs;
 
-        const urlBase = window.location.origin + window.location.pathname.replace("admin.html", "index.html").replace("/admin/", "/");
+        // Gera Link Único Perfeito para o index.html
+        let urlBase = window.location.href.split('?')[0].replace("admin.html", "index.html");
+        if (!urlBase.endsWith("index.html")) {
+          urlBase = urlBase.replace(/\/$/, "") + "/index.html";
+        }
         const linkAcesso = `${urlBase}?token=${u.token}`;
 
         const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-950/40 transition";
+        tr.className = `hover:bg-slate-950/40 transition ${vencendoEmBreve ? 'bg-amber-500/5' : ''}`;
         tr.innerHTML = `
-          <td class="p-3.5 font-semibold text-white">${u.nome}</td>
+          <td class="p-3.5">
+            <div class="font-bold text-white">${u.nome}</div>
+            <div class="text-[11px] font-mono text-slate-400">Senha: <b class="text-sky-400">${u.senha || "Sem senha"}</b></div>
+          </td>
           <td class="p-3.5">
             <span class="capitalize text-slate-400">${u.tipoContato}:</span> ${u.numero}
           </td>
           <td class="p-3.5 text-slate-400">${u.dataCadastroFormatada}</td>
-          <td class="p-3.5 font-medium ${expirado ? 'text-rose-400' : 'text-slate-300'}">${u.dataVencimentoFormatada}</td>
+          <td class="p-3.5 font-medium ${expirado ? 'text-rose-400' : (vencendoEmBreve ? 'text-amber-400 font-bold' : 'text-slate-300')}">
+            ${u.dataVencimentoFormatada}
+          </td>
           <td class="p-3.5">
             ${expirado 
               ? '<span class="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">Expirado</span>' 
-              : `<span class="px-2 py-0.5 rounded-full text-[10px] ${u.banco === 'cadastro' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'} font-semibold">Ativo (${u.banco === 'cadastro' ? '30d' : '6h'})</span>`}
+              : (vencendoEmBreve 
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold animate-pulse">⚠️ Vence em breve</span>'
+                : `<span class="px-2 py-0.5 rounded-full text-[10px] ${u.banco === 'cadastro' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'} font-semibold">Ativo (${u.banco === 'cadastro' ? '30d' : '6h'})</span>`)}
           </td>
           <td class="p-3.5">
             <div class="flex items-center gap-1.5">
               <input type="text" readonly value="${linkAcesso}" class="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-[11px] text-slate-400 w-36 select-all" />
               <button onclick="copiarLink('${linkAcesso}')" title="Copiar Link" class="p-1 hover:text-white text-slate-400 bg-slate-800 rounded border border-slate-700">📋</button>
-              <button onclick="enviarMensagem('${u.tipoContato}', '${u.numero}', '${u.nome}', '${linkAcesso}', '${u.dataVencimentoFormatada}', '${u.banco}')" title="Enviar Acesso" class="p-1 hover:text-white text-emerald-400 bg-slate-800 rounded border border-slate-700">🚀</button>
+              <button onclick="enviarMensagem('${u.tipoContato}', '${u.numero}', '${u.nome}', '${linkAcesso}', '${u.senha}', '${u.dataVencimentoFormatada}', '${u.banco}')" title="Enviar WhatsApp/Telegram" class="p-1 hover:text-white text-emerald-400 bg-slate-800 rounded border border-slate-700">🚀</button>
             </div>
           </td>
           <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
             ${u.banco === 'teste' ? `
-              <button onclick="ativarPlano30Dias('${u.id}')" class="px-2 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-semibold transition shadow-sm">
+              <button onclick="ativarPlano30Dias('${u.id}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[11px] font-semibold transition shadow-sm">
                 💎 Ativar 30 Dias
               </button>
-            ` : `
-              <button onclick="renovarPeriodo('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded text-[11px] transition">
-                +30 Dias
-              </button>
-            `}
-            <button onclick="excluirUsuario('${u.id}')" class="px-2 py-1 bg-slate-800 hover:bg-rose-950/40 text-rose-400 rounded text-[11px] transition">
-              Excluir
+            ` : ''}
+            <button onclick="renovarPeriodo('${u.id}')" title="Renovar Período" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-lg text-[11px] transition">
+              🔄 Renovar
+            </button>
+            <button onclick="abrirModalEdicao('${u.id}')" title="Editar Usuário" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] transition">
+              ✏️ Editar
+            </button>
+            <button onclick="excluirUsuario('${u.id}')" title="Excluir Usuário" class="px-2 py-1 bg-slate-800 hover:bg-rose-950/40 text-rose-400 rounded-lg text-[11px] transition">
+              🗑️
             </button>
           </td>
         `;
@@ -446,12 +559,12 @@
 
     function copiarLink(link) {
       navigator.clipboard.writeText(link);
-      alert("Link copiado com sucesso!");
+      alert("Link exclusivo copiado!");
     }
 
-    function enviarMensagem(tipo, numero, nome, link, vencimento, banco) {
-      const duracao = banco === "cadastro" ? "30 dias (Assinatura Completa)" : "6 horas (Teste de Demonstração)";
-      const msg = encodeURIComponent(`Olá ${nome}!\n\nSeu acesso ao Universal Master Studio foi gerado com sucesso (${duracao}).\n\n🔗 Link único de acesso:\n${link}\n\n⏳ Validade até: ${vencimento}\n\nBom trabalho!`);
+    function enviarMensagem(tipo, numero, nome, link, senha, vencimento, banco) {
+      const duracao = banco === "cadastro" ? "30 dias (Assinatura Completa)" : "6 horas (Teste Gratuito)";
+      const msg = encodeURIComponent(`Olá ${nome}!\n\nSeu acesso ao Universal Master Studio está liberado (${duracao}).\n\n🔗 Link direto de acesso:\n${link}\n\n🔑 Senha de acesso: ${senha}\n⏳ Vencimento: ${vencimento}\n\nBom trabalho!`);
       if (tipo === "whatsapp") {
         const numLimpo = numero.replace(/\D/g, '');
         window.open(`https://api.whatsapp.com/send?phone=${numLimpo}&text=${msg}`, '_blank');
@@ -460,46 +573,13 @@
       }
     }
 
-    async function renovarPeriodo(id) {
-      const lista = bancoAtual === "cadastro" ? dbCadastros : dbTeste;
-      const user = lista.find(u => u.id === id);
-      if (!user) return;
-
-      const agora = new Date();
-      let novoVenc;
-
-      if (user.banco === "cadastro") {
-        novoVenc = new Date(agora.getTime() + (30 * 24 * 60 * 60 * 1000));
-      } else {
-        novoVenc = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
-      }
-
-      user.dataVencimentoIso = novoVenc.toISOString();
-      user.dataVencimentoFormatada = formatarDataHora(novoVenc);
-
-      await salvarBancos();
-      renderizarTabela();
-      alert(`Acesso renovado com sucesso!`);
-    }
-
-    async function excluirUsuario(id) {
-      if (!confirm("Tem certeza que deseja excluir este registro?")) return;
-      if (bancoAtual === "cadastro") {
-        dbCadastros = dbCadastros.filter(u => u.id !== id);
-      } else {
-        dbTeste = dbTeste.filter(u => u.id !== id);
-      }
-      await salvarBancos();
-      renderizarTabela();
-    }
-
     window.onload = function() {
-      definirDataHoraAtual();
-      
       const keySalva = localStorage.getItem("studio_master_gemini_key") || "";
       if (keySalva) document.getElementById("adminMasterKeyInput").value = keySalva;
 
-      carregarDadosDaNuvem(false);
+      gerarSenhaAutomatica();
+      atualizarContadores();
+      renderizarTabela();
     };
   </script>
 </body>
