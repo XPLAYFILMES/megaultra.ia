@@ -274,9 +274,9 @@
   </div>
 
   <script>
-    // Configurações JSONBin Globais Atualizadas
+    // Configurações JSONBin Globais
     const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8"; // ID Atualizado!
+    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
     const BIN_TESTE = "6abc21bfac6210605a032f92";
     const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
 
@@ -720,6 +720,7 @@
       }
     }
 
+    // A Chave API agora fica centralizada no painel ou localStorage sem poluir o cabeçalho
     function obterChaveSistema() {
       try {
         const k = localStorage.getItem("studio_master_gemini_key");
