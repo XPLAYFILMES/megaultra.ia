@@ -13,6 +13,27 @@
       overflow: hidden;
     }
 
+    #authScreen, #appScreen, #expiredScreen {
+      display: none !important;
+      opacity: 0;
+      transition: opacity 0.15s ease-in;
+    }
+
+    html.estado-deslogado #authScreen {
+      display: block !important;
+      opacity: 1;
+    }
+
+    html.estado-logado #appScreen {
+      display: flex !important;
+      opacity: 1;
+    }
+
+    html.estado-expirado #expiredScreen {
+      display: flex !important;
+      opacity: 1;
+    }
+
     .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
     .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
     .prose th { background-color: #1e293b; color: #93c5fd; font-weight: 600; }
@@ -57,14 +78,65 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
 
-  <!-- PAINEL PRINCIPAL DO STUDIO -->
-  <div class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
+  <!-- TELA DE ACESSO EXPIRADO -->
+  <div id="expiredScreen" class="w-full max-w-md bg-slate-900 border border-rose-500/30 p-8 rounded-2xl shadow-2xl text-center space-y-4">
+    <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-3xl mx-auto">
+      ⏳
+    </div>
+    <h1 class="text-xl font-bold text-white">Acesso Expirado</h1>
+    <p class="text-xs text-slate-400 leading-relaxed" id="expiredDescText">
+      Seu período de acesso encerrou. Clique abaixo para renovar sua assinatura com o suporte.
+    </p>
+    <div class="pt-2 flex flex-col gap-2">
+      <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer">
+        <span>💬</span> Renovar Plano no WhatsApp
+      </button>
+      <a href="admin.html" class="inline-block px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-xl transition border border-slate-700">
+        Painel Administrativo 🛡️
+      </a>
+    </div>
+  </div>
+
+  <!-- TELA DE LOGIN -->
+  <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-5 my-auto max-h-[95vh] overflow-y-auto">
+    <div class="text-center space-y-1.5">
+      <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mx-auto shadow-inner">
+        🎬
+      </div>
+      <h1 class="text-xl font-bold text-white tracking-tight">Universal Master Studio</h1>
+      <p class="text-xs text-slate-400">Insira suas credenciais para acessar seu estúdio.</p>
+    </div>
+
+    <form onsubmit="executarLogin(event)" autocomplete="off" class="space-y-3 text-left">
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Nome de Usuário</label>
+        <input type="text" id="authUsername" required placeholder="Digite seu usuário" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition" />
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Sua Senha</label>
+        <input type="password" id="authPassword" required placeholder="Digite sua senha de 12 dígitos" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition font-mono" />
+      </div>
+
+      <div id="loginFeedback" class="text-xs py-2 px-3 rounded-lg hidden font-medium"></div>
+
+      <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2">
+        Entrar no Estúdio
+      </button>
+
+      <div class="pt-2 text-center">
+        <a href="admin.html" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Painel Administrativo 🛡️</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- PAINEL PRINCIPAL DO STUDIO (100% LIMPO - SEM CAMPOS DE CHAVE DE API) -->
+  <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
     
     <!-- BARRA LATERAL -->
     <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
       <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
         
-        <!-- MÓDULOS -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos de Produção</label>
@@ -73,7 +145,7 @@
           <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800"></div>
         </div>
 
-        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
+        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0 cursor-pointer">
           <span>+</span> Novo Projeto
         </button>
 
@@ -84,24 +156,26 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé / Chave do Usuário -->
+      <!-- Rodapé do Usuário -->
       <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold text-slate-400 uppercase">Chave Gemini API</span>
-          <span id="keyStatusBadge" class="text-[10px] text-amber-400">⚠️ Ausente</span>
-        </div>
-        <div class="flex gap-1.5">
-          <input 
-            type="password" 
-            id="geminiKeyInput" 
-            placeholder="Cole sua Gemini API Key" 
-            oninput="autoSalvarChave()"
-            class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
-          />
-          <button onclick="salvarChaveGemini(true)" id="saveKeyBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-2.5 py-1.5 rounded-lg text-xs transition">
-            Salvar
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
+              👤
+            </div>
+            <div class="flex flex-col truncate">
+              <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
+              <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo (30 Dias)</span>
+            </div>
+          </div>
+          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition cursor-pointer">
+            Sair
           </button>
         </div>
+
+        <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer">
+          <span>💎</span> Suporte & Renovação
+        </button>
       </div>
     </aside>
 
@@ -121,11 +195,11 @@
           <input 
             type="text" 
             id="userInput" 
-            placeholder="Digite sua resposta ou [0]..." 
+            placeholder="Digite sua resposta ou comando..." 
             onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
             class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
           />
-          <button onclick="enviarMensagemUsuario()" id="sendBtn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm transition disabled:opacity-40">
+          <button onclick="enviarMensagemUsuario()" id="sendBtn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm transition disabled:opacity-40 cursor-pointer">
             Enviar
           </button>
         </div>
@@ -162,16 +236,17 @@
       }
     ];
 
-    let promptsCache = {};
-    let etapasEstaticasCache = {};
+    let activeUser = null;
     let activeSessionId = "producao";
     let currentConversationId = null;
     let conversationHistory = [];
+    let promptsCache = {};
+    let etapasEstaticasCache = {};
     let ultimaMensagemPendente = "";
     let isDigitando = false;
 
     function getStorageProjects(sessao) {
-      const key = "studio_clean_projs_" + sessao;
+      const key = "studio_projs_" + (activeUser ? activeUser.toLowerCase() : "anon") + "_" + sessao;
       try {
         const p = localStorage.getItem(key);
         return p ? JSON.parse(p) : [];
@@ -179,8 +254,67 @@
     }
 
     function saveStorageProjects(sessao, projs) {
-      const key = "studio_clean_projs_" + sessao;
+      const key = "studio_projs_" + (activeUser ? activeUser.toLowerCase() : "anon") + "_" + sessao;
       try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
+    }
+
+    function solicitarAtivacaoWhatsapp() {
+      const nome = activeUser || "Cliente";
+      const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio e gostaria de falar sobre minha licença.\nUsuário: ${nome}`);
+      window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
+    }
+
+    function executarLogin(e) {
+      e.preventDefault();
+      const uNome = document.getElementById("authUsername").value.trim();
+      const uSenha = document.getElementById("authPassword").value.trim();
+      const feedback = document.getElementById("loginFeedback");
+
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+      const todos = [...dbCadastros, ...dbTeste];
+
+      const user = todos.find(x => x.nome.toLowerCase() === uNome.toLowerCase() && (x.senha === uSenha || !x.senha));
+
+      if (!user) {
+        feedback.textContent = "Usuário ou senha incorretos.";
+        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        feedback.classList.remove("hidden");
+        return;
+      }
+
+      const agoraMs = new Date().getTime();
+      const vencMs = new Date(user.dataVencimentoIso).getTime();
+
+      if (agoraMs > vencMs) {
+        document.documentElement.className = "estado-expirado";
+        return;
+      }
+
+      abrirStudio(user.nome, user.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+    }
+
+    function abrirStudio(username, badge) {
+      activeUser = username;
+      localStorage.setItem("studio_active_session", username);
+      localStorage.setItem("studio_user_badge", badge || "Ativo");
+      document.documentElement.className = "estado-logado";
+
+      document.getElementById("userNameDisplay").textContent = username;
+      document.getElementById("licencaBadge").textContent = badge || "Ativo";
+
+      renderizarBotoesSessoes();
+      atualizarListaProjetos();
+
+      const projs = getStorageProjects(activeSessionId);
+      if (projs.length > 0) selecionarProjeto(projs[0].id);
+      else criarNovoProjeto();
+    }
+
+    function fazerLogout() {
+      localStorage.removeItem("studio_active_session");
+      document.documentElement.className = "estado-deslogado";
+      activeUser = null;
     }
 
     function extrairEtapasDoTexto(rawTxt) {
@@ -191,10 +325,8 @@
       while ((match = regexEtapas.exec(rawTxt)) !== null) {
         const cabecalho = match[1].trim();
         const conteudo = match[2].trim();
-
         const temOpcoesNumeradas = /\[0\]|\[1\]/.test(conteudo);
-        const ehEtapaCriativa = /opções inéditas|gerar 20 novos|títulos magnéticos|enredo mais envolvente/i.test(conteudo);
-
+        const ehEtapaCriativa = /opções inéditas|gerar 20 novos|títulos magnéticos/i.test(conteudo);
         const idEtapa = cabecalho.split(":")[0].replace(/\s+/g, "_").toLowerCase();
 
         etapas[idEtapa] = {
@@ -203,16 +335,12 @@
           estatica: temOpcoesNumeradas && !ehEtapaCriativa
         };
       }
-
       return etapas;
     }
 
     async function carregarPromptETratarEtapas(sessaoId) {
       const sessao = sessoesDisponiveis.find(s => s.id === sessaoId) || sessoesDisponiveis[0];
-
-      if (promptsCache[sessao.id]) {
-        return promptsCache[sessao.id];
-      }
+      if (promptsCache[sessao.id]) return promptsCache[sessao.id];
 
       try {
         const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
@@ -222,9 +350,7 @@
           etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
           return texto;
         }
-      } catch (e) {
-        console.warn("Erro ao ler o arquivo .txt:", e);
-      }
+      } catch (e) {}
 
       return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
     }
@@ -235,18 +361,12 @@
 
       sessoesDisponiveis.forEach(s => {
         const btn = document.createElement("button");
-        btn.id = "btn_sessao_" + s.id;
         const isActive = (s.id === activeSessionId);
-        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
-          isActive 
-            ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" 
-            : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
+        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between cursor-pointer ${
+          isActive ? "bg-blue-600 text-white shadow-md" : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
         }`;
         btn.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="text-sm">${s.icone}</span> 
-            <span>${s.nome}</span>
-          </div>
+          <div class="flex items-center gap-2"><span>${s.icone}</span> <span>${s.nome}</span></div>
           ${isActive ? '<span class="text-[10px] bg-blue-500/40 px-1.5 py-0.5 rounded text-blue-100">Ativa</span>' : ''}
         `;
         btn.onclick = () => mudarSessao(s.id);
@@ -256,13 +376,9 @@
 
     function mudarSessao(novaSessaoId) {
       if (activeSessionId === novaSessaoId && currentConversationId) return;
-
       activeSessionId = novaSessaoId;
       currentConversationId = null;
       conversationHistory = [];
-      ultimaMensagemPendente = "";
-
-      localStorage.setItem("studio_active_module", novaSessaoId);
       renderizarBotoesSessoes();
 
       const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
@@ -272,69 +388,9 @@
       }
 
       atualizarListaProjetos();
-
       const projs = getStorageProjects(activeSessionId);
-      if (projs.length > 0) {
-        selecionarProjeto(projs[0].id);
-      } else {
-        criarNovoProjeto();
-      }
-    }
-
-    function obterChaveUsuario() {
-      const input = document.getElementById("geminiKeyInput");
-      const val = input ? input.value.trim() : "";
-      if (val) return val;
-      return localStorage.getItem("studio_gemini_key") || "";
-    }
-
-    function autoSalvarChave() {
-      const val = document.getElementById("geminiKeyInput").value.trim();
-      localStorage.setItem("studio_gemini_key", val);
-      atualizarBadgeChave(val);
-    }
-
-    function salvarChaveGemini(mostrarAviso = true) {
-      const input = document.getElementById("geminiKeyInput");
-      const val = input.value.trim();
-
-      if (!val) {
-        alert("Cole sua chave de API do Gemini antes de salvar.");
-        input.focus();
-        return;
-      }
-
-      localStorage.setItem("studio_gemini_key", val);
-      atualizarBadgeChave(val);
-
-      const btn = document.getElementById("saveKeyBtn");
-      btn.textContent = "Salvo ✓";
-      btn.className = "bg-emerald-600 text-white font-medium px-2.5 py-1.5 rounded-lg text-xs transition";
-      setTimeout(() => {
-        btn.textContent = "Salvar";
-        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-medium px-2.5 py-1.5 rounded-lg text-xs transition";
-      }, 1500);
-
-      if (mostrarAviso) alert("Chave salva com sucesso!");
-    }
-
-    function carregarChave() {
-      const key = localStorage.getItem("studio_gemini_key") || "";
-      const input = document.getElementById("geminiKeyInput");
-      if (input) input.value = key;
-      atualizarBadgeChave(key);
-    }
-
-    function atualizarBadgeChave(key) {
-      const badge = document.getElementById("keyStatusBadge");
-      if (!badge) return;
-      if (key && key.length > 10) {
-        badge.textContent = "✓ Chave Ativa";
-        badge.className = "text-[10px] text-emerald-400 font-medium";
-      } else {
-        badge.textContent = "⚠️ Ausente";
-        badge.className = "text-[10px] text-amber-400 font-medium";
-      }
+      if (projs.length > 0) selecionarProjeto(projs[0].id);
+      else criarNovoProjeto();
     }
 
     function fecharMenusAbertos(e) {
@@ -374,9 +430,7 @@
       if (novoNome && novoNome.trim()) {
         proj.title = novoNome.trim();
         saveStorageProjects(activeSessionId, projs);
-        if (currentConversationId === id) {
-          document.getElementById("currentChatTitle").textContent = proj.title;
-        }
+        if (currentConversationId === id) document.getElementById("currentChatTitle").textContent = proj.title;
         atualizarListaProjetos();
       }
     }
@@ -384,22 +438,13 @@
     function excluirProjeto(e, id) {
       e.stopPropagation();
       fecharMenusAbertos({ target: document.body });
-
       const projs = getStorageProjects(activeSessionId);
-      const proj = projs.find(p => p.id === id);
-      if (!proj) return;
-
-      if (!confirm(`Excluir "${proj.title}"?`)) return;
-
       const filtrados = projs.filter(p => p.id !== id);
       saveStorageProjects(activeSessionId, filtrados);
 
       if (currentConversationId === id) {
-        if (filtrados.length > 0) {
-          selecionarProjeto(filtrados[0].id);
-        } else {
-          criarNovoProjeto();
-        }
+        if (filtrados.length > 0) selecionarProjeto(filtrados[0].id);
+        else criarNovoProjeto();
       } else {
         atualizarListaProjetos();
       }
@@ -407,11 +452,7 @@
 
     function atualizarListaProjetos() {
       const projs = getStorageProjects(activeSessionId);
-      
-      projs.sort((a, b) => {
-        if (Boolean(a.pinned) === Boolean(b.pinned)) return 0;
-        return a.pinned ? -1 : 1;
-      });
+      projs.sort((a, b) => (Boolean(a.pinned) === Boolean(b.pinned) ? 0 : a.pinned ? -1 : 1));
 
       const listEl = document.getElementById("conversationsList");
       listEl.innerHTML = "";
@@ -419,39 +460,23 @@
       projs.forEach(p => {
         const wrapper = document.createElement("div");
         wrapper.className = `relative group flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-          p.id === currentConversationId
-            ? "bg-slate-800 text-blue-400 font-semibold"
-            : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
+          p.id === currentConversationId ? "bg-slate-800 text-blue-400 font-semibold" : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
         } ${p.pinned ? "border-l-2 border-amber-400 bg-slate-900/40" : ""}`;
 
         wrapper.onclick = () => selecionarProjeto(p.id);
 
         wrapper.innerHTML = `
           <div class="flex items-center gap-2 truncate pr-2">
-            ${p.pinned ? '<span class="text-amber-400 text-[10px]" title="Fixado">📌</span>' : ''}
+            ${p.pinned ? '<span class="text-amber-400 text-[10px]">📌</span>' : ''}
             <span class="truncate">${p.title || "Novo Projeto"}</span>
           </div>
-
-          <button 
-            type="button" 
-            onclick="toggleMenu(event, '${p.id}')"
-            class="menu-btn p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/60 transition opacity-80 group-hover:opacity-100">
-            ⋮
-          </button>
-
+          <button type="button" onclick="toggleMenu(event, '${p.id}')" class="menu-btn p-1 rounded-md text-slate-400 hover:text-white transition">⋮</button>
           <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
-            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
-              <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
-            </button>
-            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
-              <span>✏️</span> Renomear
-            </button>
-            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
-              <span>🗑️</span> Excluir
-            </button>
+            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 text-xs">📌 ${p.pinned ? 'Desafixar' : 'Fixar'}</button>
+            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 text-xs">✏️ Renomear</button>
+            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 text-xs border-t border-slate-800">🗑️ Excluir</button>
           </div>
         `;
-
         listEl.appendChild(wrapper);
       });
     }
@@ -459,20 +484,15 @@
     function exibirPainelInicialCentral() {
       const chatArea = document.getElementById("chatArea");
       chatArea.innerHTML = "";
-
       const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || sessoesDisponiveis[0];
 
       const startDiv = document.createElement("div");
       startDiv.className = "h-full flex flex-col items-center justify-center text-center space-y-4 py-12";
       startDiv.innerHTML = `
-        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold shadow-inner">
-          ${sessao.icone}
-        </div>
+        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold">${sessao.icone}</div>
         <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo}</h2>
-        <p class="text-sm text-slate-400 max-w-sm">
-          ${sessao.descricao}
-        </p>
-        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
+        <p class="text-sm text-slate-400 max-w-sm">${sessao.descricao}</p>
+        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 cursor-pointer">
           Iniciar ${sessao.nome}
         </button>
       `;
@@ -496,7 +516,6 @@
 
     function selecionarProjeto(id) {
       currentConversationId = id;
-
       const projs = getStorageProjects(activeSessionId);
       const proj = projs.find(p => p.id === id);
       if (!proj) return;
@@ -518,8 +537,7 @@
     }
 
     function formatarTextoComOpcoes(rawText) {
-      let formatado = rawText;
-      formatado = formatado.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
+      let formatado = rawText.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
       return marked.parse(formatado);
     }
 
@@ -532,17 +550,11 @@
       if (isError) {
         bubble.className = "max-w-[85%] rounded-2xl p-4 text-sm bg-rose-500/10 border border-rose-500/30 text-rose-200 space-y-3";
         bubble.innerHTML = `
-          <div class="leading-relaxed">${texto}</div>
-          <button onclick="tentarNovamente()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-emerald-600/30 cursor-pointer">
-            <span>▶</span> Continuar de Onde Parou
-          </button>
+          <div>${texto}</div>
+          <button onclick="tentarNovamente()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold">Continuar</button>
         `;
       } else {
-        bubble.className = `max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${
-          isUser
-            ? "bg-blue-600 text-white font-medium shadow-md"
-            : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative"
-        }`;
+        bubble.className = `max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${isUser ? "bg-blue-600 text-white font-medium shadow-md" : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md"}`;
         bubble.innerHTML = isUser ? texto : formatarTextoComOpcoes(texto);
       }
 
@@ -558,23 +570,20 @@
       div.className = "flex justify-start w-full";
       
       const bubble = document.createElement("div");
-      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative typing-cursor";
+      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md typing-cursor";
       bubble.innerHTML = "<span></span>";
       div.appendChild(bubble);
       chatArea.appendChild(div);
 
-      const spanConteudo = bubble.querySelector("span");
-
+      const span = bubble.querySelector("span");
       let index = 0;
-      const tamanhoTotal = textoCompleto.length;
-      const passo = tamanhoTotal > 800 ? 6 : (tamanhoTotal > 300 ? 4 : 2);
-      const velocidadeMs = 10;
+      const total = textoCompleto.length;
+      const passo = total > 600 ? 5 : 3;
 
       return new Promise((resolve) => {
         const timer = setInterval(() => {
           index += passo;
-          if (index >= tamanhoTotal) {
-            index = tamanhoTotal;
+          if (index >= total) {
             clearInterval(timer);
             bubble.classList.remove("typing-cursor");
             bubble.innerHTML = formatarTextoComOpcoes(textoCompleto);
@@ -582,37 +591,15 @@
             isDigitando = false;
             resolve();
           } else {
-            const textoParcial = textoCompleto.substring(0, index);
-            spanConteudo.innerHTML = formatarTextoComOpcoes(textoParcial);
+            span.innerHTML = formatarTextoComOpcoes(textoCompleto.substring(0, index));
             chatArea.scrollTop = chatArea.scrollHeight;
           }
-        }, velocidadeMs);
+        }, 12);
       });
-    }
-
-    function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
-      const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
-      if (matchTitulo && matchTitulo[1]) {
-        const tituloLimpo = matchTitulo[1].replace(/[*#]/g, '').trim();
-        projetoAtual.title = tituloLimpo;
-        document.getElementById("currentChatTitle").textContent = tituloLimpo;
-        saveStorageProjects(activeSessionId, todosProjetos);
-        atualizarListaProjetos();
-        return;
-      }
-
-      if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 3) {
-        const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
-        projetoAtual.title = tituloResumo;
-        document.getElementById("currentChatTitle").textContent = tituloResumo;
-        saveStorageProjects(activeSessionId, todosProjetos);
-        atualizarListaProjetos();
-      }
     }
 
     async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
       if (isDigitando) return;
-
       const projs = getStorageProjects(activeSessionId);
       const atual = projs.find(p => p.id === currentConversationId);
 
@@ -623,14 +610,13 @@
       const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
       const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
 
-      // 1. INICIAL: Exibe a Etapa 1 do arquivo .txt sem gastar API
+      // 1. Etapa inicial estática direta
       if (isInicial) {
         const primeiraEtapaId = Object.keys(mapaEtapas)[0];
         if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
           const textoEtapa1 = mapaEtapas[primeiraEtapaId].textoCompleto;
           conversationHistory.push({ role: "model", parts: [{ text: textoEtapa1 }] });
           renderizarMensagemInstantanea(textoEtapa1, false);
-
           if (atual) {
             atual.messages.push({ role: "model", content: textoEtapa1 });
             saveStorageProjects(activeSessionId, projs);
@@ -639,7 +625,6 @@
         }
       }
 
-      // Registra a mensagem do usuário
       if (!isInicial && !isRetomada) {
         renderizarMensagemInstantanea(texto, true);
         conversationHistory.push({ role: "user", parts: [{ text: texto }] });
@@ -649,7 +634,7 @@
         }
       }
 
-      // 2. SE FOR ETAPA ESTÁTICA COM OPÇÕES FIXAS DO TXT (Zero API)
+      // 2. Próxima etapa estática (sem custo de API)
       const mensagensModelo = conversationHistory.filter(m => m.role === "model");
       const indiceProximaEtapa = mensagensModelo.length;
       const chavesEtapas = Object.keys(mapaEtapas);
@@ -658,7 +643,6 @@
         const textoProximaEtapa = mapaEtapas[chavesEtapas[indiceProximaEtapa]].textoCompleto;
         conversationHistory.push({ role: "model", parts: [{ text: textoProximaEtapa }] });
         renderizarMensagemInstantanea(textoProximaEtapa, false);
-
         if (atual) {
           atual.messages.push({ role: "model", content: textoProximaEtapa });
           saveStorageProjects(activeSessionId, projs);
@@ -666,11 +650,10 @@
         return;
       }
 
-      // 3. SE A ETAPA EXIGIR CRIAÇÃO: ACIONA O GEMINI
-      const apiKey = obterChaveUsuario();
+      // 3. Etapa Criativa: Usa a chave mestra configurada no Painel Admin
+      const apiKey = localStorage.getItem("studio_master_gemini_key") || "";
       if (!apiKey || apiKey.length < 10) {
-        alert("Cole sua chave gratuita da Gemini API no rodapé esquerdo para continuar.");
-        document.getElementById("geminiKeyInput").focus();
+        renderizarMensagemInstantanea("⚠️ A chave mestra do Gemini não está configurada. Acesse o Painel Admin para configurá-la.", false, true);
         return;
       }
 
@@ -684,45 +667,32 @@
       indicador.className = "flex justify-start w-full";
       indicador.innerHTML = `
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          Processando etapa criativa...
+          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> Processando etapa criativa...
         </div>
       `;
       document.getElementById("chatArea").appendChild(indicador);
       document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
 
-      const modelosCandidatos = [
-        "gemini-2.5-flash",
-        "gemini-2.0-flash",
-        "gemini-1.5-flash"
-      ];
-
       let respostaFinal = null;
-      for (const modelo of modelosCandidatos) {
-        try {
-          const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                systemInstruction: { parts: [{ text: promptMestre }] },
-                contents: conversationHistory,
-                generationConfig: { 
-                  temperature: 0.8, 
-                  topP: 0.95,
-                  maxOutputTokens: 8192 
-                }
-              })
-            }
-          );
+      const modelos = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
 
+      for (const mod of modelos) {
+        try {
+          const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: promptMestre }] },
+              contents: conversationHistory,
+              generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
+            })
+          });
           const data = await resp.json();
           if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             respostaFinal = data.candidates[0].content.parts[0].text;
             break;
           }
-        } catch (err) {}
+        } catch (e) {}
       }
 
       const loadEl = document.getElementById("indicadorCarregando");
@@ -734,16 +704,10 @@
 
         if (atual) {
           atual.messages.push({ role: "model", content: respostaFinal });
-          detectarEAtualizarTitulo(texto, respostaFinal, atual, projs);
           saveStorageProjects(activeSessionId, projs);
         }
-        ultimaMensagemPendente = "";
       } else {
-        renderizarMensagemInstantanea(
-          `⚠️ **Houve uma oscilação na conexão com a IA.**\n\nSua última escolha foi salva. Clique abaixo para tentar novamente:`,
-          false,
-          true
-        );
+        renderizarMensagemInstantanea("⚠️ Houve uma oscilação na conexão com a IA. Clique abaixo para tentar novamente.", false, true);
       }
 
       sendBtn.disabled = false;
@@ -753,14 +717,8 @@
 
     function tentarNovamente() {
       const chatArea = document.getElementById("chatArea");
-      const erroBox = chatArea.lastElementChild;
-      if (erroBox) erroBox.remove();
-
-      if (ultimaMensagemPendente) {
-        dispararFluxo(ultimaMensagemPendente, false, true);
-      } else {
-        dispararFluxo("", true, true);
-      }
+      if (chatArea.lastElementChild) chatArea.lastElementChild.remove();
+      dispararFluxo("", false, true);
     }
 
     function iniciarProducao() {
@@ -777,22 +735,46 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      carregarChave();
+      // Reconhecimento por Token Único via URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
 
-      const moduloSalvo = localStorage.getItem("studio_active_module");
-      if (moduloSalvo && sessoesDisponiveis.some(s => s.id === moduloSalvo)) {
-        activeSessionId = moduloSalvo;
+      const dbCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
+      const dbTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
+      const todos = [...dbCadastros, ...dbTeste];
+
+      if (token) {
+        const u = todos.find(x => x.token === token);
+        if (u) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(u.dataVencimentoIso).getTime();
+
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            return;
+          }
+
+          abrirStudio(u.nome, u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+          return;
+        }
       }
 
-      renderizarBotoesSessoes();
-      atualizarListaProjetos();
-
-      const projs = getStorageProjects(activeSessionId);
-      if (projs.length > 0) {
-        selecionarProjeto(projs[0].id);
-      } else {
-        criarNovoProjeto();
+      const sessaoAtiva = localStorage.getItem("studio_active_session");
+      if (sessaoAtiva) {
+        const u = todos.find(x => x.nome.toLowerCase() === sessaoAtiva.toLowerCase());
+        if (u) {
+          const agoraMs = new Date().getTime();
+          const vencMs = new Date(u.dataVencimentoIso).getTime();
+          if (agoraMs > vencMs) {
+            document.documentElement.className = "estado-expirado";
+            return;
+          }
+          abrirStudio(u.nome, u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
+          return;
+        }
       }
+
+      document.documentElement.className = "estado-deslogado";
     });
   </script>
 </body>
