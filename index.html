@@ -104,7 +104,7 @@
         🎬
       </div>
       <h1 class="text-xl font-bold text-white tracking-tight">Universal Master Studio</h1>
-      <p class="text-xs text-slate-400">Insira seus dados para acessar o ambiente de produção.</p>
+      <p class="text-xs text-slate-400">Insira suas credenciais para acessar o estúdio.</p>
     </div>
 
     <form onsubmit="executarLogin(event)" autocomplete="off" class="space-y-3 text-left">
@@ -130,7 +130,7 @@
     </form>
   </div>
 
-  <!-- PAINEL PRINCIPAL DO STUDIO (TOTALMENTE LIMPO) -->
+  <!-- PAINEL PRINCIPAL DO STUDIO -->
   <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
     
     <!-- BARRA LATERAL -->
@@ -156,11 +156,11 @@
         <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
       </div>
 
-      <!-- Rodapé do Usuário -->
-      <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
+      <!-- Rodapé do Usuário com Configuração e Ativação da Chave API no Site -->
+      <div class="p-3 border-t border-slate-800 flex flex-col gap-2.5 bg-slate-950/80 shrink-0">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <div class="w-7 h-7 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
               👤
             </div>
             <div class="flex flex-col truncate">
@@ -168,9 +168,29 @@
               <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo</span>
             </div>
           </div>
-          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition cursor-pointer">
+          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded transition cursor-pointer">
             Sair
           </button>
+        </div>
+
+        <!-- CAMPO DE ATIVAÇÃO DA CHAVE GEMINI API DIRETAMENTE NO SITE -->
+        <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-xl space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chave Gemini API</span>
+            <span id="keyStatusBadge" class="text-[10px] font-medium text-amber-400">⚠️ Ausente</span>
+          </div>
+          <div class="flex gap-1.5">
+            <input 
+              type="password" 
+              id="geminiKeyInput" 
+              placeholder="Cole sua API Key aqui" 
+              oninput="autoSalvarChave()"
+              class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
+            />
+            <button onclick="salvarChaveGemini(true)" id="saveKeyBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0">
+              Salvar
+            </button>
+          </div>
         </div>
 
         <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer">
@@ -256,6 +276,61 @@
       try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
     }
 
+    function obterChaveGemini() {
+      const input = document.getElementById("geminiKeyInput");
+      const val = input ? input.value.trim() : "";
+      if (val) return val;
+      return localStorage.getItem("studio_gemini_key") || localStorage.getItem("studio_master_gemini_key") || "";
+    }
+
+    function autoSalvarChave() {
+      const input = document.getElementById("geminiKeyInput");
+      const val = input ? input.value.trim() : "";
+      localStorage.setItem("studio_gemini_key", val);
+      atualizarBadgeChave(val);
+    }
+
+    function salvarChaveGemini(mostrarAviso = true) {
+      const input = document.getElementById("geminiKeyInput");
+      const val = input ? input.value.trim() : "";
+      if (!val) {
+        alert("Cole sua chave de API do Gemini antes de salvar.");
+        if (input) input.focus();
+        return;
+      }
+      localStorage.setItem("studio_gemini_key", val);
+      atualizarBadgeChave(val);
+
+      const btn = document.getElementById("saveKeyBtn");
+      btn.textContent = "Salvo ✓";
+      btn.className = "bg-emerald-600 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0";
+      setTimeout(() => {
+        btn.textContent = "Salvar";
+        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer shrink-0";
+      }, 1500);
+
+      if (mostrarAviso) alert("Chave de API ativada com sucesso no site!");
+    }
+
+    function carregarChaveNaInterface() {
+      const key = obterChaveGemini();
+      const input = document.getElementById("geminiKeyInput");
+      if (input) input.value = key;
+      atualizarBadgeChave(key);
+    }
+
+    function atualizarBadgeChave(key) {
+      const badge = document.getElementById("keyStatusBadge");
+      if (!badge) return;
+      if (key && key.length > 10) {
+        badge.textContent = "✓ Chave Ativa";
+        badge.className = "text-[10px] font-semibold text-emerald-400";
+      } else {
+        badge.textContent = "⚠️️ Ausente";
+        badge.className = "text-[10px] font-medium text-amber-400";
+      }
+    }
+
     function solicitarAtivacaoWhatsapp() {
       const nome = activeUser || "Cliente";
       const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio e gostaria de falar sobre minha licença.\nUsuário: ${nome}`);
@@ -301,6 +376,7 @@
       document.getElementById("userNameDisplay").textContent = username;
       document.getElementById("licencaBadge").textContent = badge || "Ativo";
 
+      carregarChaveNaInterface();
       renderizarBotoesSessoes();
       atualizarListaProjetos();
 
@@ -328,7 +404,7 @@
         }
       } catch (e) {}
 
-      return "Você é um diretor e engenheiro de IA especializado. Conduza o projeto etapa por etapa.";
+      return "Você é um diretor e engenheiro de IA especializado. Conduza o projeto etapa por etapa de acordo com o arquivo mestre.";
     }
 
     function renderizarBotoesSessoes() {
@@ -605,14 +681,14 @@
 
       const promptMestre = await carregarPromptMestre(activeSessionId);
 
-      // Obtém a API Key salva pelo administrador no painel
-      const apiKey = localStorage.getItem("studio_master_gemini_key") || "";
+      const apiKey = obterChaveGemini();
       if (!apiKey || apiKey.length < 10) {
-        renderizarMensagemInstantanea("⚠️ A Chave Mestra da API Gemini não foi configurada. Acesse o Painel Administrativo (admin.html) e salve sua chave.", false, true);
+        renderizarMensagemInstantanea("⚠️ Chave de API do Gemini ausente. Insira sua chave no rodapé da barra lateral e clique em 'Salvar' para ativar.", false, true);
+        const inputKey = document.getElementById("geminiKeyInput");
+        if (inputKey) inputKey.focus();
         return;
       }
 
-      // Adiciona mensagem ao histórico
       if (isInicial) {
         conversationHistory = [
           { role: "user", parts: [{ text: "Iniciar motor de produção. Apresente a Etapa 1 rigorosamente conforme instruído." }] }
@@ -677,7 +753,7 @@
           saveStorageProjects(activeSessionId, projs);
         }
       } else {
-        renderizarMensagemInstantanea("⚠️ Houve uma instabilidade na conexão com a IA. Clique abaixo para tentar novamente.", false, true);
+        renderizarMensagemInstantanea("⚠️️ Houve uma instabilidade na conexão com a IA. Verifique sua chave de API ou clique abaixo para tentar novamente.", false, true);
       }
 
       sendBtn.disabled = false;
@@ -710,6 +786,8 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
+      carregarChaveNaInterface();
+
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get("token");
 
