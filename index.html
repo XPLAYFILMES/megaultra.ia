@@ -274,8 +274,9 @@
   </div>
 
   <script>
+    // Configurações JSONBin Globais Atualizadas
     const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8";
+    const BIN_CADASTROS = "6abc2cf2ac6210605a034cf8"; // ID Atualizado!
     const BIN_TESTE = "6abc21bfac6210605a032f92";
     const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
 
@@ -297,37 +298,39 @@
     let bancoTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
     let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
 
-    // Sincronização inteligente: SÓ EXECUTA UMA VEZ A CADA 15 MINUTOS NO APARELHO!
-    async function sincronizarComNuvemEconomico() {
-      const ultimoSync = parseInt(localStorage.getItem("ultimo_sync_nuvem") || "0");
-      const agora = Date.now();
-
-      // Se já sincronizou há menos de 15 minutos, não gasta requisição
-      if (agora - ultimoSync < 15 * 60 * 1000 && bancoCadastros.length > 0) {
-        return;
-      }
-
+    async function sincronizarComNuvem() {
       try {
         const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
 
-        const [rCad, rTest, rCon] = await Promise.all([
-          fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers }),
-          fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers }),
-          fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
-        ]);
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.usuarios || []);
+            if (arr.length > 0) {
+              bancoCadastros = arr;
+              localStorage.setItem("db_cadastros_completo", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
 
-        const dCad = await rCad.json();
-        const dTest = await rTest.json();
-        const dCon = await rCon.json();
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.testes || []);
+            if (arr.length > 0) {
+              bancoTeste = arr;
+              localStorage.setItem("db_cadastros_teste", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
 
-        bancoCadastros = Array.isArray(dCad.record) ? dCad.record : (dCad.record?.usuarios || []);
-        bancoTeste = Array.isArray(dTest.record) ? dTest.record : (dTest.record?.testes || []);
-        bancoConhecimento = Array.isArray(dCon.record) ? dCon.record : (dCon.record?.conhecimento || []);
-
-        localStorage.setItem("db_cadastros_completo", JSON.stringify(bancoCadastros));
-        localStorage.setItem("db_cadastros_teste", JSON.stringify(bancoTeste));
-        localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-        localStorage.setItem("ultimo_sync_nuvem", agora.toString());
+        fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
+          .then(r => r.json())
+          .then(d => {
+            const arr = Array.isArray(d.record) ? d.record : (d.record?.conhecimento || []);
+            if (arr.length > 0) {
+              bancoConhecimento = arr;
+              localStorage.setItem("banco_conhecimento_local", JSON.stringify(arr));
+            }
+          }).catch(()=>{});
       } catch (e) {}
     }
 
@@ -355,9 +358,17 @@
           respostas: [resposta.trim()],
           data: new Date().toISOString()
         });
-        localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-        gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
+      } else {
+        if (!bancoConhecimento[index].respostas) {
+          bancoConhecimento[index].respostas = [bancoConhecimento[index].resposta || resposta.trim()];
+        }
+        if (!bancoConhecimento[index].respostas.includes(resposta.trim())) {
+          bancoConhecimento[index].respostas.push(resposta.trim());
+        }
       }
+
+      localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
+      gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
     }
 
     function normalizarTexto(txt) {
@@ -1246,7 +1257,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      sincronizarComNuvemEconomico();
+      sincronizarComNuvem();
 
       const enteredByToken = (function() {
         const urlParams = new URLSearchParams(window.location.search);
