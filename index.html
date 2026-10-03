@@ -3,170 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agente IA 100% Local (Sem Chaves)</title>
+  <title>Agente Assistente</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 flex flex-col items-center min-h-screen p-4">
+<body class="bg-slate-950 text-slate-100 flex flex-col items-center justify-center min-h-screen p-4">
 
-  <main class="w-full max-w-2xl bg-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-800 flex flex-col h-[90vh]">
-    
-    <!-- Cabeçalho -->
-    <header class="border-b border-slate-800 pb-4 mb-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-lg font-bold text-emerald-400">Agente Local Zero-Custo</h1>
-        <p class="text-xs text-slate-400">Roda 100% no seu navegador usando WebGPU</p>
+  <main class="w-full max-w-xl bg-slate-900 rounded-2xl shadow-xl border border-slate-800 flex flex-col h-[85vh]">
+    <!-- Topo -->
+    <header class="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+        <h1 class="font-semibold text-slate-100 text-sm">Assistente Online</h1>
       </div>
-      <span id="badgeStatus" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full">
-        Não carregado
-      </span>
+      <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full">Acesso Liberado</span>
     </header>
 
-    <!-- Barra de Download/Progresso do Modelo -->
-    <div id="setupArea" class="bg-slate-950 border border-slate-800 p-4 rounded-xl mb-4 space-y-3">
-      <div class="flex items-center justify-between text-xs text-slate-400">
-        <span>Modelo leve: <strong class="text-slate-200">Gemma-2-2b-IT</strong> (~1.4 GB)</span>
-        <button id="btnInit" onclick="iniciarAgente()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-1.5 rounded-lg text-xs transition">
-          Carregar IA
-        </button>
-      </div>
-      <div id="progressContainer" class="hidden space-y-1">
-        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-          <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-        <p id="progressText" class="text-[11px] text-slate-500 text-right">Preparando...</p>
+    <!-- Chat -->
+    <div id="chatHistory" class="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+      <div class="bg-slate-800 text-slate-300 p-3 rounded-xl max-w-[85%] border border-slate-700">
+        Olá! Sou seu assistente de inteligência artificial. Como posso te ajudar hoje?
       </div>
     </div>
 
-    <!-- Área de Chat -->
-    <div id="chatHistory" class="flex-1 overflow-y-auto space-y-4 pr-2 text-sm">
-      <div class="bg-slate-800/50 border border-slate-800 rounded-xl p-3.5 text-slate-300">
-        👋 Clique em <strong>"Carregar IA"</strong> acima para baixar o modelo no cache do seu navegador. Uma vez baixado, as respostas são geradas direto no seu computador sem enviar dados para a internet e sem usar créditos de ninguém.
-      </div>
-    </div>
-
-    <!-- Entrada de Texto -->
-    <footer class="mt-4 pt-3 border-t border-slate-800 flex gap-2">
-      <input type="text" id="userInput" disabled placeholder="Aguardando carregamento da IA..." 
-        class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+    <!-- Campo de Entrada -->
+    <footer class="p-3 border-t border-slate-800 flex gap-2">
+      <input type="text" id="userInput" placeholder="Envie sua mensagem..." 
+        class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
         onkeypress="if(event.key==='Enter') enviarMensagem()">
       
-      <button id="btnSend" disabled onclick="enviarMensagem()" 
-        class="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium px-5 py-3 rounded-xl text-sm transition">
+      <button onclick="enviarMensagem()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2.5 rounded-xl text-sm transition">
         Enviar
       </button>
     </footer>
-
   </main>
 
-  <!-- Biblioteca WebLLM oficial via Módulo ESM -->
-  <script type="module">
-    import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-
-    let engine = null;
-    const selectedModel = "gemma-2-2b-it-q4f32_1-MLC"; // Modelo balanceado para boa velocidade em PCs comuns
-
-    window.iniciarAgente = async function() {
-      // Checagem de suporte a WebGPU
-      if (!navigator.gpu) {
-        alert("Seu navegador não suporta WebGPU. Ative a aceleração de hardware no Chrome/Edge ou use um navegador atualizado.");
-        return;
-      }
-
-      const btnInit = document.getElementById("btnInit");
-      const progressContainer = document.getElementById("progressContainer");
-      const progressBar = document.getElementById("progressBar");
-      const progressText = document.getElementById("progressText");
-      const badgeStatus = document.getElementById("badgeStatus");
-
-      btnInit.disabled = true;
-      btnInit.classList.add("opacity-50");
-      progressContainer.classList.remove("hidden");
-
-      try {
-        engine = new webllm.MLCEngine();
-        
-        // Callback para acompanhar o download das fatias do modelo
-        engine.setInitProgressCallback((report) => {
-          const percent = Math.round(report.progress * 100);
-          progressBar.style.width = `${percent}%`;
-          progressText.innerText = report.text;
-        });
-
-        // Inicializa o modelo no cache do IndexedDB local
-        await engine.reload(selectedModel);
-
-        badgeStatus.innerText = "Pronto (Local)";
-        badgeStatus.className = "text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full";
-        
-        document.getElementById("setupArea").classList.add("hidden");
-        document.getElementById("userInput").disabled = false;
-        document.getElementById("userInput").placeholder = "Pergunte qualquer coisa ao agente...";
-        document.getElementById("btnSend").disabled = false;
-        document.getElementById("userInput").focus();
-
-      } catch (err) {
-        console.error(err);
-        badgeStatus.innerText = "Erro no Carregamento";
-        badgeStatus.className = "text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full";
-        alert("Falha ao carregar o modelo: " + err.message);
-      }
-    };
-
-    const mensagens = [
-      { role: "system", content: "Você é um assistente prestativo, inteligente e direto em suas respostas." }
-    ];
-
-    window.enviarMensagem = async function() {
+  <script>
+    async function enviarMensagem() {
       const input = document.getElementById("userInput");
       const chat = document.getElementById("chatHistory");
       const texto = input.value.trim();
 
-      if (!texto || !engine) return;
+      if (!texto) return;
 
-      // Mensagem do usuário na tela
+      // Renderiza mensagem do usuário
       chat.innerHTML += `
         <div class="flex justify-end">
-          <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[85%]">
+          <div class="bg-emerald-600 text-white p-3 rounded-xl rounded-tr-none max-w-[85%]">
             ${texto}
           </div>
         </div>
       `;
-      mensagens.push({ role: "user", content: texto });
       input.value = "";
       chat.scrollTop = chat.scrollHeight;
 
-      // Resposta da IA com streaming progressivo
-      const botMsgId = "bot-" + Date.now();
+      // Mensagem temporária de "digitando..."
+      const tempId = "temp-" + Date.now();
       chat.innerHTML += `
-        <div class="flex justify-start">
-          <div id="${botMsgId}" class="bg-slate-800 text-slate-200 border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[85%] whitespace-pre-wrap">
-            ...
+        <div id="${tempId}" class="flex justify-start">
+          <div class="bg-slate-800 text-slate-400 p-3 rounded-xl rounded-tl-none border border-slate-700">
+            Digitando...
           </div>
         </div>
       `;
       chat.scrollTop = chat.scrollHeight;
 
-      const botElement = document.getElementById(botMsgId);
-      let respostaCompleta = "";
-
       try {
-        const chunks = await engine.chat.completions.create({
-          messages: mensagens,
-          stream: true
+        const response = await fetch("/.netlify/functions/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensagem: texto })
         });
 
-        for await (const chunk of chunks) {
-          const delta = chunk.choices[0]?.delta?.content || "";
-          respostaCompleta += delta;
-          botElement.innerText = respostaCompleta;
-          chat.scrollTop = chat.scrollHeight;
-        }
+        const data = await response.json();
+        const tempElem = document.getElementById(tempId);
 
-        mensagens.push({ role: "assistant", content: respostaCompleta });
-      } catch (e) {
-        botElement.innerText = "Erro ao processar: " + e.message;
+        if (data.resposta) {
+          tempElem.outerHTML = `
+            <div class="flex justify-start">
+              <div class="bg-slate-800 text-slate-100 p-3 rounded-xl rounded-tl-none border border-slate-700 max-w-[85%] whitespace-pre-wrap">
+                ${data.resposta}
+              </div>
+            </div>
+          `;
+        } else {
+          tempElem.outerHTML = `
+            <div class="flex justify-start">
+              <div class="bg-red-950/60 text-red-300 p-3 rounded-xl rounded-tl-none border border-red-800 text-xs">
+                ${data.erro || "Ocorreu um erro ao responder."}
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        document.getElementById(tempId).innerText = "Erro ao conectar ao servidor.";
       }
-    };
+      chat.scrollTop = chat.scrollHeight;
+    }
   </script>
 </body>
 </html>
