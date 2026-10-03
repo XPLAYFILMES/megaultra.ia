@@ -1,1489 +1,172 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Universal Master Studio AI</title>
-  
-  <style>
-    body {
-      background-color: #020617;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-
-    #authScreen, #appScreen, #expiredScreen {
-      display: none !important;
-      opacity: 0;
-      transition: opacity 0.15s ease-in;
-    }
-
-    html.estado-deslogado #authScreen {
-      display: block !important;
-      opacity: 1;
-    }
-
-    html.estado-logado #appScreen {
-      display: flex !important;
-      opacity: 1;
-    }
-
-    html.estado-expirado #expiredScreen {
-      display: flex !important;
-      opacity: 1;
-    }
-
-    .prose table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.85rem; border-radius: 0.5rem; overflow: hidden; }
-    .prose th, .prose td { border: 1px solid #334155; padding: 0.65rem 0.85rem; text-align: left; }
-    .prose th { background-color: #1e293b; color: #93c5fd; font-weight: 600; }
-    .prose td { background-color: #0f172a; color: #cbd5e1; }
-    .prose pre { background-color: #020617; border: 1px solid #334155; border-radius: 0.75rem; padding: 1rem; overflow-x: auto; margin: 1rem 0; }
-    .prose code { color: #38bdf8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    
-    .prose ul, .prose ol { margin: 1rem 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-    .prose li { 
-      background: rgba(15, 23, 42, 0.7); 
-      border: 1px solid rgba(51, 65, 85, 0.7); 
-      padding: 0.65rem 0.9rem; 
-      border-radius: 0.65rem; 
-      line-height: 1.5; 
-      color: #e2e8f0;
-      transition: all 0.2s ease;
-    }
-    .prose li:hover {
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.85);
-    }
-    .prose p { margin-bottom: 0.85rem; line-height: 1.6; }
-    .prose h3, .prose h4 { color: #60a5fa; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.65rem; border-bottom: 1px solid #1e293b; padding-bottom: 0.4rem; }
-    .prose hr { border-color: #334155; margin: 1.5rem 0; }
-
-    .typing-cursor::after {
-      content: '▋';
-      display: inline-block;
-      vertical-align: baseline;
-      color: #38bdf8;
-      animation: blink 0.8s infinite;
-      margin-left: 2px;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-  </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agente IA 100% Local (Sem Chaves)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 font-sans" onclick="fecharMenusAbertos(event)">
+<body class="bg-slate-950 text-slate-100 flex flex-col items-center min-h-screen p-4">
 
-  <!-- TELA DE ACESSO EXPIRADO -->
-  <div id="expiredScreen" class="w-full max-w-md bg-slate-900 border border-rose-500/30 p-8 rounded-2xl shadow-2xl text-center space-y-4">
-    <div class="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 text-3xl mx-auto">
-      ⏳
-    </div>
-    <h1 class="text-xl font-bold text-white">Período de Acesso Expirado</h1>
-    <p class="text-xs text-slate-400 leading-relaxed" id="expiredDescText">
-      O período de acesso foi concluído. Clique no botão abaixo para ativar a sua assinatura completa de 30 dias diretamente com o suporte.
-    </p>
-    <div class="pt-2 flex flex-col gap-2">
-      <button onclick="solicitarAtivacaoWhatsapp()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2">
-        <span>💬</span> Ativar Assinatura 30 Dias no WhatsApp
-      </button>
-      <a href="admin.html" class="inline-block px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs rounded-xl transition border border-slate-700">
-        Painel Administrativo 🛡️
-      </a>
-    </div>
-  </div>
-
-  <!-- TELA DE LOGIN / CADASTRO -->
-  <div id="authScreen" class="w-full max-w-md bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-5 my-auto max-h-[95vh] overflow-y-auto">
-    <div class="text-center space-y-1.5">
-      <div class="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mx-auto shadow-inner">
-        🎬
-      </div>
-      <h1 class="text-xl font-bold text-white tracking-tight">Universal Master Studio</h1>
-      <p class="text-xs text-slate-400">
-        Novos cadastros liberam <b class="text-purple-400">teste de 6 horas</b> (1 vez por aparelho).
-      </p>
-    </div>
-
-    <div class="flex border-b border-slate-800 text-xs">
-      <button id="tabAuthEntrar" onclick="alternarModoAuth('login')" class="flex-1 py-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition">
-        Já tenho Acesso
-      </button>
-      <button id="tabAuthCadastrar" onclick="alternarModoAuth('cadastro')" class="flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition">
-        Criar Conta Teste (6h)
-      </button>
-    </div>
-
-    <form onsubmit="executarAcesso(event)" autocomplete="off" class="space-y-3 text-left">
-      <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
-          Nome de Usuário
-        </label>
-        <input 
-          type="text" 
-          id="authUsername" 
-          required
-          autocomplete="off"
-          placeholder="Ex: alex" 
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-        />
-      </div>
-
-      <div id="campoEmailWrapper" class="hidden">
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
-          Seu E-mail
-        </label>
-        <input 
-          type="email" 
-          id="authEmail" 
-          autocomplete="off"
-          placeholder="Ex: seuemail@gmail.com" 
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-        />
-      </div>
-
-      <div id="campoContatoWrapper" class="hidden grid grid-cols-3 gap-2">
-        <div class="col-span-1">
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Canal</label>
-          <select id="authTipoContato" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
-            <option value="whatsapp">WhatsApp</option>
-            <option value="telegram">Telegram</option>
-          </select>
-        </div>
-        <div class="col-span-2">
-          <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">Número / @Usuário</label>
-          <input 
-            type="text" 
-            id="authNumeroContato" 
-            autocomplete="off"
-            placeholder="Ex: 5548999999999" 
-            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label class="block text-[11px] font-semibold text-slate-300 mb-1 uppercase tracking-wider">
-          Sua Senha
-        </label>
-        <input 
-          type="password" 
-          id="authPassword" 
-          required
-          autocomplete="off"
-          placeholder="Digite sua senha" 
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-        />
-      </div>
-
-      <div id="loginFeedback" class="text-xs py-2 px-3 rounded-lg hidden font-medium"></div>
-
-      <button 
-        type="submit" 
-        id="btnAuthSubmit"
-        class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2">
-        Entrar na Conta
-      </button>
-
-      <div class="pt-2 text-center">
-        <a href="admin.html" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Painel Administrativo 🛡️</a>
-      </div>
-    </form>
-  </div>
-
-  <!-- PAINEL PRINCIPAL DO STUDIO -->
-  <div id="appScreen" class="w-full max-w-6xl h-screen sm:h-[92vh] bg-slate-900 border border-slate-800 sm:rounded-2xl shadow-2xl flex overflow-hidden">
+  <main class="w-full max-w-2xl bg-slate-900 rounded-2xl shadow-2xl p-6 border border-slate-800 flex flex-col h-[90vh]">
     
-    <!-- BARRA LATERAL -->
-    <aside class="w-64 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between select-none">
-      <div class="p-4 space-y-4 flex-1 flex flex-col min-h-0">
-        
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Módulos & Motores</label>
-            <span id="sessionCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">4 sessões</span>
-          </div>
-          <div id="sessoesContainer" class="flex flex-col gap-1.5 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800 max-h-48 overflow-y-auto"></div>
-        </div>
-
-        <button onclick="criarNovoProjeto()" id="btnNovaAcao" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-600/20 shrink-0">
-          <span>+</span> Novo Projeto
-        </button>
-
-        <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-1 shrink-0 flex justify-between items-center">
-          <span id="labelHistorico">Projetos Salvos</span>
-        </div>
-        
-        <div id="conversationsList" class="space-y-1.5 overflow-y-auto flex-1 pr-1"></div>
+    <!-- Cabeçalho -->
+    <header class="border-b border-slate-800 pb-4 mb-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-emerald-400">Agente Local Zero-Custo</h1>
+        <p class="text-xs text-slate-400">Roda 100% no seu navegador usando WebGPU</p>
       </div>
+      <span id="badgeStatus" class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full">
+        Não carregado
+      </span>
+    </header>
 
-      <!-- Rodapé do Usuário -->
-      <div class="p-3 border-t border-slate-800 flex flex-col gap-2 bg-slate-950/60 shrink-0">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-bold text-xs">
-              👤
-            </div>
-            <div class="flex flex-col truncate">
-              <span id="userNameDisplay" class="text-xs font-semibold text-slate-200 truncate">Usuário</span>
-              <span id="licencaBadge" class="text-[10px] text-emerald-400 font-medium">Ativo (30 Dias)</span>
-            </div>
-          </div>
-          <button onclick="fazerLogout()" title="Sair da Conta" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">
-            Sair
-          </button>
-        </div>
-
-        <button id="btnUpgrade30Dias" onclick="solicitarAtivacaoWhatsapp()" class="w-full py-1.5 px-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition shadow-sm">
-          <span>💎</span> Quero Ativar 30 Dias
+    <!-- Barra de Download/Progresso do Modelo -->
+    <div id="setupArea" class="bg-slate-950 border border-slate-800 p-4 rounded-xl mb-4 space-y-3">
+      <div class="flex items-center justify-between text-xs text-slate-400">
+        <span>Modelo leve: <strong class="text-slate-200">Gemma-2-2b-IT</strong> (~1.4 GB)</span>
+        <button id="btnInit" onclick="iniciarAgente()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-1.5 rounded-lg text-xs transition">
+          Carregar IA
         </button>
       </div>
-    </aside>
-
-    <!-- ÁREA PRINCIPAL DO CHAT -->
-    <main class="flex-1 flex flex-col h-full bg-slate-900 min-w-0">
-      <header class="p-3 sm:p-4 border-b border-slate-800 flex justify-between items-center gap-2 bg-slate-900/80">
-        <div class="flex items-center gap-2 truncate">
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></div>
-          <span id="currentChatTitle" class="text-sm font-semibold text-white truncate max-w-[160px] sm:max-w-xs">Nova Conversa</span>
+      <div id="progressContainer" class="hidden space-y-1">
+        <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+          <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
-        
-        <div class="flex items-center gap-2 shrink-0">
-          <!-- Indicador de Nuvem Automática Conectada -->
-          <div class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Nuvem Ativa
-          </div>
-
-          <a href="admin.html" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1 shadow-sm">
-            <span>🛡️</span> <span class="hidden sm:inline">Admin</span>
-          </a>
-
-          <span id="keyStatusBadge" class="text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block">
-            ⚠️ Chave Ausente
-          </span>
-          <div class="relative">
-            <input 
-              type="password" 
-              id="geminiKeyInput" 
-              placeholder="Cole sua Gemini API Key aqui" 
-              oninput="autoSalvarChave()"
-              class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-36 sm:w-56 transition"
-            />
-          </div>
-          <button id="saveKeyBtn" onclick="salvarChaveGemini(true)" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm">
-            Salvar
-          </button>
-        </div>
-      </header>
-
-      <div id="chatArea" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4"></div>
-
-      <footer class="p-3 sm:p-4 border-t border-slate-800 bg-slate-900/80">
-        <div class="flex gap-2">
-          <input 
-            type="text" 
-            id="userInput" 
-            placeholder="Pergunte qualquer coisa ou envie comandos..." 
-            onkeydown="if(event.key==='Enter') enviarMensagemUsuario()"
-            class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-          />
-          <button onclick="enviarMensagemUsuario()" id="sendBtn" class="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl text-sm transition disabled:opacity-40">
-            Enviar
-          </button>
-        </div>
-      </footer>
-    </main>
-
-  </div>
-
-  <!-- MODAL DA CHAVE GEMINI -->
-  <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl font-bold">
-          🔑
-        </div>
-        <div>
-          <h3 class="text-base font-bold text-white">Chave de API Necessária</h3>
-          <p class="text-xs text-slate-400">Cada usuário insere a sua própria chave gratuita.</p>
-        </div>
-      </div>
-
-      <p class="text-xs text-slate-300 leading-relaxed">
-        Para usar o Studio, você precisa de uma chave gratuita do Google Gemini:
-      </p>
-
-      <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside bg-slate-950 p-3 rounded-xl border border-slate-800">
-        <li>Acesse o <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 underline font-semibold">Google AI Studio</a>.</li>
-        <li>Clique em <b>Create API key</b> e gere uma chave.</li>
-        <li>Cole no campo abaixo.</li>
-      </ol>
-
-      <div class="space-y-2">
-        <input 
-          type="text" 
-          id="modalKeyInput" 
-          placeholder="Cole sua chave aqui (ex: AIzaSy...)" 
-          class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-        />
-      </div>
-
-      <div class="flex justify-end gap-2 pt-2">
-        <button onclick="fecharModalChave()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-slate-200 bg-slate-800">Cancelar</button>
-        <button onclick="salvarChaveDoModal()" class="px-5 py-2 rounded-xl text-xs bg-blue-600 hover:bg-blue-500 text-white font-semibold">Salvar e Começar</button>
+        <p id="progressText" class="text-[11px] text-slate-500 text-right">Preparando...</p>
       </div>
     </div>
-  </div>
 
-  <script>
-    // =========================================================================
-    // CONFIGURAÇÃO DA NUVEM JSONBIN (INTEGRAÇÃO CENTRAL GLOBAL)
-    // =========================================================================
-    const JSONBIN_MASTER_KEY = "$2a$10$LQhRV/47R.k.BBK.OY7bs.MHF5Dzb4915Juxf5PkjU2/TNgVU5d0q";
-    const BIN_CADASTROS = "6abc217fac6210605a032ebc";
-    const BIN_TESTE = "6abc21bfac6210605a032f92";
-    const BIN_CONHECIMENTO = "6abc21e9ac6210605a03301a";
+    <!-- Área de Chat -->
+    <div id="chatHistory" class="flex-1 overflow-y-auto space-y-4 pr-2 text-sm">
+      <div class="bg-slate-800/50 border border-slate-800 rounded-xl p-3.5 text-slate-300">
+        👋 Clique em <strong>"Carregar IA"</strong> acima para baixar o modelo no cache do seu navegador. Uma vez baixado, as respostas são geradas direto no seu computador sem enviar dados para a internet e sem usar créditos de ninguém.
+      </div>
+    </div>
 
-    let modoAuthAtual = "login";
-    let sessoesDisponiveis = [];
-    let promptsCache = {};
-    let etapasEstaticasCache = {};
-    let activeUser = null;
-    let activeSessionId = "producao";
-    let currentConversationId = null;
-    let conversationHistory = [];
-    let ultimaMensagemPendente = "";
-    let isDigitando = false;
-
-    let memoryUsers = {};
-    let memoryProjects = {};
-
-    // Cache local sincronizado
-    let bancoCadastros = JSON.parse(localStorage.getItem("db_cadastros_completo") || "[]");
-    let bancoTeste = JSON.parse(localStorage.getItem("db_cadastros_teste") || "[]");
-    let bancoConhecimento = JSON.parse(localStorage.getItem("banco_conhecimento_local") || "[]");
-
-    // Sincronização de leitura com a nuvem JSONBin
-    async function sincronizarComNuvem() {
-      try {
-        const headers = { "X-Master-Key": JSONBIN_MASTER_KEY };
-
-        // Carrega Cadastros
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_CADASTROS}/latest`, { headers })
-          .then(r => r.json())
-          .then(d => {
-            const arr = Array.isArray(d.record) ? d.record : (d.record?.usuarios || []);
-            if (arr.length > 0) {
-              bancoCadastros = arr;
-              localStorage.setItem("db_cadastros_completo", JSON.stringify(arr));
-            }
-          }).catch(()=>{});
-
-        // Carrega Testes
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_TESTE}/latest`, { headers })
-          .then(r => r.json())
-          .then(d => {
-            const arr = Array.isArray(d.record) ? d.record : (d.record?.testes || []);
-            if (arr.length > 0) {
-              bancoTeste = arr;
-              localStorage.setItem("db_cadastros_teste", JSON.stringify(arr));
-            }
-          }).catch(()=>{});
-
-        // Carrega Conhecimento Coletivo
-        fetch(`https://api.jsonbin.io/v3/b/${BIN_CONHECIMENTO}/latest`, { headers })
-          .then(r => r.json())
-          .then(d => {
-            const arr = Array.isArray(d.record) ? d.record : (d.record?.conhecimento || []);
-            if (arr.length > 0) {
-              bancoConhecimento = arr;
-              localStorage.setItem("banco_conhecimento_local", JSON.stringify(arr));
-            }
-          }).catch(()=>{});
-      } catch (e) {
-        console.warn("Sincronização em nuvem:", e);
-      }
-    }
-
-    // Gravação na nuvem sem requerer permissão local
-    async function gravarNuvem(binId, dados, chaveObjeto) {
-      try {
-        await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": JSONBIN_MASTER_KEY
-          },
-          body: JSON.stringify({ [chaveObjeto]: dados })
-        });
-      } catch (e) {
-        console.warn("Erro ao gravar na nuvem:", e);
-      }
-    }
-
-    // =========================================================================
-    // BANCO DE CONHECIMENTO COLETIVO COM VARIAÇÃO DINÂMICA
-    // =========================================================================
-    function salvarConhecimento(pergunta, resposta) {
-      if (!pergunta || !resposta || resposta.length < 10) return;
-      const perguntaNormalizada = normalizarTexto(pergunta);
+    <!-- Entrada de Texto -->
+    <footer class="mt-4 pt-3 border-t border-slate-800 flex gap-2">
+      <input type="text" id="userInput" disabled placeholder="Aguardando carregamento da IA..." 
+        class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+        onkeypress="if(event.key==='Enter') enviarMensagem()">
       
-      const index = bancoConhecimento.findIndex(item => normalizarTexto(item.pergunta) === perguntaNormalizada);
-      if (index === -1) {
-        bancoConhecimento.unshift({
-          pergunta: pergunta.trim(),
-          respostas: [resposta.trim()],
-          data: new Date().toISOString()
-        });
-      } else {
-        if (!bancoConhecimento[index].respostas) {
-          bancoConhecimento[index].respostas = [bancoConhecimento[index].resposta || resposta.trim()];
-        }
-        if (!bancoConhecimento[index].respostas.includes(resposta.trim())) {
-          bancoConhecimento[index].respostas.push(resposta.trim());
-        }
+      <button id="btnSend" disabled onclick="enviarMensagem()" 
+        class="bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-medium px-5 py-3 rounded-xl text-sm transition">
+        Enviar
+      </button>
+    </footer>
+
+  </main>
+
+  <!-- Biblioteca WebLLM oficial via Módulo ESM -->
+  <script type="module">
+    import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+    let engine = null;
+    const selectedModel = "gemma-2-2b-it-q4f32_1-MLC"; // Modelo balanceado para boa velocidade em PCs comuns
+
+    window.iniciarAgente = async function() {
+      // Checagem de suporte a WebGPU
+      if (!navigator.gpu) {
+        alert("Seu navegador não suporta WebGPU. Ative a aceleração de hardware no Chrome/Edge ou use um navegador atualizado.");
+        return;
       }
 
-      localStorage.setItem("banco_conhecimento_local", JSON.stringify(bancoConhecimento));
-      // Grava em segundo plano na nuvem global
-      gravarNuvem(BIN_CONHECIMENTO, bancoConhecimento, "conhecimento");
-    }
+      const btnInit = document.getElementById("btnInit");
+      const progressContainer = document.getElementById("progressContainer");
+      const progressBar = document.getElementById("progressBar");
+      const progressText = document.getElementById("progressText");
+      const badgeStatus = document.getElementById("badgeStatus");
 
-    function normalizarTexto(txt) {
-      return txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/gi, '').trim();
-    }
+      btnInit.disabled = true;
+      btnInit.classList.add("opacity-50");
+      progressContainer.classList.remove("hidden");
 
-    const variacoesAbertura = [
-      "Com certeza! ",
-      "Aqui está: ",
-      "Entendido! ",
-      "Perfeito. ",
-      "Claro, veja a seguir: ",
-      "Com base no que você precisa: ",
-      "Sem problemas! "
+      try {
+        engine = new webllm.MLCEngine();
+        
+        // Callback para acompanhar o download das fatias do modelo
+        engine.setInitProgressCallback((report) => {
+          const percent = Math.round(report.progress * 100);
+          progressBar.style.width = `${percent}%`;
+          progressText.innerText = report.text;
+        });
+
+        // Inicializa o modelo no cache do IndexedDB local
+        await engine.reload(selectedModel);
+
+        badgeStatus.innerText = "Pronto (Local)";
+        badgeStatus.className = "text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full";
+        
+        document.getElementById("setupArea").classList.add("hidden");
+        document.getElementById("userInput").disabled = false;
+        document.getElementById("userInput").placeholder = "Pergunte qualquer coisa ao agente...";
+        document.getElementById("btnSend").disabled = false;
+        document.getElementById("userInput").focus();
+
+      } catch (err) {
+        console.error(err);
+        badgeStatus.innerText = "Erro no Carregamento";
+        badgeStatus.className = "text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full";
+        alert("Falha ao carregar o modelo: " + err.message);
+      }
+    };
+
+    const mensagens = [
+      { role: "system", content: "Você é um assistente prestativo, inteligente e direto em suas respostas." }
     ];
 
-    function variarResposta(textoBase) {
-      let texto = textoBase;
-      variacoesAbertura.forEach(ab => {
-        if (texto.startsWith(ab)) texto = texto.substring(ab.length);
-      });
-      const aberturaSorteada = variacoesAbertura[Math.floor(Math.random() * variacoesAbertura.length)];
-      return aberturaSorteada + texto;
-    }
-
-    function buscarNaMemoriaLocal(perguntaUsuario) {
-      const perguntaLimpa = normalizarTexto(perguntaUsuario);
-      const palavrasPergunta = perguntaLimpa.split(/\s+/).filter(p => p.length > 2);
-
-      if (palavrasPergunta.length === 0) return null;
-
-      for (const item of bancoConhecimento) {
-        const itemPerguntaLimpa = normalizarTexto(item.pergunta);
-        
-        let match = false;
-        if (itemPerguntaLimpa === perguntaLimpa) {
-          match = true;
-        } else {
-          let matches = 0;
-          palavrasPergunta.forEach(palavra => {
-            if (itemPerguntaLimpa.includes(palavra)) matches++;
-          });
-          const score = matches / palavrasPergunta.length;
-          if (score >= 0.85) match = true;
-        }
-
-        if (match) {
-          const listaRespostas = item.respostas || [item.resposta];
-          const respostaEscolhida = listaRespostas[Math.floor(Math.random() * listaRespostas.length)];
-          return variarResposta(respostaEscolhida);
-        }
-      }
-
-      return null;
-    }
-
-    function alternarModoAuth(modo) {
-      modoAuthAtual = modo;
-      const tabLogin = document.getElementById("tabAuthEntrar");
-      const tabCad = document.getElementById("tabAuthCadastrar");
-      const campoEmail = document.getElementById("campoEmailWrapper");
-      const campoContato = document.getElementById("campoContatoWrapper");
-      const btnSubmit = document.getElementById("btnAuthSubmit");
-
-      if (modo === "login") {
-        tabLogin.className = "flex-1 py-2 font-semibold text-blue-400 border-b-2 border-blue-500 transition";
-        tabCad.className = "flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition";
-        campoEmail.classList.add("hidden");
-        campoContato.classList.add("hidden");
-        btnSubmit.textContent = "Entrar na Conta";
-        btnSubmit.className = "w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-blue-600/25 active:scale-[0.98] cursor-pointer mt-2";
-      } else {
-        tabCad.className = "flex-1 py-2 font-semibold text-purple-400 border-b-2 border-purple-500 transition";
-        tabLogin.className = "flex-1 py-2 font-semibold text-slate-400 hover:text-white border-b-2 border-transparent transition";
-        campoEmail.classList.remove("hidden");
-        campoContato.classList.remove("hidden");
-        btnSubmit.textContent = "Criar Conta & Iniciar Teste (6h)";
-        btnSubmit.className = "w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl text-xs transition shadow-lg shadow-purple-600/25 active:scale-[0.98] cursor-pointer mt-2";
-      }
-    }
-
-    function getStorageUsers() {
-      try {
-        const u = localStorage.getItem("studio_final_users");
-        return u ? JSON.parse(u) : memoryUsers;
-      } catch (e) { return memoryUsers; }
-    }
-
-    function saveStorageUsers(users) {
-      memoryUsers = users;
-      try { localStorage.setItem("studio_final_users", JSON.stringify(users)); } catch (e) {}
-    }
-
-    function getStorageProjects(user, sessao) {
-      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
-      try {
-        const p = localStorage.getItem(key);
-        return p ? JSON.parse(p) : (memoryProjects[key] || []);
-      } catch (e) { return memoryProjects[key] || []; }
-    }
-
-    function saveStorageProjects(user, sessao, projs) {
-      const key = "studio_v19_" + user.toLowerCase() + "_" + sessao;
-      memoryProjects[key] = projs;
-      try { localStorage.setItem(key, JSON.stringify(projs)); } catch (e) {}
-    }
-
-    function solicitarAtivacaoWhatsapp() {
-      const nome = activeUser || "Cliente";
-      const texto = encodeURIComponent(`Olá! Estou utilizando o Universal Master Studio como teste e desejo ativar meu plano de 30 DIAS completo!\n\nNome do usuário: ${nome}`);
-      window.open(`https://api.whatsapp.com/send?phone=5548999977643&text=${texto}`, '_blank');
-    }
-
-    // AUTENTICAÇÃO COM VERIFICAÇÃO NA NUVEM
-    function executarAcesso(e) {
-      if (e) e.preventDefault();
-
-      const userInput = document.getElementById("authUsername");
-      const passInput = document.getElementById("authPassword");
-      const feedback = document.getElementById("loginFeedback");
-
-      const username = (userInput.value || "").trim();
-      const password = (passInput.value || "").trim();
-
-      if (!username || !password) {
-        feedback.textContent = "Preencha todos os campos!";
-        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        feedback.classList.remove("hidden");
-        return;
-      }
-
-      if (modoAuthAtual === "login") {
-        const assinante = bancoCadastros.find(u => u.nome.toLowerCase() === username.toLowerCase());
-        if (assinante) {
-          const agoraMs = new Date().getTime();
-          const vencMs = new Date(assinante.dataVencimentoIso).getTime();
-
-          if (agoraMs > vencMs) {
-            document.documentElement.className = "estado-expirado";
-            return;
-          }
-
-          feedback.textContent = `Assinante reconhecido! Entrando...`;
-          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-          feedback.classList.remove("hidden");
-          localStorage.setItem("studio_user_badge", "Ativo (30 Dias)");
-          setTimeout(() => abrirStudio(assinante.nome), 200);
-          return;
-        }
-
-        const userTeste = bancoTeste.find(u => u.nome.toLowerCase() === username.toLowerCase());
-        if (userTeste) {
-          const agoraMs = new Date().getTime();
-          const vencMs = new Date(userTeste.dataVencimentoIso).getTime();
-
-          if (agoraMs > vencMs) {
-            document.documentElement.className = "estado-expirado";
-            document.getElementById("expiredDescText").textContent = "Seu teste gratuito de 6 horas expirou. Ative o plano de 30 dias para continuar.";
-            return;
-          }
-
-          feedback.textContent = `Acesso de teste ativo! Entrando...`;
-          feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
-          feedback.classList.remove("hidden");
-          localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
-          setTimeout(() => abrirStudio(userTeste.nome), 200);
-          return;
-        }
-
-        feedback.textContent = "Usuário não encontrado. Crie uma conta teste na aba ao lado.";
-        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        feedback.classList.remove("hidden");
-        return;
-      }
-
-      // CADASTRO NOVO (TESTE DE 6 HORAS)
-      const testeJaUtilizado = localStorage.getItem("studio_teste_utilizado_dispositivo");
-      if (testeJaUtilizado && testeJaUtilizado !== username.toLowerCase()) {
-        feedback.textContent = "⚠️ O teste gratuito de 6 horas já foi utilizado neste aparelho. Fale com o suporte para assinar.";
-        feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        feedback.classList.remove("hidden");
-        return;
-      }
-
-      const email = document.getElementById("authEmail").value.trim();
-      const tipoContato = document.getElementById("authTipoContato").value;
-      const numeroContato = document.getElementById("authNumeroContato").value.trim();
-
-      const agora = new Date();
-      const vencimento6h = new Date(agora.getTime() + (6 * 60 * 60 * 1000));
-
-      const formatarData = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-
-      const novoTeste = {
-        id: "usr_" + Date.now(),
-        nome: username,
-        email: email || "Não informado",
-        tipoContato: tipoContato,
-        numero: numeroContato || "Cadastro pelo Site",
-        banco: "teste",
-        dataCadastroIso: agora.toISOString(),
-        dataCadastroFormatada: formatarData(agora),
-        dataVencimentoIso: vencimento6h.toISOString(),
-        dataVencimentoFormatada: formatarData(vencimento6h),
-        token: "tok_" + Date.now()
-      };
-
-      bancoTeste.unshift(novoTeste);
-      localStorage.setItem("db_cadastros_teste", JSON.stringify(bancoTeste));
-      localStorage.setItem("studio_teste_utilizado_dispositivo", username.toLowerCase());
-      localStorage.setItem("studio_user_badge", "Teste (6 Horas)");
-
-      // Grava direto na nuvem sem precisar de permissões
-      gravarNuvem(BIN_TESTE, bancoTeste, "testes");
-
-      feedback.textContent = `✨ Conta teste de 6 horas criada com sucesso! Entrando...`;
-      feedback.className = "text-xs py-2 px-3 rounded-lg font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30";
-      feedback.classList.remove("hidden");
-      setTimeout(() => abrirStudio(username), 300);
-    }
-
-    function extrairEtapasDoTexto(rawTxt) {
-      const etapas = {};
-      const regexEtapas = /###\s*(ETAPA\s*[\d\.]+:[^\n]+)([\s\S]*?)(?=###\s*ETAPA|---\s*\[FORMATO|---\s*\[INSTRUÇÃO|$)/gi;
-      let match;
-
-      while ((match = regexEtapas.exec(rawTxt)) !== null) {
-        const cabecalho = match[1].trim();
-        const conteudo = match[2].trim();
-
-        const temOpcoesNumeradas = /\[0\]|\[1\]/.test(conteudo);
-        const ehEtapaCriativa = /opções inéditas|gerar 20 novos|títulos magnéticos|enredo mais envolvente/i.test(conteudo);
-
-        const idEtapa = cabecalho.split(":")[0].replace(/\s+/g, "_").toLowerCase();
-
-        etapas[idEtapa] = {
-          titulo: `### ${cabecalho}`,
-          textoCompleto: `### ${cabecalho}\n\n${conteudo}`,
-          estatica: temOpcoesNumeradas && !ehEtapaCriativa
-        };
-      }
-
-      return etapas;
-    }
-
-    async function carregarPromptETratarEtapas(sessaoId) {
-      const sessao = sessoesDisponiveis.find(s => s.id === sessaoId) || sessoesDisponiveis[0];
-
-      if (promptsCache[sessao.id]) {
-        return promptsCache[sessao.id];
-      }
-
-      try {
-        const resp = await fetch(sessao.arquivo + "?t=" + Date.now());
-        if (resp.ok) {
-          const texto = await resp.text();
-          promptsCache[sessao.id] = texto;
-          if (sessaoId !== "chat") {
-            etapasEstaticasCache[sessao.id] = extrairEtapasDoTexto(texto);
-          }
-          return texto;
-        }
-      } catch (e) {
-        console.warn("Erro ao ler arquivo de prompt:", e);
-      }
-
-      if (sessaoId === "chat") {
-        return "Você é uma inteligência artificial completa, prestativa e perspicaz, no mesmo padrão de excelência e naturalidade do Gemini e ChatGPT. Responda com linguagem clara, direta, bem estruturada em parágrafos e código quando solicitado.";
-      }
-
-      return "Você é um diretor e engenheiro de IA especializado. Apresente a Etapa 1 e aguarde.";
-    }
-
-    async function carregarSessoesDoGithub() {
-      try {
-        const resp = await fetch("prompts/sessoes.json?t=" + Date.now());
-        if (resp.ok) {
-          sessoesDisponiveis = await resp.json();
-        } else {
-          throw new Error("sessoes.json não localizado");
-        }
-      } catch (e) {
-        sessoesDisponiveis = [
-          { id: "producao", nome: "Produção", icone: "🎬", arquivo: "prompts/producao.txt", titulo: "Engine V19.0 Ultra Master", descricao: "Diretor de Produção Audiovisual pronto para operar sob o sistema monotarefa." },
-          { id: "storyboard", nome: "Storyboard", icone: "🎨", arquivo: "prompts/storyboard.txt", titulo: "Engine de Storyboard Visual", descricao: "Decupagem de câmera, quadros-chave sequenciais e painéis visuais." },
-          { id: "gerador", nome: "Gerador de Prompts", icone: "⚡", arquivo: "prompts/gerador.txt", titulo: "Fábrica de Prompts Especializados", descricao: "Criação de mega-prompts estruturados e comandos avançados de IA." },
-          { id: "chat", nome: "Chat IA Livre", icone: "🧠", arquivo: "prompts/chat.txt", titulo: "Chat Inteligente Livre", descricao: "Converse normalmente sobre qualquer assunto. A IA responde de forma natural e aprende da memória local." }
-        ];
-      }
-
-      const countBadge = document.getElementById("sessionCountBadge");
-      if (countBadge) countBadge.textContent = `${sessoesDisponiveis.length} sessões`;
-
-      renderizarBotoesSessoes();
-    }
-
-    function renderizarBotoesSessoes() {
-      const container = document.getElementById("sessoesContainer");
-      container.innerHTML = "";
-
-      sessoesDisponiveis.forEach(s => {
-        const btn = document.createElement("button");
-        btn.id = "btn_sessao_" + s.id;
-        const isActive = (s.id === activeSessionId);
-        btn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold transition flex items-center justify-between ${
-          isActive 
-            ? "bg-blue-600 text-white shadow-md shadow-blue-600/30" 
-            : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
-        }`;
-        btn.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="text-sm">${s.icone}</span> 
-            <span>${s.nome}</span>
-          </div>
-          ${isActive ? '<span class="text-[10px] bg-blue-500/40 px-1.5 py-0.5 rounded text-blue-100">Ativa</span>' : ''}
-        `;
-        btn.onclick = () => mudarSessao(s.id);
-        container.appendChild(btn);
-      });
-    }
-
-    function mudarSessao(novaSessaoId) {
-      if (activeSessionId === novaSessaoId && currentConversationId) return;
-
-      activeSessionId = novaSessaoId;
-      currentConversationId = null;
-      conversationHistory = [];
-      ultimaMensagemPendente = "";
-      
-      try {
-        localStorage.setItem("studio_active_tab_" + activeUser.toLowerCase(), novaSessaoId);
-      } catch(e) {}
-
-      renderizarBotoesSessoes();
-
-      const sessao = sessoesDisponiveis.find(s => s.id === novaSessaoId);
-      if (sessao) {
-        document.getElementById("btnNovaAcao").innerHTML = `<span>+</span> Nova Conversa (${sessao.nome})`;
-        document.getElementById("labelHistorico").textContent = `Histórico de ${sessao.nome}`;
-      }
-
-      atualizarListaProjetos();
-
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
-      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
-
-      if (chatParaAbrir) {
-        selecionarProjeto(chatParaAbrir.id);
-      } else if (projs.length > 0) {
-        selecionarProjeto(projs[0].id);
-      } else {
-        criarNovoProjeto();
-      }
-    }
-
-    function obterChaveUsuario() {
-      if (!activeUser) return "";
-      const input = document.getElementById("geminiKeyInput");
-      const valInput = input ? input.value.trim() : "";
-      if (valInput) return valInput;
-
-      try {
-        const stored = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase());
-        if (stored) return stored.trim();
-      } catch (e) {}
-
-      return "";
-    }
-
-    function autoSalvarChave() {
-      if (!activeUser) return;
-      const input = document.getElementById("geminiKeyInput");
-      const key = input.value.trim();
-      try {
-        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
-      } catch (e) {}
-      atualizarBadgeChave(key);
-    }
-
-    function salvarChaveGemini(mostrarAviso = true) {
-      if (!activeUser) return;
-      const input = document.getElementById("geminiKeyInput");
-      const key = input.value.trim();
-
-      if (!key) {
-        alert("Cole sua chave de API antes de salvar.");
-        input.focus();
-        return;
-      }
-
-      try {
-        localStorage.setItem("gemini_key_for_" + activeUser.toLowerCase(), key);
-      } catch (e) {}
-
-      atualizarBadgeChave(key);
-
-      const btn = document.getElementById("saveKeyBtn");
-      btn.textContent = "Salvo ✓";
-      btn.className = "bg-emerald-600 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm";
-      setTimeout(() => {
-        btn.textContent = "Salvar";
-        btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition shadow-sm";
-      }, 1500);
-
-      if (mostrarAviso) {
-        alert("Sua chave foi salva com sucesso no seu perfil!");
-      }
-    }
-
-    function carregarChaveDoUsuario() {
-      if (!activeUser) return;
-      try {
-        const key = localStorage.getItem("gemini_key_for_" + activeUser.toLowerCase()) || "";
-        const input = document.getElementById("geminiKeyInput");
-        if (input) input.value = key;
-        atualizarBadgeChave(key);
-      } catch (e) {}
-    }
-
-    function atualizarBadgeChave(key) {
-      const badge = document.getElementById("keyStatusBadge");
-      if (!badge) return;
-      if (key && key.length > 10) {
-        badge.textContent = "✓ Chave Ativa";
-        badge.className = "text-[11px] px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium hidden sm:inline-block";
-      } else {
-        badge.textContent = "⚠️ Chave Ausente";
-        badge.className = "text-[11px] px-2 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium hidden sm:inline-block";
-      }
-    }
-
-    function abrirModalChave() {
-      const modal = document.getElementById("keyModal");
-      const modalInp = document.getElementById("modalKeyInput");
-      modalInp.value = obterChaveUsuario();
-      modal.classList.remove("hidden");
-      modalInp.focus();
-    }
-
-    function fecharModalChave() {
-      document.getElementById("keyModal").classList.add("hidden");
-    }
-
-    function salvarChaveDoModal() {
-      const modalInp = document.getElementById("modalKeyInput");
-      const val = modalInp.value.trim();
-      if (!val) {
-        alert("Cole sua chave no campo!");
-        modalInp.focus();
-        return;
-      }
-      document.getElementById("geminiKeyInput").value = val;
-      salvarChaveGemini(false);
-      fecharModalChave();
-      iniciarProducao();
-    }
-
-    async function abrirStudio(username) {
-      activeUser = username;
-      try { 
-        localStorage.setItem("studio_active_session", username);
-        document.documentElement.className = "estado-logado";
-      } catch(e) {}
-
-      document.getElementById("userNameDisplay").textContent = username;
-      const badgeBadge = localStorage.getItem("studio_user_badge") || "Ativo";
-      const badgeEl = document.getElementById("licencaBadge");
-      if (badgeEl) badgeEl.textContent = badgeBadge;
-
-      const btnUpgrade = document.getElementById("btnUpgrade30Dias");
-      if (badgeBadge.includes("30 Dias")) {
-        btnUpgrade.classList.add("hidden");
-      } else {
-        btnUpgrade.classList.remove("hidden");
-      }
-
-      const tabSalva = localStorage.getItem("studio_active_tab_" + activeUser.toLowerCase());
-      if (tabSalva) activeSessionId = tabSalva;
-
-      await carregarSessoesDoGithub();
-      carregarChaveDoUsuario();
-      atualizarListaProjetos();
-
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const lastOpenedId = localStorage.getItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId);
-      const chatParaAbrir = projs.find(p => p.id === lastOpenedId);
-
-      if (chatParaAbrir) {
-        selecionarProjeto(chatParaAbrir.id);
-      } else if (projs.length > 0) {
-        selecionarProjeto(projs[0].id);
-      } else {
-        criarNovoProjeto();
-      }
-    }
-
-    function fazerLogout() {
-      try { 
-        localStorage.removeItem("studio_active_session");
-        localStorage.removeItem("studio_user_badge");
-        document.documentElement.className = "estado-deslogado";
-      } catch(e) {}
-      activeUser = null;
-      window.location.href = window.location.pathname;
-    }
-
-    function fecharMenusAbertos(e) {
-      if (!e.target.closest(".menu-btn") && !e.target.closest(".menu-dropdown")) {
-        document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
-      }
-    }
-
-    function toggleMenu(e, id) {
-      e.stopPropagation();
-      const menu = document.getElementById("dropdown_" + id);
-      const estaAberto = !menu.classList.contains("hidden");
-      document.querySelectorAll(".menu-dropdown").forEach(m => m.classList.add("hidden"));
-      if (!estaAberto) {
-        menu.classList.remove("hidden");
-      }
-    }
-
-    function alternarFixarProjeto(e, id) {
-      e.stopPropagation();
-      fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const proj = projs.find(p => p.id === id);
-      if (proj) {
-        proj.pinned = !proj.pinned;
-        saveStorageProjects(activeUser, activeSessionId, projs);
-        atualizarListaProjetos();
-      }
-    }
-
-    function renomearProjeto(e, id) {
-      e.stopPropagation();
-      fecharMenusAbertos({ target: document.body });
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const proj = projs.find(p => p.id === id);
-      if (!proj) return;
-
-      const novoNome = prompt("Digite o novo nome:", proj.title);
-      if (novoNome && novoNome.trim()) {
-        proj.title = novoNome.trim();
-        saveStorageProjects(activeUser, activeSessionId, projs);
-        if (currentConversationId === id) {
-          document.getElementById("currentChatTitle").textContent = proj.title;
-        }
-        atualizarListaProjetos();
-      }
-    }
-
-    function excluirProjeto(e, id) {
-      e.stopPropagation();
-      fecharMenusAbertos({ target: document.body });
-
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const proj = projs.find(p => p.id === id);
-      if (!proj) return;
-
-      const confirmar = confirm(`Excluir "${proj.title}"?`);
-      if (!confirmar) return;
-
-      const filtrados = projs.filter(p => p.id !== id);
-      saveStorageProjects(activeUser, activeSessionId, filtrados);
-
-      if (currentConversationId === id) {
-        if (filtrados.length > 0) {
-          selecionarProjeto(filtrados[0].id);
-        } else {
-          criarNovoProjeto();
-        }
-      } else {
-        atualizarListaProjetos();
-      }
-    }
-
-    function atualizarListaProjetos() {
-      if (!activeUser) return;
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      
-      projs.sort((a, b) => {
-        if (Boolean(a.pinned) === Boolean(b.pinned)) return 0;
-        return a.pinned ? -1 : 1;
-      });
-
-      const listEl = document.getElementById("conversationsList");
-      listEl.innerHTML = "";
-
-      projs.forEach(p => {
-        const wrapper = document.createElement("div");
-        wrapper.className = `relative group flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer ${
-          p.id === currentConversationId
-            ? "bg-slate-800 text-blue-400 font-semibold"
-            : "text-slate-400 hover:bg-slate-900/80 hover:text-slate-200"
-        } ${p.pinned ? "border-l-2 border-amber-400 bg-slate-900/40" : ""}`;
-
-        wrapper.onclick = () => selecionarProjeto(p.id);
-
-        wrapper.innerHTML = `
-          <div class="flex items-center gap-2 truncate pr-2">
-            ${p.pinned ? '<span class="text-amber-400 text-[10px]" title="Fixado">📌</span>' : ''}
-            <span class="truncate">${p.title || "Nova Conversa"}</span>
-          </div>
-
-          <button 
-            type="button" 
-            onclick="toggleMenu(event, '${p.id}')"
-            class="menu-btn p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-700/60 transition opacity-80 group-hover:opacity-100">
-            ⋮
-          </button>
-
-          <div id="dropdown_${p.id}" class="menu-dropdown absolute right-2 top-8 w-36 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-30 hidden">
-            <button onclick="alternarFixarProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-300 flex items-center gap-2 text-xs">
-              <span>📌</span> ${p.pinned ? "Desafixar" : "Fixar no topo"}
-            </button>
-            <button onclick="renomearProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-blue-300 flex items-center gap-2 text-xs">
-              <span>✏️</span> Renomear
-            </button>
-            <button onclick="excluirProjeto(event, '${p.id}')" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 text-rose-400 hover:text-rose-300 flex items-center gap-2 text-xs border-t border-slate-800">
-              <span>🗑️</span> Excluir
-            </button>
-          </div>
-        `;
-
-        listEl.appendChild(wrapper);
-      });
-    }
-
-    function exibirPainelInicialCentral() {
-      const chatArea = document.getElementById("chatArea");
-      chatArea.innerHTML = "";
-
-      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId) || {
-        nome: "Chat IA Livre",
-        icone: "🧠",
-        titulo: "Chat Inteligente Livre",
-        descricao: "Faça qualquer pergunta. A IA responde com inteligência e memoriza as respostas."
-      };
-
-      const startDiv = document.createElement("div");
-      startDiv.className = "h-full flex flex-col items-center justify-center text-center space-y-4 py-12";
-      startDiv.innerHTML = `
-        <div class="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-3xl font-bold shadow-inner">
-          ${sessao.icone}
-        </div>
-        <h2 class="text-xl font-bold text-white tracking-tight">${sessao.titulo || sessao.nome}</h2>
-        <p class="text-sm text-slate-400 max-w-sm">
-          ${activeSessionId === 'chat' ? 'Pergunte sobre qualquer assunto, peça códigos, ideias ou orientações.' : (sessao.descricao || "Clique no botão abaixo para iniciar.")}
-        </p>
-        <button onclick="iniciarProducao()" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/30 transform active:scale-95 cursor-pointer">
-          ${activeSessionId === 'chat' ? 'Abrir Conversa Livre' : 'Iniciar ' + sessao.nome}
-        </button>
-      `;
-      chatArea.appendChild(startDiv);
-    }
-
-    function criarNovoProjeto() {
-      if (!activeUser) return;
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const sessao = sessoesDisponiveis.find(s => s.id === activeSessionId);
-      const novo = {
-        id: "proj_" + Date.now(),
-        title: sessao ? `Novo ${sessao.nome}` : "Nova Conversa",
-        pinned: false,
-        messages: []
-      };
-      projs.unshift(novo);
-      saveStorageProjects(activeUser, activeSessionId, projs);
-      atualizarListaProjetos();
-      selecionarProjeto(novo.id);
-    }
-
-    function selecionarProjeto(id) {
-      if (!activeUser) return;
-      currentConversationId = id;
-      try {
-        localStorage.setItem("studio_last_chat_" + activeUser.toLowerCase() + "_" + activeSessionId, id);
-      } catch (e) {}
-
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const proj = projs.find(p => p.id === id);
-      if (!proj) return;
-
-      document.getElementById("currentChatTitle").textContent = proj.title;
-      const chatArea = document.getElementById("chatArea");
-      chatArea.innerHTML = "";
-      conversationHistory = [];
-
-      if (!proj.messages || proj.messages.length === 0) {
-        exibirPainelInicialCentral();
-      } else {
-        proj.messages.forEach(m => {
-          conversationHistory.push({ role: m.role, parts: [{ text: m.content }] });
-          renderizarMensagemInstantanea(m.content, m.role === "user");
-        });
-      }
-      atualizarListaProjetos();
-    }
-
-    function formatarTextoComOpcoes(rawText) {
-      let formatado = rawText;
-      formatado = formatado.replace(/(\n|^)(\[\d+\][^\n]+)/g, '$1- $2');
-      return marked.parse(formatado);
-    }
-
-    function renderizarMensagemInstantanea(texto, isUser, isError = false, viaCacheLocal = false) {
-      const chatArea = document.getElementById("chatArea");
-      const div = document.createElement("div");
-      div.className = `flex ${isUser ? "justify-end" : "justify-start"} w-full`;
-      const bubble = document.createElement("div");
-
-      if (isError) {
-        bubble.className = "max-w-[85%] rounded-2xl p-4 text-sm bg-rose-500/10 border border-rose-500/30 text-rose-200 space-y-3";
-        bubble.innerHTML = `
-          <div class="leading-relaxed">${texto}</div>
-          <button onclick="tentarNovamente()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md shadow-emerald-600/30 cursor-pointer">
-            <span>▶</span> Continuar de Onde Parou
-          </button>
-        `;
-      } else {
-        bubble.className = `max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm ${
-          isUser
-            ? "bg-blue-600 text-white font-medium shadow-md"
-            : "bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative"
-        }`;
-        
-        let conteudoHtml = isUser ? texto : formatarTextoComOpcoes(texto);
-        if (viaCacheLocal) {
-          conteudoHtml = `<div class="mb-2"><span class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">⚡ Resposta da Memória Local (0 Cota Usada)</span></div>` + conteudoHtml;
-        }
-        bubble.innerHTML = conteudoHtml;
-      }
-
-      div.appendChild(bubble);
-      chatArea.appendChild(div);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    async function renderizarMensagemDigitando(textoCompleto, viaCacheLocal = false) {
-      isDigitando = true;
-      const chatArea = document.getElementById("chatArea");
-      const div = document.createElement("div");
-      div.className = "flex justify-start w-full";
-      
-      const bubble = document.createElement("div");
-      bubble.className = "max-w-[92%] sm:max-w-[85%] rounded-2xl p-4 text-sm bg-slate-900 border border-slate-700/80 text-slate-100 prose prose-invert shadow-md relative typing-cursor";
-      
-      let badgeHtml = "";
-      if (viaCacheLocal) {
-        badgeHtml = `<div class="mb-2"><span class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">⚡ Resposta da Memória Local (0 Cota Usada)</span></div>`;
-      }
-
-      bubble.innerHTML = badgeHtml + "<span></span>";
-      div.appendChild(bubble);
-      chatArea.appendChild(div);
-
-      const spanConteudo = bubble.querySelector("span");
-
-      let index = 0;
-      const tamanhoTotal = textoCompleto.length;
-      const passo = tamanhoTotal > 800 ? 5 : (tamanhoTotal > 300 ? 3 : 2);
-      const velocidadeMs = 12;
-
-      return new Promise((resolve) => {
-        const timer = setInterval(() => {
-          index += passo;
-          if (index >= tamanhoTotal) {
-            index = tamanhoTotal;
-            clearInterval(timer);
-            bubble.classList.remove("typing-cursor");
-            bubble.innerHTML = badgeHtml + formatarTextoComOpcoes(textoCompleto);
-            chatArea.scrollTop = chatArea.scrollHeight;
-            isDigitando = false;
-            resolve();
-          } else {
-            const textoParcial = textoCompleto.substring(0, index);
-            spanConteudo.innerHTML = formatarTextoComOpcoes(textoParcial);
-            chatArea.scrollTop = chatArea.scrollHeight;
-          }
-        }, velocidadeMs);
-      });
-    }
-
-    function detectarEAtualizarTitulo(textoUsuario, respostaModelo, projetoAtual, todosProjetos) {
-      const matchTitulo = respostaModelo.match(/(?:TÍTULO ESCOLHIDO|Título Oficial|Título do Vídeo|Título do Storyboard|Projeto):\s*["']?([^"'\n]+)["']?/i);
-      if (matchTitulo && matchTitulo[1]) {
-        const tituloLimpo = matchTitulo[1].replace(/[*#]/g, '').trim();
-        projetoAtual.title = tituloLimpo;
-        document.getElementById("currentChatTitle").textContent = tituloLimpo;
-        saveStorageProjects(activeUser, activeSessionId, todosProjetos);
-        atualizarListaProjetos();
-        return;
-      }
-
-      if (textoUsuario && !textoUsuario.startsWith("[") && isNaN(textoUsuario.trim()) && textoUsuario.length >= 3) {
-        const tituloResumo = textoUsuario.length > 25 ? textoUsuario.substring(0, 25) + "..." : textoUsuario;
-        projetoAtual.title = tituloResumo;
-        document.getElementById("currentChatTitle").textContent = tituloResumo;
-        saveStorageProjects(activeUser, activeSessionId, todosProjetos);
-        atualizarListaProjetos();
-      }
-    }
-
-    async function dispararFluxo(texto, isInicial = false, isRetomada = false) {
-      if (isDigitando) return;
-
-      const projs = getStorageProjects(activeUser, activeSessionId);
-      const atual = projs.find(p => p.id === currentConversationId);
-
-      if (isInicial && (!atual.messages || atual.messages.length === 0)) {
-        document.getElementById("chatArea").innerHTML = "";
-      }
-
-      const promptMestre = await carregarPromptETratarEtapas(activeSessionId);
-      const mapaEtapas = etapasEstaticasCache[activeSessionId] || {};
-
-      if (isInicial && activeSessionId === "chat") {
-        const boasVindas = "Olá! Como posso ajudar você hoje? Pode me perguntar qualquer assunto, pedir ideias, criar textos, analisar dados ou programar.";
-        conversationHistory.push({ role: "model", parts: [{ text: boasVindas }] });
-        await renderizarMensagemDigitando(boasVindas, false);
-        if (atual) {
-          atual.messages.push({ role: "model", content: boasVindas });
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-        return;
-      }
-
-      if (isInicial && activeSessionId !== "chat") {
-        const primeiraEtapaId = Object.keys(mapaEtapas)[0];
-        if (primeiraEtapaId && mapaEtapas[primeiraEtapaId].textoCompleto) {
-          const textoEtapa1 = mapaEtapas[primeiraEtapaId].textoCompleto;
-          conversationHistory.push({ role: "model", parts: [{ text: textoEtapa1 }] });
-          renderizarMensagemInstantanea(textoEtapa1, false);
-
-          if (atual) {
-            atual.messages.push({ role: "model", content: textoEtapa1 });
-            saveStorageProjects(activeUser, activeSessionId, projs);
-          }
-          return;
-        }
-      }
-
-      if (!isInicial && !isRetomada) {
-        renderizarMensagemInstantanea(texto, true);
-        conversationHistory.push({ role: "user", parts: [{ text: texto }] });
-        if (atual) {
-          atual.messages.push({ role: "user", content: texto });
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-      }
-
-      if (activeSessionId === "chat" && texto.length >= 3) {
-        const respostaMemoria = buscarNaMemoriaLocal(texto);
-        if (respostaMemoria) {
-          conversationHistory.push({ role: "model", parts: [{ text: respostaMemoria }] });
-          await renderizarMensagemDigitando(respostaMemoria, true);
-
-          if (atual) {
-            atual.messages.push({ role: "model", content: respostaMemoria });
-            detectarEAtualizarTitulo(texto, respostaMemoria, atual, projs);
-            saveStorageProjects(activeUser, activeSessionId, projs);
-          }
-          return;
-        }
-      }
-
-      const mensagensModelo = conversationHistory.filter(m => m.role === "model");
-      const indiceProximaEtapa = mensagensModelo.length;
-      const chavesEtapas = Object.keys(mapaEtapas);
-
-      if (activeSessionId !== "chat" && chavesEtapas[indiceProximaEtapa] && mapaEtapas[chavesEtapas[indiceProximaEtapa]].estatica) {
-        const textoProximaEtapa = mapaEtapas[chavesEtapas[indiceProximaEtapa]].textoCompleto;
-        conversationHistory.push({ role: "model", parts: [{ text: textoProximaEtapa }] });
-        renderizarMensagemInstantanea(textoProximaEtapa, false);
-
-        if (atual) {
-          atual.messages.push({ role: "model", content: textoProximaEtapa });
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-        return;
-      }
-
-      const apiKey = obterChaveUsuario();
-      if (!apiKey || apiKey.length < 10) {
-        abrirModalChave();
-        return;
-      }
-
-      const sendBtn = document.getElementById("sendBtn");
-      const userInput = document.getElementById("userInput");
-      sendBtn.disabled = true;
-      userInput.disabled = true;
-
-      const indicador = document.createElement("div");
-      indicador.id = "indicadorCarregando";
-      indicador.className = "flex justify-start w-full";
-      indicador.innerHTML = `
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-400 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
-          ${activeSessionId === 'chat' ? 'Pensando na resposta...' : 'Processando etapa criativa...'}
-        </div>
-      `;
-      document.getElementById("chatArea").appendChild(indicador);
-      document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
-
-      const modelosCandidatos = [
-        "gemini-3.5-flash-lite",
-        "gemini-3.8-flash",
-        "gemini-2.5-flash"
-      ];
-
-      const systemInstructionFinal = activeSessionId === "chat"
-        ? "Você é uma inteligência artificial completa, brilhante e prestativa, com tom natural, autêntico e variado idêntico ao Gemini e ChatGPT. Adapte-se ao contexto, varie as palavras e estruturas de frases, e forneça soluções detalhadas em português com formatação markdown rica."
-        : promptMestre;
-
-      let respostaFinal = null;
-      for (const modelo of modelosCandidatos) {
-        try {
-          const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                systemInstruction: { parts: [{ text: systemInstructionFinal }] },
-                contents: conversationHistory,
-                generationConfig: { 
-                  temperature: 0.9, 
-                  topP: 0.95,
-                  maxOutputTokens: 8192 
-                }
-              })
-            }
-          );
-
-          const data = await resp.json();
-          if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-            respostaFinal = data.candidates[0].content.parts[0].text;
-            break;
-          }
-        } catch (err) {}
-      }
-
-      const loadEl = document.getElementById("indicadorCarregando");
-      if (loadEl) loadEl.remove();
-
-      if (respostaFinal) {
-        conversationHistory.push({ role: "model", parts: [{ text: respostaFinal }] });
-        
-        await renderizarMensagemDigitando(respostaFinal, false);
-        salvarConhecimento(texto, respostaFinal);
-
-        if (atual) {
-          atual.messages.push({ role: "model", content: respostaFinal });
-          detectarEAtualizarTitulo(texto, respostaFinal, atual, projs);
-          saveStorageProjects(activeUser, activeSessionId, projs);
-        }
-        ultimaMensagemPendente = "";
-      } else {
-        renderizarMensagemInstantanea(
-          `⚠️ **Houve uma oscilação na conexão do Gemini.**\n\nSua última escolha foi gravada com sucesso. Clique abaixo para avançar sem duplicar mensagens:`,
-          false,
-          true
-        );
-      }
-
-      sendBtn.disabled = false;
-      userInput.disabled = false;
-      userInput.focus();
-    }
-
-    function tentarNovamente() {
-      const chatArea = document.getElementById("chatArea");
-      const erroBox = chatArea.lastElementChild;
-      if (erroBox) erroBox.remove();
-
-      if (ultimaMensagemPendente) {
-        dispararFluxo(ultimaMensagemPendente, false, true);
-      } else {
-        dispararFluxo("", true, true);
-      }
-    }
-
-    function iniciarProducao() {
-      dispararFluxo("", true);
-    }
-
-    function enviarMensagemUsuario() {
-      if (isDigitando) return;
+    window.enviarMensagem = async function() {
       const input = document.getElementById("userInput");
-      const val = input.value.trim();
-      if (!val) return;
+      const chat = document.getElementById("chatHistory");
+      const texto = input.value.trim();
+
+      if (!texto || !engine) return;
+
+      // Mensagem do usuário na tela
+      chat.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 max-w-[85%]">
+            ${texto}
+          </div>
+        </div>
+      `;
+      mensagens.push({ role: "user", content: texto });
       input.value = "";
-      dispararFluxo(val, false, false);
-    }
+      chat.scrollTop = chat.scrollHeight;
 
-    window.addEventListener("DOMContentLoaded", () => {
-      sincronizarComNuvem();
+      // Resposta da IA com streaming progressivo
+      const botMsgId = "bot-" + Date.now();
+      chat.innerHTML += `
+        <div class="flex justify-start">
+          <div id="${botMsgId}" class="bg-slate-800 text-slate-200 border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-2.5 max-w-[85%] whitespace-pre-wrap">
+            ...
+          </div>
+        </div>
+      `;
+      chat.scrollTop = chat.scrollHeight;
 
-      const enteredByToken = (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
-        if (!token) return false;
-        let u = bancoCadastros.find(x => x.token === token) || bancoTeste.find(x => x.token === token);
-        if (u) {
-          activeUser = u.nome;
-          localStorage.setItem("studio_active_session", activeUser);
-          localStorage.setItem("studio_user_badge", u.banco === 'cadastro' ? "Ativo (30 Dias)" : "Teste (6 Horas)");
-          document.documentElement.className = "estado-logado";
-          return true;
-        }
-        return false;
-      })();
-
-      if (enteredByToken) {
-        abrirStudio(activeUser);
-        return;
-      }
+      const botElement = document.getElementById(botMsgId);
+      let respostaCompleta = "";
 
       try {
-        const sessao = localStorage.getItem("studio_active_session");
-        if (sessao) {
-          abrirStudio(sessao);
-        } else {
-          document.documentElement.className = "estado-deslogado";
+        const chunks = await engine.chat.completions.create({
+          messages: mensagens,
+          stream: true
+        });
+
+        for await (const chunk of chunks) {
+          const delta = chunk.choices[0]?.delta?.content || "";
+          respostaCompleta += delta;
+          botElement.innerText = respostaCompleta;
+          chat.scrollTop = chat.scrollHeight;
         }
+
+        mensagens.push({ role: "assistant", content: respostaCompleta });
       } catch (e) {
-        document.documentElement.className = "estado-deslogado";
+        botElement.innerText = "Erro ao processar: " + e.message;
       }
-    });
+    };
   </script>
 </body>
 </html>
