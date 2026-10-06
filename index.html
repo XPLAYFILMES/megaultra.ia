@@ -11,7 +11,7 @@
   <div class="max-w-6xl mx-auto px-4 py-8">
     
     <!-- Top Header -->
-    <header class="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
+    <header class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-800 pb-5 mb-8 gap-4">
       <div class="flex items-center gap-3">
         <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
           <i class="fa-solid fa-film text-white text-xl"></i>
@@ -21,12 +21,15 @@
           <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <button id="openSettingsBtn" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white px-3 py-2 rounded-xl text-xs flex items-center gap-2 transition">
-          <i class="fa-solid fa-gear text-indigo-400"></i>
-          <span>Configurar API</span>
+      
+      <!-- API Key Direta na Barra -->
+      <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 p-2 rounded-xl">
+        <i class="fa-solid fa-key text-indigo-400 text-xs ml-1"></i>
+        <input type="password" id="apiKeyDirect" placeholder="Chave Gemini (AIzaSy...)" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 w-44 font-mono">
+        <button id="saveKeyBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1 rounded-lg transition font-medium">
+          Salvar
         </button>
-        <span class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-3 py-1 rounded-full font-mono">v4.6 AutoModel</span>
+        <span id="keyStatus" class="text-[11px] text-slate-500 pr-1"></span>
       </div>
     </header>
 
@@ -45,16 +48,18 @@
         </div>
         <div class="mt-4 p-3 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-400">
           <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
-          Dica: para envio direto no navegador, prefira vídeos de até <strong>18 MB</strong>.
+          Para envio direto no navegador, prefira arquivos curtos de até <strong>18 MB</strong>.
         </div>
       </div>
 
-      <!-- Drag & Drop Zone -->
-      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center relative cursor-pointer" id="dropArea">
-        <input type="file" id="videoInput" accept="video/mp4,video/webm" class="absolute inset-0 opacity-0 cursor-pointer">
+      <!-- Upload Zone Nativa e Confiável -->
+      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+        <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
         <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-2"></i>
-        <p class="text-sm font-medium text-slate-200" id="fileLabel">Clique ou arraste o vídeo aqui</p>
-        <p class="text-xs text-slate-500 mt-1">Formatos aceitos: MP4 ou WebM</p>
+        <button type="button" onclick="document.getElementById('videoInput').click()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-medium mb-1 border border-slate-700 transition">
+          Selecionar Vídeo (MP4 / WebM)
+        </button>
+        <p class="text-xs text-slate-400 mt-1" id="fileLabel">Nenhum arquivo selecionado</p>
       </div>
     </div>
 
@@ -74,7 +79,6 @@
 
     <!-- Output Blocks -->
     <main id="outputContainer" class="space-y-8 hidden">
-      
       <!-- Characters Block -->
       <section class="space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
@@ -106,21 +110,4 @@
         </div>
         <div id="scenesList" class="space-y-4"></div>
       </section>
-    </main>
-
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wide">Configurações de API</h3>
-        <button id="closeSettingsBtn" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
-        <input type="password" id="apiKeyModal" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
-        <p class="text-[11px] text-slate-500 mt-1">Salvo de forma segura no armazenamento local (localStorage) do seu navegador.</p>
-      </div>
-      <div class="flex justify-end pt-2">
-        <button id="saveApiKeyBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition
+    </main
