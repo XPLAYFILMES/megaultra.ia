@@ -32,7 +32,7 @@
     <!-- Navegação com Scrollbar Interna -->
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
       
-      <!-- Início (Botão que reseta e volta à tela inicial) -->
+      <!-- Início (Reseta e volta à tela inicial) -->
       <div>
         <button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition cursor-pointer text-left">
           <i class="fa-solid fa-house text-slate-300"></i>
@@ -152,7 +152,7 @@
         </a>
       </div>
 
-      <!-- FERRAMENTAS -->
+      <!-- FERRAMENTAS & CONFIG -->
       <div class="space-y-1">
         <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas</p>
         <a href="ferramentas-ia.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
@@ -179,7 +179,7 @@
   <main id="mainScrollArea" class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
     <div class="max-w-5xl w-full mx-auto px-6 py-8">
       
-      <!-- Topo do Card com Botão Iniciar / Resetar -->
+      <!-- Topo com Botão Iniciar / Resetar -->
       <header class="flex items-center justify-between border-b border-slate-900 pb-5 mb-8">
         <div class="flex items-center gap-3">
           <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
@@ -191,7 +191,6 @@
           </div>
         </div>
 
-        <!-- Botão Iniciar / Novo Vídeo -->
         <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer">
           <i class="fa-solid fa-rotate-left text-indigo-400"></i>
           <span>Iniciar / Limpar</span>
@@ -236,13 +235,13 @@
         </button>
       </div>
 
-      <!-- Barra de Status / Carregamento -->
+      <!-- Barra de Status -->
       <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
         <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
         <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
       </div>
 
-      <!-- Resultados -->
+      <!-- Resultados Gerados -->
       <section id="outputContainer" class="space-y-8 hidden">
         <!-- Personagens Mestre -->
         <div class="space-y-3">
@@ -301,7 +300,7 @@
     let currentFile = null;
     let fullPromptsText = "";
 
-    // Função que reinicia para o estado inicial
+    // Função Iniciar / Limpar tudo
     function resetToHome() {
       currentFile = null;
       videoInput.value = "";
@@ -318,7 +317,7 @@
     navHomeBtn.addEventListener('click', resetToHome);
     resetAppBtn.addEventListener('click', resetToHome);
 
-    // Checar Chave API
+    // Checar se a Chave API existe no navegador
     const activeKey = localStorage.getItem('gemini_api_key');
     if (activeKey) {
       keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
@@ -328,7 +327,7 @@
       keyStatusBadge.textContent = 'Vazia';
     }
 
-    // Upload Handlers
+    // Handlers de Upload
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
@@ -354,7 +353,7 @@
       reader.onerror = err => reject(err);
     });
 
-    // Processamento com fallback de alta demanda (503/429)
+    // Processamento com detecção viva de modelos e fallback inteligente
     processBtn.addEventListener('click', async () => {
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
@@ -367,10 +366,35 @@
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Preparando vídeo para análise...";
+      statusText.innerText = "Consultando modelos ativos na sua conta...";
 
       try {
         const base64Data = await fileToBase64(currentFile);
+
+        // 1. Descobrir dinamicamente os modelos habilitados na chave
+        let activeModels = [];
+        try {
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            activeModels = (listData.models || [])
+              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+              .map(m => m.name.replace('models/', ''));
+          }
+        } catch (e) {
+          console.warn("Falha no ListModels, usando fallback:", e);
+        }
+
+        // Fila priorizando os modelos estáveis mais atuais (3.6, 3.7, 3.8, etc.)
+        const preferredList = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
+        let modelsToTry = preferredList.filter(m => activeModels.includes(m));
+
+        if (modelsToTry.length === 0) {
+          modelsToTry = activeModels.filter(m => m.includes("flash"));
+        }
+        if (modelsToTry.length === 0) {
+          modelsToTry = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"];
+        }
 
         const langRules = {
           "detect_to_pt": "Traduza falas e diálogos para Português (PT-BR). Prompts em inglês conciso.",
@@ -380,7 +404,7 @@
 
         const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa.
 Regras de idioma: ${langRules[langMode.value]}
-Instrução: Prompts e descrições devem ser 50% mais concisos, sem detalhes redundantes.
+Instrução: Prompts e descrições 50% mais concisos, sem enrolação.
 
 Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
 {
@@ -402,20 +426,11 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
   ]
 }`;
 
-        // Lista de modelos ordenados para fallback automático caso ocorra 503 (High demand)
-        const modelsQueue = [
-          "gemini-3.8-flash",
-          "gemini-3.7-flash",
-          "gemini-3.6-flash",
-          "gemini-2.0-flash",
-          "gemini-1.5-flash-latest"
-        ];
-
         let successData = null;
         let lastErrorMsg = "";
 
-        for (const model of modelsQueue) {
-          statusText.innerText = `Processando com [${model}]...`;
+        for (const model of modelsToTry) {
+          statusText.innerText = `Processando vídeo com [${model}]...`;
           try {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             const res = await fetch(apiUrl, {
@@ -435,6 +450,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
               })
             });
 
+            // Se o modelo estiver sob alta demanda (503) ou rate limit (429), pula pro próximo modelo ativo
             if (res.status === 503 || res.status === 429) {
               console.warn(`Modelo ${model} em alta demanda (503/429). Tentando próximo modelo...`);
               continue;
@@ -457,7 +473,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
         }
 
         if (!successData) {
-          throw new Error(lastErrorMsg || "Todos os modelos estão temporariamente ocupados. Aguarde alguns instantes e tente novamente.");
+          throw new Error(lastErrorMsg || "Os modelos estão temporariamente com alta demanda. Aguarde alguns instantes e tente novamente.");
         }
 
         renderOutput(successData);
