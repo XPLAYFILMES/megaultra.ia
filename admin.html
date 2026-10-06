@@ -3,123 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo | Central Monetização</title>
+  <title>Admin Master | CineMorph AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-[#05070B] text-slate-100 min-h-screen p-6 font-sans">
   <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- Topo Admin -->
-    <header class="flex items-center justify-between bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+    <header class="flex items-center justify-between bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center font-black text-black text-lg shadow-lg shadow-amber-500/20">
-          <i class="fa-solid fa-shield-halved"></i>
+        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-lg shadow-lg shadow-indigo-600/30">
+          CM
         </div>
         <div>
-          <h1 class="text-base font-bold text-white uppercase tracking-wide">Painel de Gestão de Clientes</h1>
-          <p class="text-xs text-slate-400">Controle de acessos, tokens e renovações de 30 dias</p>
+          <h1 class="text-sm font-bold text-white uppercase tracking-wider">CineMorph AI — Gestão de Licenças</h1>
+          <p class="text-xs text-slate-400">Controle de links de acesso e renovações (30 Dias)</p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full font-mono">
-          <i class="fa-solid fa-circle text-[8px] mr-1"></i> Admin Conectado
-        </span>
-      </div>
+      <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full font-mono">
+        <i class="fa-solid fa-circle text-[8px] mr-1"></i> Admin Master Conectado
+      </span>
     </header>
 
-    <!-- Cadastro de Novo Usuário -->
+    <!-- Cadastro -->
     <section class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl">
       <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-user-plus text-indigo-400"></i> Cadastrar Novo Cliente (Acesso de 30 Dias)
+        <i class="fa-solid fa-user-plus text-indigo-400"></i> Cadastrar Novo Cliente (Acesso por 30 Dias)
       </h2>
-      <form id="createUserForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <form id="clientForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-xs font-semibold text-slate-400 mb-1">Nome do Cliente</label>
-          <input type="text" id="clientName" placeholder="Ex: João da Silva" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="clientName" placeholder="Ex: Lucas Souza" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">WhatsApp / Contato</label>
-          <input type="text" id="clientContact" placeholder="Ex: (11) 99999-9999" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Contato / WhatsApp</label>
+          <input type="text" id="clientContact" placeholder="(00) 00000-0000" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
         </div>
         <div class="flex items-end">
-          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-600/30">
-            <i class="fa-solid fa-link"></i> Gerar Link Exclusivo (30 Dias)
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 cursor-pointer">
+            <i class="fa-solid fa-link"></i> Gerar Link Exclusivo (30d)
           </button>
         </div>
       </form>
     </section>
 
-    <!-- Tabela de Clientes Cadastrados -->
+    <!-- Lista de Clientes -->
     <section class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-          <i class="fa-solid fa-users text-indigo-400"></i> Clientes Cadastrados
+          <i class="fa-solid fa-users text-indigo-400"></i> Licenças Emitidas
         </h2>
-        <span id="totalClientsCount" class="text-xs font-mono text-slate-400">0 Clientes</span>
+        <span id="clientCounter" class="text-xs font-mono text-slate-400">0 Cadastros</span>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-slate-300">
-          <thead class="text-[11px] uppercase tracking-wider bg-slate-950/70 text-slate-400 border-b border-slate-800">
+          <thead class="text-[11px] uppercase tracking-wider bg-slate-950/80 text-slate-400 border-b border-slate-800 font-mono">
             <tr>
               <th class="p-3">Cliente</th>
               <th class="p-3">Status</th>
-              <th class="p-3">Data Cadastro</th>
-              <th class="p-3">Data Vencimento</th>
-              <th class="p-3">Link de Acesso</th>
+              <th class="p-3">Cadastro</th>
+              <th class="p-3">Vencimento</th>
+              <th class="p-3">Link de Acesso Único</th>
               <th class="p-3 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody id="clientsTableBody" class="divide-y divide-slate-800/60 font-mono">
-            <!-- Linhas renderizadas via JS -->
-          </tbody>
+          <tbody id="clientsTable" class="divide-y divide-slate-800/60 font-mono"></tbody>
         </table>
       </div>
     </section>
-
   </div>
 
   <script>
-    const STORAGE_KEY = 'cm_client_database';
+    const STORAGE = 'cm_admin_clients';
 
-    function getClients() {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    function getList() {
+      return JSON.parse(localStorage.getItem(STORAGE) || '[]');
     }
 
-    function saveClients(list) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      renderClients();
+    function saveList(list) {
+      localStorage.setItem(STORAGE, JSON.stringify(list));
+      render();
     }
 
-    function generateToken() {
-      return 'cm_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    function createSignedToken(nome, expDateMs) {
+      const payload = { nome, exp: expDateMs, rand: Math.random().toString(36).slice(2, 7) };
+      return 'cm_' + btoa(JSON.stringify(payload));
     }
 
-    function formatDate(isoStr) {
-      const d = new Date(isoStr);
+    function formatDate(ms) {
+      const d = new Date(ms);
       return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function renderClients() {
-      const clients = getClients();
-      const tbody = document.getElementById('clientsTableBody');
-      const counter = document.getElementById('totalClientsCount');
-      counter.textContent = `${clients.length} ${clients.length === 1 ? 'Cliente' : 'Clientes'}`;
+    function render() {
+      const list = getList();
+      const tbody = document.getElementById('clientsTable');
+      document.getElementById('clientCounter').innerText = `${list.length} Licenças`;
       tbody.innerHTML = '';
 
-      if (clients.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-sans">Nenhum cliente cadastrado ainda.</td></tr>`;
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-sans">Nenhum cliente cadastrado.</td></tr>`;
         return;
       }
 
-      const now = new Date().getTime();
-      const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+      const now = Date.now();
+      const origin = window.location.origin;
 
-      clients.forEach(c => {
-        const expiresAtMs = new Date(c.expiresAt).getTime();
-        const isExpired = now > expiresAtMs || c.status === 'inativo';
-        const userLink = `${baseUrl}?token=${c.token}`;
+      list.forEach(c => {
+        const isExpired = now > c.exp;
+        const link = `${origin}/index.html?token=${c.token}`;
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-950/40 transition";
@@ -133,21 +126,21 @@
               ${isExpired ? 'Expirado' : 'Ativo'}
             </span>
           </td>
-          <td class="p-3 text-[11px] text-slate-400">${formatDate(c.createdAt)}</td>
-          <td class="p-3 text-[11px] ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-300'}">${formatDate(c.expiresAt)}</td>
+          <td class="p-3 text-[11px] text-slate-400">${formatDate(c.created)}</td>
+          <td class="p-3 text-[11px] ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-300'}">${formatDate(c.exp)}</td>
           <td class="p-3">
             <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-2 py-1 rounded max-w-xs">
-              <span class="truncate text-[10px] text-indigo-300 select-all">${userLink}</span>
-              <button onclick="copyToClipboard('${userLink}')" title="Copiar Link" class="text-slate-400 hover:text-white text-xs cursor-pointer">
+              <span class="truncate text-[10px] text-indigo-300 select-all">${link}</span>
+              <button onclick="navigator.clipboard.writeText('${link}'); alert('Link copiado!');" title="Copiar Link" class="text-slate-400 hover:text-white text-xs cursor-pointer">
                 <i class="fa-regular fa-copy"></i>
               </button>
             </div>
           </td>
           <td class="p-3 text-right space-x-2 font-sans">
-            <button onclick="renewClient('${c.id}')" title="Renovar por mais 30 dias mantendo o mesmo link" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded text-xs transition cursor-pointer">
-              <i class="fa-solid fa-arrows-rotate mr-1"></i> Renovar +30d
+            <button onclick="renew('${c.id}')" class="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded text-xs transition cursor-pointer">
+              <i class="fa-solid fa-arrows-rotate mr-1"></i> +30d
             </button>
-            <button onclick="deleteClient('${c.id}')" title="Excluir" class="text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer">
+            <button onclick="removeClient('${c.id}')" class="text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -156,66 +149,43 @@
       });
     }
 
-    document.getElementById('createUserForm').addEventListener('submit', (e) => {
+    document.getElementById('clientForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('clientName').value.trim();
       const contact = document.getElementById('clientContact').value.trim();
 
-      const createdAt = new Date();
-      // Calcula exatamente 30 dias a partir do momento atual
-      const expiresAt = new Date(createdAt.getTime() + (30 * 24 * 60 * 60 * 1000));
+      const created = Date.now();
+      const exp = created + (30 * 24 * 60 * 60 * 1000);
+      const token = createSignedToken(name, exp);
 
-      const newClient = {
-        id: 'client_' + Date.now(),
-        name,
-        contact,
-        token: generateToken(),
-        createdAt: createdAt.toISOString(),
-        expiresAt: expiresAt.toISOString(),
-        status: 'ativo'
-      };
-
-      const clients = getClients();
-      clients.unshift(newClient);
-      saveClients(clients);
+      const client = { id: 'c_' + Date.now(), name, contact, created, exp, token };
+      const list = getList();
+      list.unshift(client);
+      saveList(list);
 
       document.getElementById('clientName').value = '';
       document.getElementById('clientContact').value = '';
-
-      alert(`Cliente cadastrado com sucesso!\nLink gerado e pronto para envio.`);
+      alert("Link exclusivo gerado com sucesso!");
     });
 
-    window.renewClient = function(id) {
-      const clients = getClients();
-      const index = clients.findIndex(c => c.id === id);
-      if (index === -1) return;
+    window.renew = function(id) {
+      const list = getList();
+      const c = list.find(x => x.id === id);
+      if (!c) return;
 
-      const client = clients[index];
-      const now = new Date().getTime();
-      const currentExpiry = new Date(client.expiresAt).getTime();
-
-      // Se já venceu, adiciona 30 dias a partir de agora; se ainda não venceu, soma 30 dias ao prazo existente
-      const baseDate = currentExpiry > now ? currentExpiry : now;
-      client.expiresAt = new Date(baseDate + (30 * 24 * 60 * 60 * 1000)).toISOString();
-      client.status = 'ativo';
-
-      saveClients(clients);
-      alert(`Acesso de ${client.name} renovado por mais 30 dias!\nO link de acesso continua o mesmo.`);
+      const base = c.exp > Date.now() ? c.exp : Date.now();
+      c.exp = base + (30 * 24 * 60 * 60 * 1000);
+      c.token = createSignedToken(c.name, c.exp);
+      saveList(list);
+      alert(`Acesso renovado por +30 dias para ${c.name}!`);
     };
 
-    window.deleteClient = function(id) {
-      if (!confirm("Deseja realmente remover este cliente? O link dele deixará de funcionar imediatamente.")) return;
-      let clients = getClients();
-      clients = clients.filter(c => c.id !== id);
-      saveClients(clients);
+    window.removeClient = function(id) {
+      if (!confirm("Deseja revogar o acesso deste cliente?")) return;
+      saveList(getList().filter(x => x.id !== id));
     };
 
-    window.copyToClipboard = function(text) {
-      navigator.clipboard.writeText(text);
-      alert("Link do cliente copiado!");
-    };
-
-    renderClients();
+    render();
   </script>
 </body>
 </html>
