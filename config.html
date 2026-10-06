@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações | CineReplicate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-5">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-gear text-indigo-400"></i>
+        <h1 class="text-sm font-bold uppercase tracking-wider text-slate-200">Configuração da API</h1>
+      </div>
+      <a href="index.html" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+        <i class="fa-solid fa-arrow-left"></i> Voltar
+      </a>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
+      <p class="text-[11px] text-slate-500 mt-1">Armazenada localmente no seu navegador para uso na aplicação.</p>
+    </div>
+
+    <div class="flex gap-2 pt-2">
+      <button id="saveKeyBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-2 rounded-lg transition">
+        Salvar Chave
+      </button>
+      <button id="removeKeyBtn" class="bg-slate-800 hover:bg-rose-900/50 hover:text-rose-400 text-slate-400 text-xs px-3 py-2 rounded-lg transition">
+        Remover
+      </button>
+    </div>
+    <p id="feedbackMsg" class="text-xs text-center font-medium hidden"></p>
+  </div>
+
+  <script>
+    const input = document.getElementById('apiKeyInput');
+    const msg = document.getElementById('feedbackMsg');
+    const saved = localStorage.getItem('gemini_api_key');
+    if (saved) input.value = saved;
+
+    document.getElementById('saveKeyBtn').addEventListener('click', () => {
+      const val = input.value.trim();
+      if (!val) return alert("Insira uma chave válida.");
+      localStorage.setItem('gemini_api_key', val);
+      msg.textContent = "✓ Chave salva com sucesso!";
+      msg.className = "text-xs text-center font-medium text-emerald-400 block";
+    });
+
+    document.getElementById('removeKeyBtn').addEventListener('click', () => {
+      localStorage.removeItem('gemini_api_key');
+      input.value = "";
+      msg.textContent = "Chave removida.";
+      msg.className = "text-xs text-center font-medium text-amber-400 block";
+    });
+  </script>
+</body>
+</html>
