@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Scrollbar personalizada para o menu lateral */
+    /* Scrollbar personalizada */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -32,12 +32,12 @@
     <!-- Navegação com Scrollbar Interna -->
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
       
-      <!-- Início -->
+      <!-- Início (Botão que reseta e volta à tela inicial) -->
       <div>
-        <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 border border-slate-800 transition">
+        <button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition cursor-pointer text-left">
           <i class="fa-solid fa-house text-slate-300"></i>
           <span>Início</span>
-        </a>
+        </button>
       </div>
 
       <!-- ESTRATÉGIAS -->
@@ -152,7 +152,7 @@
         </a>
       </div>
 
-      <!-- FERRAMENTAS & CONFIGURAÇÕES -->
+      <!-- FERRAMENTAS -->
       <div class="space-y-1">
         <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas</p>
         <a href="ferramentas-ia.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
@@ -163,7 +163,6 @@
           <i class="fa-solid fa-circle-play w-4"></i>
           <span>Tutoriais</span>
         </a>
-        <!-- Configuração integrada ao menu -->
         <a href="config.html" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-900 text-slate-300 hover:text-white transition">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-gear text-indigo-400 w-4"></i>
@@ -177,10 +176,10 @@
   </aside>
 
   <!-- CONTEÚDO PRINCIPAL (ÁREA DE CLONAGEM) -->
-  <main class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
+  <main id="mainScrollArea" class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
     <div class="max-w-5xl w-full mx-auto px-6 py-8">
       
-      <!-- Topo do Card -->
+      <!-- Topo do Card com Botão Iniciar / Resetar -->
       <header class="flex items-center justify-between border-b border-slate-900 pb-5 mb-8">
         <div class="flex items-center gap-3">
           <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
@@ -191,6 +190,12 @@
             <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
           </div>
         </div>
+
+        <!-- Botão Iniciar / Novo Vídeo -->
+        <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer">
+          <i class="fa-solid fa-rotate-left text-indigo-400"></i>
+          <span>Iniciar / Limpar</span>
+        </button>
       </header>
 
       <!-- Painel de Execução -->
@@ -289,9 +294,29 @@
     const scenesList = document.getElementById('scenesList');
     const copyAllScenesBtn = document.getElementById('copyAllScenesBtn');
     const keyStatusBadge = document.getElementById('keyStatusBadge');
+    const navHomeBtn = document.getElementById('navHomeBtn');
+    const resetAppBtn = document.getElementById('resetAppBtn');
+    const mainScrollArea = document.getElementById('mainScrollArea');
 
     let currentFile = null;
     let fullPromptsText = "";
+
+    // Função que reinicia para o estado inicial
+    function resetToHome() {
+      currentFile = null;
+      videoInput.value = "";
+      fileLabel.innerText = "Clique ou arraste um vídeo até aqui";
+      statusContainer.classList.add('hidden');
+      outputContainer.classList.add('hidden');
+      charactersList.innerHTML = "";
+      environmentsList.innerHTML = "";
+      scenesList.innerHTML = "";
+      processBtn.disabled = false;
+      mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navHomeBtn.addEventListener('click', resetToHome);
+    resetAppBtn.addEventListener('click', resetToHome);
 
     // Checar Chave API
     const activeKey = localStorage.getItem('gemini_api_key');
@@ -303,7 +328,7 @@
       keyStatusBadge.textContent = 'Vazia';
     }
 
-    // Handlers de Upload
+    // Upload Handlers
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
@@ -411,7 +436,6 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
             });
 
             if (res.status === 503 || res.status === 429) {
-              // Servidor em alta demanda: tenta o próximo modelo da fila
               console.warn(`Modelo ${model} em alta demanda (503/429). Tentando próximo modelo...`);
               continue;
             }
@@ -425,7 +449,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
             const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (rawText) {
               successData = JSON.parse(rawText);
-              break; // Sucesso obtido!
+              break;
             }
           } catch (e) {
             lastErrorMsg = e.message;
