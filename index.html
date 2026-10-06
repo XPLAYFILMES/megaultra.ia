@@ -3,113 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CineReplicate Pro Studio</title>
+  <title>Central Monetização | Clonagem de Vídeo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Scrollbar personalizada para o menu lateral */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-8">
-    
-    <!-- Top Header -->
-    <header class="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
-      <div class="flex items-center gap-3">
-        <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
-          <i class="fa-solid fa-film text-white text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold text-white tracking-tight">CineReplicate <span class="text-indigo-400">Pro Studio</span></h1>
-          <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
-        </div>
+<body class="bg-black text-slate-100 flex h-screen overflow-hidden font-sans">
+
+  <!-- SIDEBAR LATERAL COMPLETA -->
+  <aside class="w-64 bg-[#05070B] border-r border-slate-900 flex flex-col h-full flex-shrink-0">
+    <!-- Logotipo CM -->
+    <div class="p-5 border-b border-slate-900 flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg shadow-blue-600/30">
+        CM
       </div>
+      <div>
+        <h1 class="text-sm font-extrabold tracking-wide text-white leading-tight uppercase">Central Monetização</h1>
+        <p class="text-[10px] font-bold text-orange-500 tracking-wider uppercase">Redes Sociais</p>
+      </div>
+    </div>
+
+    <!-- Navegação com Scrollbar Interna -->
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
       
-      <!-- Link para Configurações -->
-      <a href="config.html" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition hover:bg-slate-800">
-        <i class="fa-solid fa-gear text-indigo-400"></i>
-        <span>Configurações</span>
-        <span id="keyStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Verificando...</span>
-      </a>
-    </header>
-
-    <!-- Main Workspace -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      
-      <!-- Option Selector -->
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tradução de Áudio e Falas</label>
-          <select id="langMode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-            <option value="detect_to_pt">Detectar Idioma → Português (PT-BR)</option>
-            <option value="pt_to_en">Português → Inglês</option>
-            <option value="keep_original">Manter Áudio Original</option>
-          </select>
-        </div>
-        <div class="mt-4 p-3 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-400">
-          <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
-          Para envio direto no navegador, prefira arquivos curtos de até <strong>18 MB</strong>.
-        </div>
+      <!-- Início -->
+      <div>
+        <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 border border-slate-800 transition">
+          <i class="fa-solid fa-house text-slate-300"></i>
+          <span>Início</span>
+        </a>
       </div>
 
-      <!-- Upload Zone Nativa -->
-      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
-        <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
-        <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
-        <button type="button" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 px-4 py-2 rounded-xl text-xs font-medium mb-1 pointer-events-none">
-          Escolher Arquivo de Vídeo (MP4 / WebM)
-        </button>
-        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um vídeo até aqui</p>
+      <!-- ESTRATÉGIAS -->
+      <div class="space-y-1">
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Estratégias</p>
+        <a href="downloads.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-download w-4"></i>
+          <span>Downloads</span>
+        </a>
       </div>
-    </div>
 
-    <!-- Submit Button -->
-    <div class="flex justify-end mb-8">
-      <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Desconstruir e Gerar Ativos</span>
-      </button>
-    </div>
+      <!-- VÍDEOS -->
+      <div class="space-y-1">
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Vídeos</p>
+        <a href="menina-da-roca.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-camera w-4"></i>
+          <span>Menina da Roça</span>
+        </a>
+        <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 transition">
+          <i class="fa-solid fa-file-video w-4"></i>
+          <span>Clonagem de Vídeo</span>
+        </a>
+        <a href="novelinhas-universal.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-film w-4"></i>
+          <span>Novelinhas Universal</span>
+        </a>
+        <a href="mestre-30s.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-utensils w-4"></i>
+          <span>Mestre 30s</span>
+        </a>
+        <a href="anti-pragas.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-bug w-4"></i>
+          <span>Receitas Anti-Pragas</span>
+        </a>
+        <a href="pov-produto.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-box-open w-4"></i>
+          <span>POV Produto</span>
+        </a>
+        <a href="tiktok-seedance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-video w-4"></i>
+          <span>TikTok Shop Seedance</span>
+        </a>
+      </div>
 
-    <!-- Status Message -->
-    <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-      <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
-      <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
-    </div>
+      <!-- NOVOS AGENTES -->
+      <div class="space-y-1">
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Novos Agentes</p>
+        <a href="gordo-magro.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-scale-balanced w-4"></i>
+          <span>Gordo para Magro</span>
+        </a>
+        <a href="velho-roca.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-heart w-4"></i>
+          <span>Reflexão do Velho da Roça</span>
+        </a>
+        <a href="gerador-ganchos.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-fire w-4"></i>
+          <span>Gerador de Ganchos</span>
+        </a>
+        <a href="plantacoes.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-seedling w-4"></i>
+          <span>Vídeos de Plantações</span>
+        </a>
+        <a href="limpeza.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-wand-magic-sparkles w-4"></i>
+          <span>Vídeos de Limpeza</span>
+        </a>
+        <a href="novelinhas-gordos.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-hand-holding-heart w-4"></i>
+          <span>Novelinhas Gordos</span>
+        </a>
+        <a href="upscale.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-image w-4"></i>
+          <span>Upscale de Imagem</span>
+        </a>
+        <a href="tiktok-shopee.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-bag-shopping w-4"></i>
+          <span>TikTok Shop & Shopee</span>
+        </a>
+        <a href="receitas-ebook.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-book-open w-4"></i>
+          <span>Receitas p/ Ebook</span>
+        </a>
+        <a href="encapsulados.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-cubes-stacked w-4"></i>
+          <span>Vender Encapsulados</span>
+        </a>
+        <a href="radar-tiktok.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-chart-line w-4"></i>
+          <span>Radar TikTok Shop</span>
+        </a>
+      </div>
 
-    <!-- Output Blocks -->
-    <main id="outputContainer" class="space-y-8 hidden">
-      <!-- Characters Block -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-          <i class="fa-solid fa-users text-indigo-400"></i>
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h2>
-        </div>
-        <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
+      <!-- REDES SOCIAIS -->
+      <div class="space-y-1">
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Redes Sociais</p>
+        <a href="prompts-virais.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-bolt w-4"></i>
+          <span>Prompts Virais</span>
+        </a>
+        <a href="tiktok-shop.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-brands fa-tiktok w-4"></i>
+          <span>TikTok Shop</span>
+        </a>
+        <a href="facebook.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-brands fa-facebook w-4"></i>
+          <span>Facebook</span>
+        </a>
+        <a href="youtube-shorts.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-brands fa-youtube w-4"></i>
+          <span>YouTube e Shorts</span>
+        </a>
+      </div>
 
-      <!-- Environments Block -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-          <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h2>
-        </div>
-        <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
-
-      <!-- Scenes Timeline Block -->
-      <section class="space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-clapperboard text-indigo-400"></i>
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h2>
+      <!-- FERRAMENTAS & CONFIGURAÇÕES -->
+      <div class="space-y-1">
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas</p>
+        <a href="ferramentas-ia.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-screwdriver-wrench w-4"></i>
+          <span>Ferramentas IA</span>
+        </a>
+        <a href="tutoriais.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
+          <i class="fa-solid fa-circle-play w-4"></i>
+          <span>Tutoriais</span>
+        </a>
+        <!-- Configuração integrada ao menu -->
+        <a href="config.html" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-900 text-slate-300 hover:text-white transition">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-gear text-indigo-400 w-4"></i>
+            <span>Configurações</span>
           </div>
-          <button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono">
-            <i class="fa-regular fa-copy"></i> Copiar Prompts
-          </button>
-        </div>
-        <div id="scenesList" class="space-y-4"></div>
-      </section>
-    </main>
+          <span id="keyStatusBadge" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">...</span>
+        </a>
+      </div>
 
-  </div>
+    </nav>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL (ÁREA DE CLONAGEM) -->
+  <main class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
+    <div class="max-w-5xl w-full mx-auto px-6 py-8">
+      
+      <!-- Topo do Card -->
+      <header class="flex items-center justify-between border-b border-slate-900 pb-5 mb-8">
+        <div class="flex items-center gap-3">
+          <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
+            <i class="fa-solid fa-film text-white text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white tracking-tight">CineReplicate Pro Studio</h2>
+            <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Painel de Execução -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <!-- Seleção de Idioma -->
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tradução de Áudio e Falas</label>
+            <select id="langMode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+              <option value="detect_to_pt">Detectar Idioma → Português (PT-BR)</option>
+              <option value="pt_to_en">Português → Inglês</option>
+              <option value="keep_original">Manter Áudio Original</option>
+            </select>
+          </div>
+          <div class="mt-4 p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400">
+            <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
+            Envio direto via navegador: prefira arquivos até <strong>18 MB</strong>.
+          </div>
+        </div>
+
+        <!-- Área de Upload -->
+        <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
+          <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
+          <button type="button" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 px-4 py-2 rounded-xl text-xs font-medium mb-1 pointer-events-none">
+            Escolher Arquivo de Vídeo (MP4 / WebM)
+          </button>
+          <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um vídeo até aqui</p>
+        </div>
+      </div>
+
+      <!-- Botão de Ação -->
+      <div class="flex justify-end mb-8">
+        <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Desconstruir e Gerar Ativos</span>
+        </button>
+      </div>
+
+      <!-- Barra de Status / Carregamento -->
+      <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+        <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
+        <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
+      </div>
+
+      <!-- Resultados -->
+      <section id="outputContainer" class="space-y-8 hidden">
+        <!-- Personagens Mestre -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i class="fa-solid fa-users text-indigo-400"></i>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h3>
+          </div>
+          <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Cenários Mestre -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h3>
+          </div>
+          <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Cenas Decupadas -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-clapperboard text-indigo-400"></i>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h3>
+            </div>
+            <button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono">
+              <i class="fa-regular fa-copy"></i> Copiar Prompts
+            </button>
+          </div>
+          <div id="scenesList" class="space-y-4"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
 
   <script>
     const dropArea = document.getElementById('dropArea');
@@ -129,17 +293,17 @@
     let currentFile = null;
     let fullPromptsText = "";
 
-    // Badge de status da API
+    // Checar Chave API
     const activeKey = localStorage.getItem('gemini_api_key');
     if (activeKey) {
-      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
-      keyStatusBadge.textContent = 'Chave Ativa';
+      keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+      keyStatusBadge.textContent = 'Ativa';
     } else {
-      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
-      keyStatusBadge.textContent = 'Sem Chave';
+      keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+      keyStatusBadge.textContent = 'Vazia';
     }
 
-    // Upload Handlers
+    // Handlers de Upload
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
@@ -155,7 +319,7 @@
     function handleFile(file) {
       currentFile = file;
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB carregado)`;
+      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`;
     }
 
     const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -165,10 +329,11 @@
       reader.onerror = err => reject(err);
     });
 
+    // Processamento com fallback de alta demanda (503/429)
     processBtn.addEventListener('click', async () => {
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
-        alert("Chave API não configurada. Redirecionando para a página de configurações.");
+        alert("Chave API não configurada. Indo para a tela de configurações.");
         window.location.href = "config.html";
         return;
       }
@@ -177,31 +342,9 @@
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Consultando catálogo de modelos ativos...";
+      statusText.innerText = "Preparando vídeo para análise...";
 
       try {
-        // 1. Identificar dinamicamente os modelos disponíveis
-        let targetModel = "gemini-3.8-flash";
-        try {
-          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-          if (listRes.ok) {
-            const listData = await listRes.json();
-            const models = (listData.models || [])
-              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-              .map(m => m.name.replace('models/', ''));
-
-            // Prioriza a geração atual 3.8-flash ou os flashes disponíveis
-            targetModel = models.find(m => m.includes("3.8-flash")) ||
-                          models.find(m => m.includes("3.5-flash")) ||
-                          models.find(m => m.includes("flash")) ||
-                          models[0] ||
-                          "gemini-3.8-flash";
-          }
-        } catch (e) {
-          console.warn("Consulta aos modelos falhou, utilizando padrão gemini-3.8-flash", e);
-        }
-
-        statusText.innerText = `Processando vídeo com [${targetModel}]...`;
         const base64Data = await fileToBase64(currentFile);
 
         const langRules = {
@@ -234,39 +377,66 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
   ]
 }`;
 
-        // 2. Chamada à API
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptText },
-                { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }
-              ]
-            }],
-            generationConfig: {
-              response_mime_type: "application/json",
-              temperature: 0.2
+        // Lista de modelos ordenados para fallback automático caso ocorra 503 (High demand)
+        const modelsQueue = [
+          "gemini-3.8-flash",
+          "gemini-3.7-flash",
+          "gemini-3.6-flash",
+          "gemini-2.0-flash",
+          "gemini-1.5-flash-latest"
+        ];
+
+        let successData = null;
+        let lastErrorMsg = "";
+
+        for (const model of modelsQueue) {
+          statusText.innerText = `Processando com [${model}]...`;
+          try {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const res = await fetch(apiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: promptText },
+                    { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }
+                  ]
+                }],
+                generationConfig: {
+                  response_mime_type: "application/json",
+                  temperature: 0.2
+                }
+              })
+            });
+
+            if (res.status === 503 || res.status === 429) {
+              // Servidor em alta demanda: tenta o próximo modelo da fila
+              console.warn(`Modelo ${model} em alta demanda (503/429). Tentando próximo modelo...`);
+              continue;
             }
-          })
-        });
 
-        const contentType = res.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-          throw new Error(`A API retornou resposta inesperada (Status ${res.status}).`);
+            const data = await res.json();
+            if (!res.ok) {
+              lastErrorMsg = data.error?.message || "Erro retornado pela API.";
+              continue;
+            }
+
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawText) {
+              successData = JSON.parse(rawText);
+              break; // Sucesso obtido!
+            }
+          } catch (e) {
+            lastErrorMsg = e.message;
+          }
         }
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error?.message || "Erro retornado pela API.");
+        if (!successData) {
+          throw new Error(lastErrorMsg || "Todos os modelos estão temporariamente ocupados. Aguarde alguns instantes e tente novamente.");
         }
 
-        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!rawText) throw new Error("A API não retornou conteúdo utilizável.");
-
-        renderOutput(JSON.parse(rawText));
+        renderOutput(successData);
         outputContainer.classList.remove('hidden');
       } catch (err) {
         alert("Erro no processamento: " + err.message);
