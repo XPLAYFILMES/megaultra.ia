@@ -21,15 +21,13 @@
           <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
         </div>
       </div>
-
-      <!-- Botão para abrir a Aba/Modal de Configuração -->
-      <div class="flex items-center gap-3">
-        <button id="openSettingsBtn" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition hover:bg-slate-800">
-          <i class="fa-solid fa-gear text-indigo-400"></i>
-          <span>Configurações</span>
-          <span id="badgeApiKey" class="hidden w-2 h-2 rounded-full bg-emerald-400"></span>
-        </button>
-      </div>
+      
+      <!-- Link para a página de configurações separada -->
+      <a href="config.html" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition hover:bg-slate-800">
+        <i class="fa-solid fa-gear text-indigo-400"></i>
+        <span>Configurações</span>
+        <span id="keyStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Verificando...</span>
+      </a>
     </header>
 
     <!-- Main Workspace -->
@@ -51,15 +49,14 @@
         </div>
       </div>
 
-      <!-- Upload Zone Direta com Clique e Arrastar -->
-      <div id="dropZone" class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer">
-        <!-- Input nativo acessível via clique do dropZone -->
-        <input type="file" id="videoInput" accept="video/mp4,video/webm" style="display: none;">
-        <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-2 pointer-events-none"></i>
-        <button type="button" id="browseBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-medium mb-1 border border-slate-700 transition">
+      <!-- Upload Zone Nativa -->
+      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
+        <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
+        <button type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-medium mb-1 border border-slate-700 pointer-events-none">
           Selecionar Vídeo (MP4 / WebM)
         </button>
-        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um vídeo até aqui</p>
+        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um arquivo até aqui</p>
       </div>
     </div>
 
@@ -114,319 +111,7 @@
 
   </div>
 
-  <!-- Modal de Configurações da API -->
-  <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-indigo-400"></i>
-          <h3 class="text-sm font-bold text-slate-100 uppercase tracking-wide">Configurações do Sistema</h3>
-        </div>
-        <button id="closeSettingsBtn" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
-        <input type="password" id="modalApiKey" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
-        <p class="text-[11px] text-slate-500 mt-1">Sua chave é salva apenas no seu navegador e não é compartilhada.</p>
-      </div>
-
-      <div class="flex items-center justify-between pt-2">
-        <span id="saveConfirmation" class="text-xs text-emerald-400 font-medium hidden">✓ Salvo com sucesso!</span>
-        <button id="saveApiKeyBtn" class="ml-auto bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition">
-          Salvar Chave
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Elementos do Modal de Configuração
-    const settingsModal = document.getElementById('settingsModal');
-    const openSettingsBtn = document.getElementById('openSettingsBtn');
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    const modalApiKey = document.getElementById('modalApiKey');
-    const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-    const saveConfirmation = document.getElementById('saveConfirmation');
-    const badgeApiKey = document.getElementById('badgeApiKey');
-
-    // Elementos de Upload e Processamento
-    const dropZone = document.getElementById('dropZone');
-    const browseBtn = document.getElementById('browseBtn');
-    const videoInput = document.getElementById('videoInput');
-    const fileLabel = document.getElementById('fileLabel');
-    const processBtn = document.getElementById('processBtn');
-    const langMode = document.getElementById('langMode');
-    const statusContainer = document.getElementById('statusContainer');
-    const statusText = document.getElementById('statusText');
-    const outputContainer = document.getElementById('outputContainer');
-    const charactersList = document.getElementById('charactersList');
-    const environmentsList = document.getElementById('environmentsList');
-    const scenesList = document.getElementById('scenesList');
-    const copyAllScenesBtn = document.getElementById('copyAllScenesBtn');
-
-    let currentFile = null;
-    let fullPromptsText = "";
-
-    // 1. Gerenciamento da Chave da API no Modal
-    function updateKeyBadge() {
-      const saved = localStorage.getItem('gemini_api_key');
-      if (saved) {
-        modalApiKey.value = saved;
-        badgeApiKey.classList.remove('hidden');
-      } else {
-        badgeApiKey.classList.add('hidden');
-      }
-    }
-    updateKeyBadge();
-
-    openSettingsBtn.addEventListener('click', () => {
-      saveConfirmation.classList.add('hidden');
-      settingsModal.classList.remove('hidden');
-    });
-
-    closeSettingsBtn.addEventListener('click', () => {
-      settingsModal.classList.add('hidden');
-    });
-
-    saveApiKeyBtn.addEventListener('click', () => {
-      const key = modalApiKey.value.trim();
-      if (!key) {
-        localStorage.removeItem('gemini_api_key');
-        updateKeyBadge();
-        alert('Chave removida.');
-        return;
-      }
-      localStorage.setItem('gemini_api_key', key);
-      updateKeyBadge();
-      saveConfirmation.classList.remove('hidden');
-      setTimeout(() => {
-        settingsModal.classList.add('hidden');
-      }, 700);
-    });
-
-    // 2. Upload de Arquivo (Clique & Drag-and-Drop)
-    browseBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      videoInput.click();
-    });
-
-    dropZone.addEventListener('click', () => {
-      videoInput.click();
-    });
-
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('border-indigo-500');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('border-indigo-500');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-indigo-500');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0]);
-      }
-    });
-
-    videoInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileSelect(e.target.files[0]);
-      }
-    });
-
-    function handleFileSelect(file) {
-      currentFile = file;
-      const sizeMb = (currentFile.size / (1024 * 1024)).toFixed(1);
-      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${currentFile.name}</span> (${sizeMb} MB carregado com sucesso)`;
-      if (currentFile.size > 20 * 1024 * 1024) {
-        alert("Aviso: O vídeo tem mais de 20 MB. O envio direto via navegador pode exceder o limite de payload.");
-      }
-    }
-
-    const fileToBase64 = (file) => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = error => reject(error);
-    });
-
-    // 3. Processamento com Auto-Detecção de Modelo
-    processBtn.addEventListener('click', async () => {
-      const apiKey = localStorage.getItem('gemini_api_key');
-      if (!apiKey) {
-        settingsModal.classList.remove('hidden');
-        return alert("Por favor, configure sua Gemini API Key na aba de Configurações.");
-      }
-      if (!currentFile) {
-        return alert("Por favor, selecione um arquivo de vídeo primeiro.");
-      }
-
-      Os dois pontos foram corrigidos:
-
-1. **Chave de API dentro de uma aba/gaveta de Configurações:** O campo foi retirado da barra principal e alocado dentro de um painel expansível via botão superior **"Configurações"**. Ele abre e fecha com transição suave, permitindo colar e salvar a chave no `localStorage` sem poluir a interface.
-2. **Botão de seleção e upload consertado:** O `<input type="file">` e o botão visual de seleção estavam sofrendo sobreposição de eventos e bloqueio no DOM. O seletor foi reestruturado com gatilho direto via JavaScript e suporte tanto a clique quanto a arrastar e soltar (drag and drop) nativo.
-
-Substitua todo o conteúdo do seu arquivo **`index.html`** no repositório por este:
-
-```html
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CineReplicate Pro Studio</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css)" rel="stylesheet">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-8">
-    
-    <!-- Top Header -->
-    <header class="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
-      <div class="flex items-center gap-3">
-        <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
-          <i class="fa-solid fa-film text-white text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold text-white tracking-tight">CineReplicate <span class="text-indigo-400">Pro Studio</span></h1>
-          <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
-        </div>
-      </div>
-      
-      <!-- Botão para alternar a aba/painel de configurações -->
-      <div class="flex items-center gap-3">
-        <button id="toggleSettingsBtn" type="button" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer">
-          <i class="fa-solid fa-gear text-indigo-400"></i>
-          <span>Configurações</span>
-          <span id="keyStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Não configurada</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Aba de Configurações (Gaveta Expansível) -->
-    <section id="settingsDrawer" class="hidden mb-8 bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl transition-all">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-indigo-400 text-sm"></i>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200">Painel de Configurações</h3>
-        </div>
-        <button id="closeSettingsBtn" class="text-slate-500 hover:text-slate-300 text-xs">
-          <i class="fa-solid fa-xmark"></i> Fechar
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-        <div class="md:col-span-2">
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
-          <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
-          <p class="text-[11px] text-slate-500 mt-1">Armazenada de forma segura e direta no seu navegador (localStorage).</p>
-        </div>
-        <div class="flex gap-2">
-          <button id="saveKeyBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-check"></i>
-            <span>Salvar Chave</span>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Main Workspace -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      
-      <!-- Option Selector -->
-      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tradução de Áudio e Falas</label>
-          <select id="langMode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-            <option value="detect_to_pt">Detectar Idioma → Português (PT-BR)</option>
-            <option value="pt_to_en">Português → Inglês</option>
-            <option value="keep_original">Manter Áudio Original</option>
-          </select>
-        </div>
-        <div class="mt-4 p-3 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-400">
-          <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
-          Para envio direto no navegador, prefira arquivos curtos de até <strong>18 MB</strong>.
-        </div>
-      </div>
-
-      <!-- Upload Zone Confiável -->
-      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
-        <input type="file" id="videoInput" accept="video/mp4,video/webm" style="display: none;">
-        <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
-        
-        <button type="button" id="selectFileBtn" class="bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 px-4 py-2 rounded-xl text-xs font-medium mb-2 transition pointer-events-none">
-          Escolher Arquivo de Vídeo
-        </button>
-        
-        <p class="text-xs text-slate-400 pointer-events-none" id="fileLabel">Clique ou arraste o arquivo aqui (MP4 ou WebM)</p>
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="flex justify-end mb-8">
-      <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Desconstruir e Gerar Ativos</span>
-      </button>
-    </div>
-
-    <!-- Status Message -->
-    <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-      <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
-      <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
-    </div>
-
-    <!-- Output Blocks -->
-    <main id="outputContainer" class="space-y-8 hidden">
-      <!-- Characters Block -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-          <i class="fa-solid fa-users text-indigo-400"></i>
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h2>
-        </div>
-        <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
-
-      <!-- Environments Block -->
-      <section class="space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-          <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
-          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h2>
-        </div>
-        <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
-
-      <!-- Scenes Timeline Block -->
-      <section class="space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-clapperboard text-indigo-400"></i>
-            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h2>
-          </div>
-          <button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono">
-            <i class="fa-regular fa-copy"></i> Copiar Prompts
-          </button>
-        </div>
-        <div id="scenesList" class="space-y-4"></div>
-      </section>
-    </main>
-
-  </div>
-
-  <script>
-    // Elementos da Gaveta de Configurações
-    const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    const settingsDrawer = document.getElementById('settingsDrawer');
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const saveKeyBtn = document.getElementById('saveKeyBtn');
-    const keyStatusBadge = document.getElementById('keyStatusBadge');
-
-    // Elementos de Arquivo e Ação
     const dropArea = document.getElementById('dropArea');
     const videoInput = document.getElementById('videoInput');
     const fileLabel = document.getElementById('fileLabel');
@@ -439,172 +124,103 @@ Substitua todo o conteúdo do seu arquivo **`index.html`** no repositório por e
     const environmentsList = document.getElementById('environmentsList');
     const scenesList = document.getElementById('scenesList');
     const copyAllScenesBtn = document.getElementById('copyAllScenesBtn');
+    const keyStatusBadge = document.getElementById('keyStatusBadge');
 
     let currentFile = null;
     let fullPromptsText = "";
 
-    // 1. Gerenciamento do Painel de Configurações
-    function updateBadge(hasKey) {
-      if (hasKey) {
-        keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
-        keyStatusBadge.innerText = 'Chave Ativa';
-      } else {
-        keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400';
-        keyStatusBadge.innerText = 'Não configurada';
-      }
+    // Badge de status da API
+    const activeKey = localStorage.getItem('gemini_api_key');
+    if (activeKey) {
+      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+      keyStatusBadge.textContent = 'Chave Ativa';
+    } else {
+      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+      keyStatusBadge.textContent = 'Sem Chave';
     }
 
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-      apiKeyInput.value = savedKey;
-      updateBadge(true);
-    }
-
-    toggleSettingsBtn.addEventListener('click', () => {
-      settingsDrawer.classList.toggle('hidden');
-    });
-
-    closeSettingsBtn.addEventListener('click', () => {
-      settingsDrawer.classList.add('hidden');
-    });
-
-    saveKeyBtn.addEventListener('click', () => {
-      const val = apiKeyInput.value.trim();
-      if (!val) {
-        localStorage.removeItem('gemini_api_key');
-        updateBadge(false);
-        alert("Chave removida.");
-        return;
-      }
-      localStorage.setItem('gemini_api_key', val);
-      updateBadge(true);
-      settingsDrawer.classList.add('hidden');
-      alert("Chave API salva com sucesso!");
-    });
-
-    // 2. Sistema de Seleção e Upload do Arquivo
-    dropArea.addEventListener('click', () => {
-      videoInput.click();
-    });
-
-    dropArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropArea.classList.add('border-indigo-500');
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-      dropArea.classList.remove('border-indigo-500');
-    });
-
+    // Manipulação de Upload
+    dropArea.addEventListener('click', () => videoInput.click());
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
     dropArea.addEventListener('drop', (e) => {
       e.preventDefault();
       dropArea.classList.remove('border-indigo-500');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelect(e.dataTransfer.files[0]);
-      }
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
-
     videoInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileSelect(e.target.files[0]);
-      }
+      if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
     });
 
-    function handleFileSelect(file) {
+    function handleFile(file) {
       currentFile = file;
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB carregado)`;
-      if (file.size > 20 * 1024 * 1024) {
-        alert("Atenção: O arquivo excede 20 MB. O navegador pode falhar ao enviar via Base64.");
-      }
+      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`;
     }
 
-    // 3. Conversão para Base64
     const fileToBase64 = (file) => new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = error => reject(error);
+      reader.onerror = err => reject(err);
     });
 
-    // 4. Execução e Análise
     processBtn.addEventListener('click', async () => {
-      const apiKey = localStorage.getItem('gemini_api_key') || apiKeyInput.value.trim();
+      const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
-        settingsDrawer.classList.remove('hidden');
-        apiKeyInput.focus();
-        return alert("Abra a aba Configurações e salve sua chave Gemini API.");
+        alert("Chave API não configurada. Redirecionando para a página de configurações.");
+        window.location.href = "config.html";
+        return;
       }
-      if (!currentFile) {
-        return alert("Por favor, selecione um arquivo de vídeo antes de processar.");
-      }
+      if (!currentFile) return alert("Selecione um arquivo de vídeo primeiro.");
 
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Consultando modelos disponíveis na sua conta...";
+      statusText.innerText = "Processando vídeo com a API...";
 
       try {
         const base64Data = await fileToBase64(currentFile);
 
-        // Detecta o modelo suportado diretamente na conta
-        let chosenModel = "models/gemini-1.5-flash";
-        try {
-          const listRes = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models?key=$](https://generativelanguage.googleapis.com/v1beta/models?key=$){apiKey}`);
-          if (listRes.ok) {
-            const listData = await listRes.json();
-            const available = (listData.models || [])
-              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-              .map(m => m.name);
-
-            const preferred = available.find(m => m.includes("2.0-flash") || m.includes("1.5-flash") || m.includes("gemini-pro"));
-            if (preferred) chosenModel = preferred;
-            else if (available.length > 0) chosenModel = available[0];
-          }
-        } catch (e) {
-          console.warn("Fallback de modelo ativado.", e);
-        }
-
-        const modelClean = chosenModel.replace('models/', '');
-        statusText.innerText = `Processando com [${modelClean}]...`;
-
         const langRules = {
-          "detect_to_pt": "Traduza falas para Português (PT-BR). Prompts visuais T2V em inglês conciso.",
-          "pt_to_en": "Traduza falas para Inglês. Prompts visuais T2V em inglês conciso.",
-          "keep_original": "Mantenha o áudio no idioma falado original. Prompts visuais T2V em inglês conciso."
+          "detect_to_pt": "Traduza falas e diálogos para Português (PT-BR). Prompts em inglês conciso.",
+          "pt_to_en": "Traduza falas para Inglês. Prompts em inglês conciso.",
+          "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso."
         };
 
-        const systemPrompt = `Você é um desconstrutor técnico de vídeos para IA generativa.
+        const promptText = `Você é um desconstrutor técnico de vídeos.
 Regras de idioma: ${langRules[langMode.value]}
-Foco: Prompts ultra-diretos e concisos (sem enrolação, estilo Kling/Luma/Runway).
+Instrução: Prompts e descrições devem ser 50% mais concisos, sem detalhes redundantes.
 
-Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos markdown):
+Retorne estritamente um JSON no seguinte padrão:
 {
   "characters": [
-    { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt em inglês conciso para o personagem" }
+    { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês para imagem" }
   ],
   "environments": [
-    { "name": "Nome do local", "details": "Iluminação e estilo", "master_prompt": "Prompt em inglês conciso para o cenário" }
+    { "name": "Nome do local", "details": "Iluminação resumida", "master_prompt": "Prompt conciso em inglês para cenário" }
   ],
   "scenes": [
     {
       "scene_number": 1,
       "timestamp": "00:00 - 00:05",
-      "camera": "Ângulo e movimento da câmera",
-      "action": "Ação principal resumida",
-      "audio": { "speech": "Falas transcritas", "sfx": "Efeitos sonoros" },
-      "prompt_t2v": "Prompt visual T2V conciso em inglês direto para o modelo de vídeo"
+      "camera": "Ângulo e movimento",
+      "action": "Ação resumida",
+      "audio": { "speech": "Falas", "sfx": "SFX" },
+      "prompt_t2v": "Prompt visual conciso em inglês para vídeo"
     }
   ]
 }`;
 
-        const res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/$](https://generativelanguage.googleapis.com/v1beta/$){chosenModel}:generateContent?key=${apiKey}`, {
+        // Chamada direta ao endpoint oficial com proteção de resposta
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const res = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{
               parts: [
-                { text: systemPrompt },
+                { text: promptText },
                 { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }
               ]
             }],
@@ -615,16 +231,21 @@ Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos m
           })
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error?.message || "Erro na geração.");
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          const rawErr = await res.text();
+          throw new Error(`A API não retornou JSON (Status ${res.status}). Verifique a chave ou o tamanho do arquivo.`);
         }
 
         const data = await res.json();
-        const rawText = data.candidates[0].content.parts[0].text;
-        const result = JSON.parse(rawText);
+        if (!res.ok) {
+          throw new Error(data.error?.message || "Erro no processamento da API.");
+        }
 
-        renderOutput(result);
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawText) throw new Error("A API não retornou conteúdo textual utilizável.");
+
+        renderOutput(JSON.parse(rawText));
         outputContainer.classList.remove('hidden');
       } catch (err) {
         alert("Erro no processamento: " + err.message);
@@ -635,14 +256,13 @@ Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos m
     });
 
     function renderOutput(data) {
-      // 1. Personagens
       charactersList.innerHTML = "";
       (data.characters || []).forEach(char => {
         const card = document.createElement('div');
         card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
         card.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wide">${char.name}</span>
+            <span class="text-xs font-bold text-indigo-400 uppercase">${char.name}</span>
             <button onclick="navigator.clipboard.writeText('${char.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
           </div>
           <p class="text-xs text-slate-300">${char.traits}</p>
@@ -651,14 +271,13 @@ Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos m
         charactersList.appendChild(card);
       });
 
-      // 2. Cenários
       environmentsList.innerHTML = "";
       (data.environments || []).forEach(env => {
         const card = document.createElement('div');
         card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
         card.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wide">${env.name}</span>
+            <span class="text-xs font-bold text-indigo-400 uppercase">${env.name}</span>
             <button onclick="navigator.clipboard.writeText('${env.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
           </div>
           <p class="text-xs text-slate-300">${env.details}</p>
@@ -667,12 +286,10 @@ Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos m
         environmentsList.appendChild(card);
       });
 
-      // 3. Cenas
       fullPromptsText = "";
       scenesList.innerHTML = "";
       (data.scenes || []).forEach(scene => {
         fullPromptsText += `// Cena ${scene.scene_number} (${scene.timestamp})\n${scene.prompt_t2v}\n\n`;
-
         const card = document.createElement('div');
         card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3";
         card.innerHTML = `
@@ -686,11 +303,11 @@ Retorne APENAS um JSON válido e estrito no seguinte formato exato (sem blocos m
           <p class="text-xs text-slate-300"><strong>Ação:</strong> ${scene.action}</p>
           <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800/70 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             <div>
-              <span class="text-indigo-400 font-semibold block mb-0.5"><i class="fa-solid fa-microphone-lines text-[10px]"></i> Fala/Diálogo:</span>
+              <span class="text-indigo-400 font-semibold block mb-0.5">Fala/Diálogo:</span>
               <p class="text-slate-300 italic">${scene.audio?.speech || 'Sem falas'}</p>
             </div>
             <div>
-              <span class="text-indigo-400 font-semibold block mb-0.5"><i class="fa-solid fa-volume-high text-[10px]"></i> SFX/Áudio:</span>
+              <span class="text-indigo-400 font-semibold block mb-0.5">SFX/Áudio:</span>
               <p class="text-slate-400">${scene.audio?.sfx || 'Ambiente'}</p>
             </div>
           </div>
