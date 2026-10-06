@@ -139,7 +139,7 @@
       keyStatusBadge.textContent = 'Sem Chave';
     }
 
-    // Manipulação de Upload
+    // Upload Handlers
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
@@ -177,11 +177,11 @@
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Consultando catálogo de modelos ativos da sua conta...";
+      statusText.innerText = "Consultando catálogo de modelos ativos...";
 
       try {
-        // 1. Descoberta dinâmica do modelo disponível na sua conta
-        let targetModel = null;
+        // 1. Identificar dinamicamente os modelos disponíveis
+        let targetModel = "gemini-3.8-flash";
         try {
           const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
           if (listRes.ok) {
@@ -190,20 +190,15 @@
               .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
               .map(m => m.name.replace('models/', ''));
 
-            // Prioriza na ordem: 2.5-flash, 2.0-flash, 1.5-flash-latest, 1.5-flash-002, ou qualquer um compatível
-            targetModel = models.find(m => m.includes("2.5-flash")) ||
-                          models.find(m => m.includes("2.0-flash")) ||
-                          models.find(m => m.includes("1.5-flash-latest")) ||
-                          models.find(m => m.includes("1.5-flash-002")) ||
+            // Prioriza a geração atual 3.8-flash ou os flashes disponíveis
+            targetModel = models.find(m => m.includes("3.8-flash")) ||
+                          models.find(m => m.includes("3.5-flash")) ||
                           models.find(m => m.includes("flash")) ||
-                          models[0];
+                          models[0] ||
+                          "gemini-3.8-flash";
           }
         } catch (e) {
-          console.warn("Falha ao listar modelos:", e);
-        }
-
-        if (!targetModel) {
-          targetModel = "gemini-2.5-flash"; // Fallback moderno padrão
+          console.warn("Consulta aos modelos falhou, utilizando padrão gemini-3.8-flash", e);
         }
 
         statusText.innerText = `Processando vídeo com [${targetModel}]...`;
@@ -239,7 +234,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
   ]
 }`;
 
-        // 2. Chamada à API com o modelo ativo verificado
+        // 2. Chamada à API
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
         const res = await fetch(apiUrl, {
           method: 'POST',
@@ -260,7 +255,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
 
         const contentType = res.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
-          throw new Error(`A API retornou resposta inválida (Status ${res.status}). Verifique a chave ou o tamanho do arquivo.`);
+          throw new Error(`A API retornou resposta inesperada (Status ${res.status}).`);
         }
 
         const data = await res.json();
