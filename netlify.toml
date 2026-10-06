@@ -1,8 +1,6 @@
 [build]
   publish = "."
-  functions = "netlify/functions"
+  command = ""
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Sem redirects - seu site tem várias páginas (admin.html, config.html, etc)
+# Se deixar o redirect /* -> /index.html, o admin.html nunca abre
