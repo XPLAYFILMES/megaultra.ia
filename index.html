@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Central Monetização | Clonagem de Vídeo</title>
+  <title>CineMorph AI Studio | Clonagem & Criação de Vídeos</title>
+  <script src="auth-guard.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Scrollbar personalizada */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -16,25 +16,23 @@
 </head>
 <body class="bg-black text-slate-100 flex h-screen overflow-hidden font-sans">
 
-  <!-- SIDEBAR LATERAL COMPLETA -->
+  <!-- SIDEBAR LATERAL -->
   <aside class="w-64 bg-[#05070B] border-r border-slate-900 flex flex-col h-full flex-shrink-0">
-    <!-- Logotipo CM -->
+    <!-- Logotipo CineMorph AI -->
     <div class="p-5 border-b border-slate-900 flex items-center gap-3">
-      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg shadow-blue-600/30">
+      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-600/30">
         CM
       </div>
       <div>
-        <h1 class="text-sm font-extrabold tracking-wide text-white leading-tight uppercase">Central Monetização</h1>
-        <p class="text-[10px] font-bold text-orange-500 tracking-wider uppercase">Redes Sociais</p>
+        <h1 class="text-sm font-extrabold tracking-wide text-white leading-tight uppercase">CineMorph AI</h1>
+        <p class="text-[10px] font-bold text-indigo-400 tracking-wider uppercase">Video & Prompt Studio</p>
       </div>
     </div>
 
-    <!-- Navegação com Scrollbar Interna -->
+    <!-- Navegação -->
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
-      
-      <!-- Início (Reseta e volta à tela inicial) -->
       <div>
-        <button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition cursor-pointer text-left">
+        <button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition text-left cursor-pointer">
           <i class="fa-solid fa-house text-slate-300"></i>
           <span>Início</span>
         </button>
@@ -51,7 +49,7 @@
 
       <!-- VÍDEOS -->
       <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Vídeos</p>
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Vídeos & Clonagem</p>
         <a href="menina-da-roca.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
           <i class="fa-solid fa-camera w-4"></i>
           <span>Menina da Roça</span>
@@ -84,7 +82,7 @@
 
       <!-- NOVOS AGENTES -->
       <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Novos Agentes</p>
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Agentes Especializados</p>
         <a href="gordo-magro.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
           <i class="fa-solid fa-scale-balanced w-4"></i>
           <span>Gordo para Magro</span>
@@ -152,9 +150,9 @@
         </a>
       </div>
 
-      <!-- FERRAMENTAS & CONFIG -->
+      <!-- FERRAMENTAS -->
       <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas</p>
+        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas & Sistema</p>
         <a href="ferramentas-ia.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
           <i class="fa-solid fa-screwdriver-wrench w-4"></i>
           <span>Ferramentas IA</span>
@@ -171,36 +169,33 @@
           <span id="keyStatusBadge" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">...</span>
         </a>
       </div>
-
     </nav>
   </aside>
 
-  <!-- CONTEÚDO PRINCIPAL (ÁREA DE CLONAGEM) -->
+  <!-- PAINEL PRINCIPAL -->
   <main id="mainScrollArea" class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
     <div class="max-w-5xl w-full mx-auto px-6 py-8">
       
-      <!-- Topo com Botão Iniciar / Resetar -->
+      <!-- Cabeçalho do App -->
       <header class="flex items-center justify-between border-b border-slate-900 pb-5 mb-8">
         <div class="flex items-center gap-3">
-          <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
-            <i class="fa-solid fa-film text-white text-lg"></i>
+          <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/20">
+            <i class="fa-solid fa-clapperboard text-white text-lg"></i>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-white tracking-tight">CineReplicate Pro Studio</h2>
-            <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
+            <h2 class="text-lg font-bold text-white tracking-tight">CineMorph <span class="text-indigo-400">Studio Pro</span></h2>
+            <p class="text-xs text-slate-400">Engenharia Reversa de Vídeos, Extração de Prompts & Clonagem Audiovisual</p>
           </div>
         </div>
 
-        <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer">
+        <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer">
           <i class="fa-solid fa-rotate-left text-indigo-400"></i>
           <span>Iniciar / Limpar</span>
         </button>
       </header>
 
-      <!-- Painel de Execução -->
+      <!-- Painel de Upload e Idioma -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        
-        <!-- Seleção de Idioma -->
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tradução de Áudio e Falas</label>
@@ -216,7 +211,6 @@
           </div>
         </div>
 
-        <!-- Área de Upload -->
         <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
           <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
           <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
@@ -227,7 +221,6 @@
         </div>
       </div>
 
-      <!-- Botão de Ação -->
       <div class="flex justify-end mb-8">
         <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -235,15 +228,13 @@
         </button>
       </div>
 
-      <!-- Barra de Status -->
       <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
         <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
         <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
       </div>
 
-      <!-- Resultados Gerados -->
+      <!-- Resultados -->
       <section id="outputContainer" class="space-y-8 hidden">
-        <!-- Personagens Mestre -->
         <div class="space-y-3">
           <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
             <i class="fa-solid fa-users text-indigo-400"></i>
@@ -252,7 +243,6 @@
           <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- Cenários Mestre -->
         <div class="space-y-3">
           <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
             <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
@@ -261,7 +251,6 @@
           <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- Cenas Decupadas -->
         <div class="space-y-3">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <div class="flex items-center gap-2">
@@ -300,7 +289,6 @@
     let currentFile = null;
     let fullPromptsText = "";
 
-    // Função Iniciar / Limpar tudo
     function resetToHome() {
       currentFile = null;
       videoInput.value = "";
@@ -317,7 +305,6 @@
     navHomeBtn.addEventListener('click', resetToHome);
     resetAppBtn.addEventListener('click', resetToHome);
 
-    // Checar se a Chave API existe no navegador
     const activeKey = localStorage.getItem('gemini_api_key');
     if (activeKey) {
       keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
@@ -327,7 +314,6 @@
       keyStatusBadge.textContent = 'Vazia';
     }
 
-    // Handlers de Upload
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
@@ -353,11 +339,10 @@
       reader.onerror = err => reject(err);
     });
 
-    // Processamento com detecção viva de modelos e fallback inteligente
     processBtn.addEventListener('click', async () => {
       const apiKey = localStorage.getItem('gemini_api_key');
       if (!apiKey) {
-        alert("Chave API não configurada. Indo para a tela de configurações.");
+        alert("Chave API não configurada. Aceda à página config.html.");
         window.location.href = "config.html";
         return;
       }
@@ -366,12 +351,11 @@
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Consultando modelos ativos na sua conta...";
+      statusText.innerText = "Consultando catálogo de modelos ativos da sua conta...";
 
       try {
         const base64Data = await fileToBase64(currentFile);
 
-        // 1. Descobrir dinamicamente os modelos habilitados na chave
         let activeModels = [];
         try {
           const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
@@ -385,7 +369,6 @@
           console.warn("Falha no ListModels, usando fallback:", e);
         }
 
-        // Fila priorizando os modelos estáveis mais atuais (3.6, 3.7, 3.8, etc.)
         const preferredList = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
         let modelsToTry = preferredList.filter(m => activeModels.includes(m));
 
@@ -402,11 +385,11 @@
           "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso."
         };
 
-        const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa.
+        const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa no CineMorph Studio.
 Regras de idioma: ${langRules[langMode.value]}
-Instrução: Prompts e descrições 50% mais concisos, sem enrolação.
+Instrução: Prompts e descrições 50% mais concisos, sem detalhes redundantes.
 
-Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
+Retorne estritamente um JSON no seguinte padrão:
 {
   "characters": [
     { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês para imagem" }
@@ -450,9 +433,8 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
               })
             });
 
-            // Se o modelo estiver sob alta demanda (503) ou rate limit (429), pula pro próximo modelo ativo
             if (res.status === 503 || res.status === 429) {
-              console.warn(`Modelo ${model} em alta demanda (503/429). Tentando próximo modelo...`);
+              console.warn(`Modelo ${model} ocupado. Tentando alternativa...`);
               continue;
             }
 
@@ -473,7 +455,7 @@ Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
         }
 
         if (!successData) {
-          throw new Error(lastErrorMsg || "Os modelos estão temporariamente com alta demanda. Aguarde alguns instantes e tente novamente.");
+          throw new Error(lastErrorMsg || "Modelos temporariamente ocupados. Aguarde alguns instantes e tente novamente.");
         }
 
         renderOutput(successData);
