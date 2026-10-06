@@ -1,8 +1,3 @@
-# na sua pasta megaultra.ia
-# apaga as pastas antigas de vez
-git rm -r admin css
-git rm menu-config.js # se ainda existir
-# atualiza o netlify.toml com o código acima
-git add netlify.toml
-git commit -m "fix: corrige netlify.toml e limpa pastas antigas"
-git push origin main
+[build]
+  publish = "."
+  command = ""
