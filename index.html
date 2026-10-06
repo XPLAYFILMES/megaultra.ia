@@ -1,1 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineReplicate Pro Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- Top Header -->
+    <header class="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
+      <div class="flex items-center gap-3">
+        <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-film text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">CineReplicate <span class="text-indigo-400">Pro Studio</span></h1>
+          <p class="text-xs text-slate-400">Desconstrução, Clonagem e Extração de Prompts</p>
+        </div>
+      </div>
+      
+      <!-- Link para a página de configurações separada -->
+      <a href="config.html" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition hover:bg-slate-800">
+        <i class="fa-solid fa-gear text-indigo-400"></i>
+        <span>Configurações</span>
+        <span id="keyStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Verificando...</span>
+      </a>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      
+      <!-- Option Selector -->
+      <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tradução de Áudio e Falas</label>
+          <select id="langMode" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+            <option value="detect_to_pt">Detectar Idioma → Português (PT-BR)</option>
+            <option value="pt_to_en">Português → Inglês</option>
+            <option value="keep_original">Manter Áudio Original</option>
+          </select>
+        </div>
+        <div class="mt-4 p-3 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-400">
+          <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
+          Para envio direto no navegador, prefira vídeos de até <strong>18 MB</strong>.
+        </div>
+      </div>
+
+      <!-- Upload Zone Nativa -->
+      <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
+        <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
+        <button type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-medium mb-1 border border-slate-700 pointer-events-none">
+          Selecionar Vídeo (MP4 / WebM)
+        </button>
+        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um arquivo até aqui</p>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end mb-8">
+      <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Desconstruir e Gerar Ativos</span>
+      </button>
+    </div>
+
+    <!-- Status Message -->
+    <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+      <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
+      <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
+    </div>
+
+    <!-- Output Blocks -->
+    <main id="outputContainer" class="space-y-8 hidden">
+      <!-- Characters Block -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+          <i class="fa-solid fa-users text-indigo-400"></i>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h2>
+        </div>
+        <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- Environments Block -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+          <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h2>
+        </div>
+        <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- Scenes Timeline Block -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-clapperboard text-indigo-400"></i>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h2>
+          </div>
+          <button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono">
+            <i class="fa-regular fa-copy"></i> Copiar Prompts
+          </button>
+        </div>
+        <div id="scenesList" class="space-y-4"></div>
+      </section>
+    </main>
+
+  </div>
+
+  <script>
+    const dropArea = document.getElementById('dropArea');
+    const videoInput = document.getElementById('videoInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const processBtn = document.getElementById('processBtn');
+    const langMode = document.getElementById('langMode');
+    const statusContainer = document.getElementById('statusContainer');
+    const statusText = document.getElementById('statusText');
+    const outputContainer = document.getElementById('outputContainer');
+    const charactersList = document.getElementById('charactersList');
+    const environmentsList = document.getElementById('environmentsList');
+    const scenesList = document.getElementById('scenesList');
+    const copyAllScenesBtn = document.getElementById('copyAllScenesBtn');
+    const keyStatusBadge = document.getElementById('keyStatusBadge');
+
+    let currentFile = null;
+    let fullPromptsText = "";
+
+    // Badge de status da API
+    const activeKey = localStorage.getItem('gemini_api_key');
+    if (activeKey) {
+      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+      keyStatusBadge.textContent = 'Chave Ativa';
+    } else {
+      keyStatusBadge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+      keyStatusBadge.textContent = 'Sem Chave';
+    }
+
+    // Manipulação de Upload
+    dropArea.addEventListener('click', () => videoInput.click());
+    dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
+    dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.classList.remove('border-indigo-500');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    videoInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      currentFile = file;
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`;
+    }
+
+    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = err => reject(err);
+    });
+
+    processBtn.addEventListener('click', async () => {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        alert("Chave API não configurada. Redirecionando para a página de configurações.");
+        window.location.href = "config.html";
+        return;
+      }
+      if (!currentFile) return alert("Selecione um arquivo de vídeo primeiro.");
+
+      processBtn.disabled = true;
+      statusContainer.classList.remove('hidden');
+      outputContainer.classList.add('hidden');
+      statusText.innerText = "Processando vídeo com a API...";
+
+      try {
+        const base64Data = await fileToBase64(currentFile);
+
+        const langRules = {
+          "detect_to_pt": "Traduza falas e diálogos para Português (PT-BR). Prompts em inglês conciso.",
+          "pt_to_en": "Traduza falas para Inglês. Prompts em inglês conciso.",
+          "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso."
+        };
+
+        const promptText = `Você é um desconstrutor técnico de vídeos.
+Regras de idioma: ${langRules[langMode.value]}
+Instrução: Prompts e descrições devem ser 50% mais concisos, sem detalhes redundantes.
+
+Retorne estritamente um JSON no seguinte padrão:
+{
+  "characters": [
+    { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês para imagem" }
+  ],
+  "environments": [
+    { "name": "Nome do local", "details": "Iluminação resumida", "master_prompt": "Prompt conciso em inglês para cenário" }
+  ],
+  "scenes": [
+    {
+      "scene_number": 1,
+      "timestamp": "00:00 - 00:05",
+      "camera": "Ângulo e movimento",
+      "action": "Ação resumida",
+      "audio": { "speech": "Falas", "sfx": "SFX" },
+      "prompt_t2v": "Prompt visual conciso em inglês para vídeo"
+    }
+  ]
+}`;
+
+        // Chamada direta ao endpoint oficial com proteção de resposta
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: promptText },
+                { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }
+              ]
+            }],
+            generationConfig: {
+              response_mime_type: "application/json",
+              temperature: 0.2
+            }
+          })
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          const rawErr = await res.text();
+          throw new Error(`A API não retornou JSON (Status ${res.status}). Verifique a chave ou o tamanho do arquivo.`);
+        }
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error?.message || "Erro no processamento da API.");
+        }
+
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawText) throw new Error("A API não retornou conteúdo textual utilizável.");
+
+        renderOutput(JSON.parse(rawText));
+        outputContainer.classList.remove('hidden');
+      } catch (err) {
+        alert("Erro no processamento: " + err.message);
+      } finally {
+        processBtn.disabled = false;
+        statusContainer.classList.add('hidden');
+      }
+    });
+
+    function renderOutput(data) {
+      charactersList.innerHTML = "";
+      (data.characters || []).forEach(char => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-400 uppercase">${char.name}</span>
+            <button onclick="navigator.clipboard.writeText('${char.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
+          </div>
+          <p class="text-xs text-slate-300">${char.traits}</p>
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${char.master_prompt}</div>
+        `;
+        charactersList.appendChild(card);
+      });
+
+      environmentsList.innerHTML = "";
+      (data.environments || []).forEach(env => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-indigo-400 uppercase">${env.name}</span>
+            <button onclick="navigator.clipboard.writeText('${env.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
+          </div>
+          <p class="text-xs text-slate-300">${env.details}</p>
+          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${env.master_prompt}</div>
+        `;
+        environmentsList.appendChild(card);
+      });
+
+      fullPromptsText = "";
+      scenesList.innerHTML = "";
+      (data.scenes || []).forEach(scene => {
+        fullPromptsText += `// Cena ${scene.scene_number} (${scene.timestamp})\n${scene.prompt_t2v}\n\n`;
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3";
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
+            <span class="font-bold text-indigo-400">CENA ${scene.scene_number}</span>
+            <div class="flex gap-3 text-slate-400 font-mono text-[11px]">
+              <span><i class="fa-regular fa-clock"></i> ${scene.timestamp}</span>
+              <span><i class="fa-solid fa-camera"></i> ${scene.camera}</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-300"><strong>Ação:</strong> ${scene.action}</p>
+          <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800/70 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-indigo-400 font-semibold block mb-0.5">Fala/Diálogo:</span>
+              <p class="text-slate-300 italic">${scene.audio?.speech || 'Sem falas'}</p>
+            </div>
+            <div>
+              <span class="text-indigo-400 font-semibold block mb-0.5">SFX/Áudio:</span>
+              <p class="text-slate-400">${scene.audio?.sfx || 'Ambiente'}</p>
+            </div>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start justify-between gap-3">
+            <p class="text-xs font-mono text-slate-300 select-all">${scene.prompt_t2v}</p>
+            <button onclick="navigator.clipboard.writeText('${scene.prompt_t2v.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs mt-1"><i class="fa-regular fa-copy"></i></button>
+          </div>
+        `;
+        scenesList.appendChild(card);
+      });
+    }
+
+    copyAllScenesBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(fullPromptsText);
+      copyAllScenesBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
+      setTimeout(() => copyAllScenesBtn.innerHTML = `<i class="fa-regular fa-copy"></i> Copiar Prompts`, 2000);
+    });
+  </script>
+</body>
+</html>
 
