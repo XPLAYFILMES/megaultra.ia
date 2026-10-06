@@ -22,7 +22,7 @@
         </div>
       </div>
       
-      <!-- Link para a página de configurações separada -->
+      <!-- Link para Configurações -->
       <a href="config.html" class="bg-slate-900 border border-slate-700 hover:border-indigo-500 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition hover:bg-slate-800">
         <i class="fa-solid fa-gear text-indigo-400"></i>
         <span>Configurações</span>
@@ -45,7 +45,7 @@
         </div>
         <div class="mt-4 p-3 rounded-lg bg-slate-950/50 border border-slate-800 text-[11px] text-slate-400">
           <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
-          Para envio direto no navegador, prefira vídeos de até <strong>18 MB</strong>.
+          Para envio direto no navegador, prefira arquivos curtos de até <strong>18 MB</strong>.
         </div>
       </div>
 
@@ -53,16 +53,16 @@
       <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
         <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
         <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
-        <button type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl text-xs font-medium mb-1 border border-slate-700 pointer-events-none">
-          Selecionar Vídeo (MP4 / WebM)
+        <button type="button" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 px-4 py-2 rounded-xl text-xs font-medium mb-1 pointer-events-none">
+          Escolher Arquivo de Vídeo (MP4 / WebM)
         </button>
-        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um arquivo até aqui</p>
+        <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um vídeo até aqui</p>
       </div>
     </div>
 
     <!-- Submit Button -->
     <div class="flex justify-end mb-8">
-      <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50">
+      <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
         <i class="fa-solid fa-wand-magic-sparkles"></i>
         <span>Desconstruir e Gerar Ativos</span>
       </button>
@@ -155,7 +155,7 @@
     function handleFile(file) {
       currentFile = file;
       const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`;
+      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB carregado)`;
     }
 
     const fileToBase64 = (file) => new Promise((resolve, reject) => {
@@ -177,9 +177,36 @@
       processBtn.disabled = true;
       statusContainer.classList.remove('hidden');
       outputContainer.classList.add('hidden');
-      statusText.innerText = "Processando vídeo com a API...";
+      statusText.innerText = "Consultando catálogo de modelos ativos da sua conta...";
 
       try {
+        // 1. Descoberta dinâmica do modelo disponível na sua conta
+        let targetModel = null;
+        try {
+          const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+          if (listRes.ok) {
+            const listData = await listRes.json();
+            const models = (listData.models || [])
+              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+              .map(m => m.name.replace('models/', ''));
+
+            // Prioriza na ordem: 2.5-flash, 2.0-flash, 1.5-flash-latest, 1.5-flash-002, ou qualquer um compatível
+            targetModel = models.find(m => m.includes("2.5-flash")) ||
+                          models.find(m => m.includes("2.0-flash")) ||
+                          models.find(m => m.includes("1.5-flash-latest")) ||
+                          models.find(m => m.includes("1.5-flash-002")) ||
+                          models.find(m => m.includes("flash")) ||
+                          models[0];
+          }
+        } catch (e) {
+          console.warn("Falha ao listar modelos:", e);
+        }
+
+        if (!targetModel) {
+          targetModel = "gemini-2.5-flash"; // Fallback moderno padrão
+        }
+
+        statusText.innerText = `Processando vídeo com [${targetModel}]...`;
         const base64Data = await fileToBase64(currentFile);
 
         const langRules = {
@@ -188,11 +215,11 @@
           "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso."
         };
 
-        const promptText = `Você é um desconstrutor técnico de vídeos.
+        const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa.
 Regras de idioma: ${langRules[langMode.value]}
 Instrução: Prompts e descrições devem ser 50% mais concisos, sem detalhes redundantes.
 
-Retorne estritamente um JSON no seguinte padrão:
+Retorne estritamente um JSON no seguinte padrão (sem marcação markdown):
 {
   "characters": [
     { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês para imagem" }
@@ -212,8 +239,8 @@ Retorne estritamente um JSON no seguinte padrão:
   ]
 }`;
 
-        // Chamada direta ao endpoint oficial com proteção de resposta
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // 2. Chamada à API com o modelo ativo verificado
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
         const res = await fetch(apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -233,17 +260,16 @@ Retorne estritamente um JSON no seguinte padrão:
 
         const contentType = res.headers.get("content-type") || "";
         if (!contentType.includes("application/json")) {
-          const rawErr = await res.text();
-          throw new Error(`A API não retornou JSON (Status ${res.status}). Verifique a chave ou o tamanho do arquivo.`);
+          throw new Error(`A API retornou resposta inválida (Status ${res.status}). Verifique a chave ou o tamanho do arquivo.`);
         }
 
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error?.message || "Erro no processamento da API.");
+          throw new Error(data.error?.message || "Erro retornado pela API.");
         }
 
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!rawText) throw new Error("A API não retornou conteúdo textual utilizável.");
+        if (!rawText) throw new Error("A API não retornou conteúdo utilizável.");
 
         renderOutput(JSON.parse(rawText));
         outputContainer.classList.remove('hidden');
@@ -328,4 +354,3 @@ Retorne estritamente um JSON no seguinte padrão:
   </script>
 </body>
 </html>
-
