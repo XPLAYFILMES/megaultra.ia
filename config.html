@@ -14,22 +14,23 @@
         <i class="fa-solid fa-gear text-indigo-400"></i>
         <h1 class="text-sm font-bold uppercase tracking-wider text-slate-200">Configuração da API</h1>
       </div>
-      <a href="index.html" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+      <!-- Botão Voltar Corrigido -->
+      <button onclick="goBack()" class="text-slate-400 hover:text-white text-xs flex items-center gap-1.5 cursor-pointer bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition">
         <i class="fa-solid fa-arrow-left"></i> Voltar
-      </a>
+      </button>
     </div>
 
     <div>
       <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
       <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
-      <p class="text-[11px] text-slate-500 mt-1">Armazenada localmente no seu navegador para uso na aplicação.</p>
+      <p class="text-[11px] text-slate-500 mt-1">Armazenada no seu navegador (localStorage) para processar os vídeos.</p>
     </div>
 
     <div class="flex gap-2 pt-2">
-      <button id="saveKeyBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-2 rounded-lg transition">
+      <button id="saveKeyBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-2 rounded-lg transition cursor-pointer">
         Salvar Chave
       </button>
-      <button id="removeKeyBtn" class="bg-slate-800 hover:bg-rose-900/50 hover:text-rose-400 text-slate-400 text-xs px-3 py-2 rounded-lg transition">
+      <button id="removeKeyBtn" class="bg-slate-800 hover:bg-rose-900/50 hover:text-rose-400 text-slate-400 text-xs px-3 py-2 rounded-lg transition cursor-pointer">
         Remover
       </button>
     </div>
@@ -42,12 +43,21 @@
     const saved = localStorage.getItem('gemini_api_key');
     if (saved) input.value = saved;
 
+    function goBack() {
+      if (document.referrer && document.referrer.includes(window.location.host)) {
+        window.history.back();
+      } else {
+        window.location.href = './';
+      }
+    }
+
     document.getElementById('saveKeyBtn').addEventListener('click', () => {
       const val = input.value.trim();
       if (!val) return alert("Insira uma chave válida.");
       localStorage.setItem('gemini_api_key', val);
       msg.textContent = "✓ Chave salva com sucesso!";
       msg.className = "text-xs text-center font-medium text-emerald-400 block";
+      setTimeout(goBack, 600);
     });
 
     document.getElementById('removeKeyBtn').addEventListener('click', () => {
