@@ -1,51 +1,44 @@
-[]// auth-guard.js - Validador de Acesso por Token e Validade
-(function () {
-  // Ignora validação na própria tela de bloqueio ou no painel admin
-  const currentPath = window.location.pathname;
-  if (currentPath.endsWith('admin.html') || currentPath.endsWith('bloqueado.html')) {
-    return;
-  }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Bloqueado | CineMorph AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-black text-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
+  <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl max-w-md w-full text-center space-y-5 shadow-2xl">
+    <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/30 text-rose-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+    
+    <div class="space-y-2">
+      <h1 class="text-lg font-bold text-white uppercase tracking-wide">CineMorph AI — Acesso Indisponível</h1>
+      <p id="motivoMsg" class="text-xs text-slate-400 leading-relaxed">
+        Seu período de assinatura de 30 dias expirou ou este link não possui uma licença ativa.
+      </p>
+    </div>
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const tokenFromUrl = urlParams.get('token');
+    <div class="pt-2">
+      <a href="https://wa.me/" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer">
+        <i class="fa-brands fa-whatsapp text-sm"></i>
+        <span>Falar com Suporte para Renovar</span>
+      </a>
+    </div>
+  </div>
 
-  // Se veio token na URL, salva no dispositivo do usuário
-  if (tokenFromUrl) {
-    localStorage.setItem('cm_user_token', tokenFromUrl);
-  }
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const motivo = params.get('motivo');
+    const nome = params.get('nome');
+    const msg = document.getElementById('motivoMsg');
 
-  const activeToken = localStorage.getItem('cm_user_token');
-
-  if (!activeToken) {
-    window.location.href = 'bloqueado.html?motivo=sem_token';
-    return;
-  }
-
-  // Busca lista de usuários cadastrados no storage central compartilhado
-  const users = JSON.parse(localStorage.getItem('cm_client_database') || '[]');
-  const client = users.find(u => u.token === activeToken);
-
-  if (!client) {
-    window.location.href = 'bloqueado.html?motivo=invalido';
-    return;
-  }
-
-  const now = new Date().getTime();
-  const expiresAt = new Date(client.expiresAt).getTime();
-
-  if (now > expiresAt || client.status !== 'ativo') {
-    window.location.href = `bloqueado.html?motivo=expirado&nome=${encodeURIComponent(client.name)}`;
-    return;
-  }
-
-  // Acesso permitido: Propaga o token nos links internos do menu para navegação contínua
-  window.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('a').forEach(anchor => {
-      const href = anchor.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#') && !href.includes('token=')) {
-        const separator = href.includes('?') ? '&' : '?';
-        anchor.setAttribute('href', `${href}${separator}token=${activeToken}`);
-      }
-    });
-  });
-})();
+    if (motivo === 'expirado') {
+      msg.innerHTML = `Olá <strong>${nome || 'Assinante'}</strong>, sua licença de 30 dias no CineMorph AI expirou. Fale com o suporte para renovar o acesso.`;
+    } else {
+      msg.innerText = "Este link é restrito para clientes autorizados da plataforma CineMorph AI. Utilize o link exclusivo enviado pelo administrador.";
+    }
+  </script>
+</body>
+</html>
