@@ -3,69 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configurações | CineReplicate</title>
+  <title>Configurações | CineMorph AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
-  <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-5">
-    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-gear text-indigo-400"></i>
-        <h1 class="text-sm font-bold uppercase tracking-wider text-slate-200">Configuração da API</h1>
+<body class="bg-[#05070B] text-slate-100 min-h-screen flex items-center justify-center p-6">
+  <div class="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl space-y-6">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black">CM</div>
+      <div>
+        <h1 class="font-bold text-white">Configurar API Key</h1>
+        <p class="text-xs text-slate-400">Cole sua chave do Gemini para usar a clonagem</p>
       </div>
-      <!-- Botão Voltar Corrigido -->
-      <button onclick="goBack()" class="text-slate-400 hover:text-white text-xs flex items-center gap-1.5 cursor-pointer bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg transition">
-        <i class="fa-solid fa-arrow-left"></i> Voltar
-      </button>
     </div>
-
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Google Gemini API Key</label>
-      <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono">
-      <p class="text-[11px] text-slate-500 mt-1">Armazenada no seu navegador (localStorage) para processar os vídeos.</p>
+      <label class="text-xs font-semibold text-slate-400">Gemini API Key</label>
+      <input id="apiKey" type="password" placeholder="AIza..." class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:border-indigo-500 outline-none">
+      <p class="text-[11px] text-slate-500 mt-2">Sua chave fica salva apenas no seu navegador (localStorage).</p>
     </div>
-
-    <div class="flex gap-2 pt-2">
-      <button id="saveKeyBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs py-2 rounded-lg transition cursor-pointer">
-        Salvar Chave
-      </button>
-      <button id="removeKeyBtn" class="bg-slate-800 hover:bg-rose-900/50 hover:text-rose-400 text-slate-400 text-xs px-3 py-2 rounded-lg transition cursor-pointer">
-        Remover
-      </button>
-    </div>
-    <p id="feedbackMsg" class="text-xs text-center font-medium hidden"></p>
+    <div id="status" class="hidden text-xs p-2.5 rounded-lg"></div>
+    <button onclick="saveKey()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/30">
+      <i class="fa-solid fa-floppy-disk mr-2"></i>Salvar e Voltar
+    </button>
+    <a href="index.html" class="block text-center text-xs text-slate-500 hover:text-white">Voltar ao Studio</a>
   </div>
-
   <script>
-    const input = document.getElementById('apiKeyInput');
-    const msg = document.getElementById('feedbackMsg');
-    const saved = localStorage.getItem('gemini_api_key');
-    if (saved) input.value = saved;
-
-    function goBack() {
-      if (document.referrer && document.referrer.includes(window.location.host)) {
-        window.history.back();
-      } else {
-        window.location.href = './';
-      }
+    const input = document.getElementById('apiKey');
+    const status = document.getElementById('status');
+    input.value = localStorage.getItem('gemini_api_key') || '';
+    if (input.value) { status.className = 'text-xs p-2.5 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400'; status.innerText = 'Chave já configurada'; status.classList.remove('hidden'); }
+    function saveKey() {
+      const key = input.value.trim();
+      if (!key) { alert('Cole sua API Key'); return; }
+      localStorage.setItem('gemini_api_key', key);
+      status.className = 'text-xs p-2.5 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-400';
+      status.innerText = 'Salvo! Redirecionando...';
+      status.classList.remove('hidden');
+      setTimeout(() => location.href = 'index.html', 800);
     }
-
-    document.getElementById('saveKeyBtn').addEventListener('click', () => {
-      const val = input.value.trim();
-      if (!val) return alert("Insira uma chave válida.");
-      localStorage.setItem('gemini_api_key', val);
-      msg.textContent = "✓ Chave salva com sucesso!";
-      msg.className = "text-xs text-center font-medium text-emerald-400 block";
-      setTimeout(goBack, 600);
-    });
-
-    document.getElementById('removeKeyBtn').addEventListener('click', () => {
-      localStorage.removeItem('gemini_api_key');
-      input.value = "";
-      msg.textContent = "Chave removida.";
-      msg.className = "text-xs text-center font-medium text-amber-400 block";
-    });
   </script>
 </body>
 </html>
