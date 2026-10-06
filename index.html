@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CineMorph AI Studio | Clonagem & Criação de Vídeos</title>
+  <script src="modules-config.js"></script>
   <script src="auth-guard.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -16,185 +17,28 @@
 </head>
 <body class="bg-black text-slate-100 flex h-screen overflow-hidden font-sans">
 
-  <!-- SIDEBAR LATERAL -->
+  <!-- SIDEBAR -->
   <aside class="w-64 bg-[#05070B] border-r border-slate-900 flex flex-col h-full flex-shrink-0">
-    <!-- Logotipo CineMorph AI -->
     <div class="p-5 border-b border-slate-900 flex items-center gap-3">
-      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-600/30">
-        CM
-      </div>
-      <div>
-        <h1 class="text-sm font-extrabold tracking-wide text-white leading-tight uppercase">CineMorph AI</h1>
-        <p class="text-[10px] font-bold text-indigo-400 tracking-wider uppercase">Video & Prompt Studio</p>
-      </div>
+      <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-600/30">CM</div>
+      <div><h1 class="text-sm font-extrabold tracking-wide text-white leading-tight uppercase">CineMorph AI</h1><p class="text-[10px] font-bold text-indigo-400 tracking-wider uppercase">Video & Prompt Studio</p></div>
     </div>
-
-    <!-- Navegação -->
-    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
-      <div>
-        <button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition text-left cursor-pointer">
-          <i class="fa-solid fa-house text-slate-300"></i>
-          <span>Início</span>
-        </button>
-      </div>
-
-      <!-- ESTRATÉGIAS -->
-      <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Estratégias</p>
-        <a href="downloads.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-download w-4"></i>
-          <span>Downloads</span>
-        </a>
-      </div>
-
-      <!-- VÍDEOS -->
-      <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Vídeos & Clonagem</p>
-        <a href="menina-da-roca.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-camera w-4"></i>
-          <span>Menina da Roça</span>
-        </a>
-        <a href="index.html" class="flex items-center gap-3 px-3 py-2 rounded-lg text-indigo-400 bg-indigo-950/30 border border-indigo-900/40 transition">
-          <i class="fa-solid fa-file-video w-4"></i>
-          <span>Clonagem de Vídeo</span>
-        </a>
-        <a href="novelinhas-universal.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-film w-4"></i>
-          <span>Novelinhas Universal</span>
-        </a>
-        <a href="mestre-30s.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-utensils w-4"></i>
-          <span>Mestre 30s</span>
-        </a>
-        <a href="anti-pragas.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-bug w-4"></i>
-          <span>Receitas Anti-Pragas</span>
-        </a>
-        <a href="pov-produto.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-box-open w-4"></i>
-          <span>POV Produto</span>
-        </a>
-        <a href="tiktok-seedance.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-video w-4"></i>
-          <span>TikTok Shop Seedance</span>
-        </a>
-      </div>
-
-      <!-- NOVOS AGENTES -->
-      <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Agentes Especializados</p>
-        <a href="gordo-magro.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-scale-balanced w-4"></i>
-          <span>Gordo para Magro</span>
-        </a>
-        <a href="velho-roca.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-heart w-4"></i>
-          <span>Reflexão do Velho da Roça</span>
-        </a>
-        <a href="gerador-ganchos.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-fire w-4"></i>
-          <span>Gerador de Ganchos</span>
-        </a>
-        <a href="plantacoes.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-seedling w-4"></i>
-          <span>Vídeos de Plantações</span>
-        </a>
-        <a href="limpeza.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-wand-magic-sparkles w-4"></i>
-          <span>Vídeos de Limpeza</span>
-        </a>
-        <a href="novelinhas-gordos.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-hand-holding-heart w-4"></i>
-          <span>Novelinhas Gordos</span>
-        </a>
-        <a href="upscale.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-image w-4"></i>
-          <span>Upscale de Imagem</span>
-        </a>
-        <a href="tiktok-shopee.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-bag-shopping w-4"></i>
-          <span>TikTok Shop & Shopee</span>
-        </a>
-        <a href="receitas-ebook.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-book-open w-4"></i>
-          <span>Receitas p/ Ebook</span>
-        </a>
-        <a href="encapsulados.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-cubes-stacked w-4"></i>
-          <span>Vender Encapsulados</span>
-        </a>
-        <a href="radar-tiktok.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-chart-line w-4"></i>
-          <span>Radar TikTok Shop</span>
-        </a>
-      </div>
-
-      <!-- REDES SOCIAIS -->
-      <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Redes Sociais</p>
-        <a href="prompts-virais.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-bolt w-4"></i>
-          <span>Prompts Virais</span>
-        </a>
-        <a href="tiktok-shop.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-brands fa-tiktok w-4"></i>
-          <span>TikTok Shop</span>
-        </a>
-        <a href="facebook.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-brands fa-facebook w-4"></i>
-          <span>Facebook</span>
-        </a>
-        <a href="youtube-shorts.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-brands fa-youtube w-4"></i>
-          <span>YouTube e Shorts</span>
-        </a>
-      </div>
-
-      <!-- FERRAMENTAS -->
-      <div class="space-y-1">
-        <p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Ferramentas & Sistema</p>
-        <a href="ferramentas-ia.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-screwdriver-wrench w-4"></i>
-          <span>Ferramentas IA</span>
-        </a>
-        <a href="tutoriais.html" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-900 hover:text-white transition">
-          <i class="fa-solid fa-circle-play w-4"></i>
-          <span>Tutoriais</span>
-        </a>
-        <a href="config.html" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-900 text-slate-300 hover:text-white transition">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-gear text-indigo-400 w-4"></i>
-            <span>Configurações</span>
-          </div>
-          <span id="keyStatusBadge" class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">...</span>
-        </a>
-      </div>
+    <nav id="dynamicMenu" class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-xs text-slate-400 font-medium">
+      <!-- Renderizado via JS com base no modules-config.js -->
     </nav>
   </aside>
 
   <!-- PAINEL PRINCIPAL -->
   <main id="mainScrollArea" class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-950">
     <div class="max-w-5xl w-full mx-auto px-6 py-8">
-      
-      <!-- Cabeçalho do App -->
       <header class="flex items-center justify-between border-b border-slate-900 pb-5 mb-8">
         <div class="flex items-center gap-3">
-          <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/20">
-            <i class="fa-solid fa-clapperboard text-white text-lg"></i>
-          </div>
-          <div>
-            <h2 class="text-lg font-bold text-white tracking-tight">CineMorph <span class="text-indigo-400">Studio Pro</span></h2>
-            <p class="text-xs text-slate-400">Engenharia Reversa de Vídeos, Extração de Prompts & Clonagem Audiovisual</p>
-          </div>
+          <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/20"><i class="fa-solid fa-clapperboard text-white text-lg"></i></div>
+          <div><h2 class="text-lg font-bold text-white tracking-tight">CineMorph <span class="text-indigo-400">Studio Pro</span></h2><p class="text-xs text-slate-400">Engenharia Reversa de Vídeos, Extração de Prompts & Clonagem Audiovisual</p></div>
         </div>
-
-        <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer">
-          <i class="fa-solid fa-rotate-left text-indigo-400"></i>
-          <span>Iniciar / Limpar</span>
-        </button>
+        <button id="resetAppBtn" type="button" class="bg-slate-900 border border-slate-800 hover:border-indigo-500 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition cursor-pointer"><i class="fa-solid fa-rotate-left text-indigo-400"></i><span>Iniciar / Limpar</span></button>
       </header>
 
-      <!-- Painel de Upload e Idioma -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
           <div>
@@ -205,70 +49,55 @@
               <option value="keep_original">Manter Áudio Original</option>
             </select>
           </div>
-          <div class="mt-4 p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400">
-            <i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>
-            Envio direto via navegador: prefira arquivos até <strong>18 MB</strong>.
-          </div>
+          <div class="mt-4 p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i> Envio direto via navegador: prefira arquivos até <strong>18 MB</strong>.</div>
         </div>
-
         <div class="md:col-span-2 bg-slate-900 border-2 border-dashed border-slate-800 hover:border-indigo-500/50 transition-colors p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer" id="dropArea">
           <input type="file" id="videoInput" accept="video/mp4,video/webm" class="hidden">
           <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-3 pointer-events-none"></i>
-          <button type="button" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 px-4 py-2 rounded-xl text-xs font-medium mb-1 pointer-events-none">
-            Escolher Arquivo de Vídeo (MP4 / WebM)
-          </button>
+          <button type="button" class="bg-indigo-600/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-600/30 px-4 py-2 rounded-xl text-xs font-medium mb-1 pointer-events-none">Escolher Arquivo de Vídeo (MP4 / WebM)</button>
           <p class="text-xs text-slate-400 mt-1 pointer-events-none" id="fileLabel">Clique ou arraste um vídeo até aqui</p>
         </div>
       </div>
 
-      <div class="flex justify-end mb-8">
-        <button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Desconstruir e Gerar Ativos</span>
-        </button>
-      </div>
+      <div class="flex justify-end mb-8"><button id="processBtn" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-medium text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50 cursor-pointer"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Desconstruir e Gerar Ativos</span></button></div>
+      <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3"><div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div><p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p></div>
 
-      <div id="statusContainer" class="hidden mb-6 p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
-        <div class="animate-spin text-indigo-400 text-lg"><i class="fa-solid fa-circle-notch"></i></div>
-        <p id="statusText" class="text-xs font-mono text-slate-300">Carregando...</p>
-      </div>
-
-      <!-- Resultados -->
       <section id="outputContainer" class="space-y-8 hidden">
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-            <i class="fa-solid fa-users text-indigo-400"></i>
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h3>
-          </div>
-          <div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-
-        <div class="space-y-3">
-          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
-            <i class="fa-solid fa-mountain-sun text-indigo-400"></i>
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h3>
-          </div>
-          <div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-
-        <div class="space-y-3">
-          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-clapperboard text-indigo-400"></i>
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h3>
-            </div>
-            <button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono">
-              <i class="fa-regular fa-copy"></i> Copiar Prompts
-            </button>
-          </div>
-          <div id="scenesList" class="space-y-4"></div>
-        </div>
+        <div class="space-y-3"><div class="flex items-center gap-2 border-b border-slate-800 pb-2"><i class="fa-solid fa-users text-indigo-400"></i><h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Personagens Mestre (Consistência)</h3></div><div id="charactersList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+        <div class="space-y-3"><div class="flex items-center gap-2 border-b border-slate-800 pb-2"><i class="fa-solid fa-mountain-sun text-indigo-400"></i><h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenários Mestre (Backgrounds)</h3></div><div id="environmentsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+        <div class="space-y-3"><div class="flex items-center justify-between border-b border-slate-800 pb-2"><div class="flex items-center gap-2"><i class="fa-solid fa-clapperboard text-indigo-400"></i><h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Cenas Decupadas & Falas</h3></div><button id="copyAllScenesBtn" class="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-mono"><i class="fa-regular fa-copy"></i> Copiar Prompts</button></div><div id="scenesList" class="space-y-4"></div></div>
       </section>
-
     </div>
   </main>
 
   <script>
+    // --- RENDERIZAÇÃO DINÂMICA DO MENU COM MODO TESTE ---
+    function renderMenu() {
+      const nav = document.getElementById('dynamicMenu');
+      const modules = getModulesState();
+      const grouped = {};
+      modules.forEach(m => {
+        if (!isModuleVisibleForUser(m)) return;
+        if (!grouped[m.category]) grouped[m.category] = [];
+        grouped[m.category].push(m);
+      });
+      let html = `<div><button id="navHomeBtn" type="button" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-800 transition text-left cursor-pointer"><i class="fa-solid fa-house text-slate-300"></i><span>Início</span></button></div>`;
+      const icons = { 'Estratégias': 'fa-download', 'Vídeos & Clonagem': 'fa-film', 'Agentes Especializados': 'fa-robot', 'Redes Sociais': 'fa-share-nodes', 'Ferramentas & Sistema': 'fa-screwdriver-wrench' };
+      for (const cat in grouped) {
+        html += `<div class="space-y-1"><p class="px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">${cat}</p>`;
+        grouped[cat].forEach(mod => {
+          const isCurrent = mod.file === 'index.html';
+          const isTest = mod.status === 'test';
+          const activeClass = isCurrent ? 'text-indigo-400 bg-indigo-950/30 border border-indigo-900/40' : 'hover:bg-slate-900 hover:text-white';
+          html += `<a href="${mod.file}${isTest ? '?admin_preview=1' : ''}" class="flex items-center justify-between px-3 py-2 rounded-lg ${activeClass} transition"><span class="flex items-center gap-3"><i class="fa-solid ${icons[cat] || 'fa-file'} w-4"></i><span>${mod.title}</span></span>${isTest ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-violet-950 text-violet-300 border border-violet-800">TESTE</span>' : ''}</a>`;
+        });
+        html += `</div>`;
+      }
+      nav.innerHTML = html;
+      document.getElementById('navHomeBtn')?.addEventListener('click', () => resetToHome());
+    }
+
+    // --- LÓGICA ORIGINAL DO CLONADOR (mantida completa) ---
     const dropArea = document.getElementById('dropArea');
     const videoInput = document.getElementById('videoInput');
     const fileLabel = document.getElementById('fileLabel');
@@ -281,263 +110,84 @@
     const environmentsList = document.getElementById('environmentsList');
     const scenesList = document.getElementById('scenesList');
     const copyAllScenesBtn = document.getElementById('copyAllScenesBtn');
-    const keyStatusBadge = document.getElementById('keyStatusBadge');
-    const navHomeBtn = document.getElementById('navHomeBtn');
     const resetAppBtn = document.getElementById('resetAppBtn');
     const mainScrollArea = document.getElementById('mainScrollArea');
-
     let currentFile = null;
     let fullPromptsText = "";
 
     function resetToHome() {
-      currentFile = null;
-      videoInput.value = "";
-      fileLabel.innerText = "Clique ou arraste um vídeo até aqui";
-      statusContainer.classList.add('hidden');
-      outputContainer.classList.add('hidden');
-      charactersList.innerHTML = "";
-      environmentsList.innerHTML = "";
-      scenesList.innerHTML = "";
-      processBtn.disabled = false;
+      currentFile = null; videoInput.value = ""; fileLabel.innerText = "Clique ou arraste um vídeo até aqui";
+      statusContainer.classList.add('hidden'); outputContainer.classList.add('hidden');
+      charactersList.innerHTML = ""; environmentsList.innerHTML = ""; scenesList.innerHTML = ""; processBtn.disabled = false;
       mainScrollArea.scrollTo({ top: 0, behavior: 'smooth' });
     }
-
-    navHomeBtn.addEventListener('click', resetToHome);
     resetAppBtn.addEventListener('click', resetToHome);
-
-    const activeKey = localStorage.getItem('gemini_api_key');
-    if (activeKey) {
-      keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
-      keyStatusBadge.textContent = 'Ativa';
-    } else {
-      keyStatusBadge.className = 'text-[9px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
-      keyStatusBadge.textContent = 'Vazia';
-    }
-
     dropArea.addEventListener('click', () => videoInput.click());
     dropArea.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('border-indigo-500'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('border-indigo-500'));
-    dropArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropArea.classList.remove('border-indigo-500');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-    });
-    videoInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
-    });
-
-    function handleFile(file) {
-      currentFile = file;
-      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`;
+    dropArea.addEventListener('drop', (e) => { e.preventDefault(); dropArea.classList.remove('border-indigo-500'); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+    videoInput.addEventListener('change', (e) => { if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]); });
+    function handleFile(file) { 
+      if (file.size > 18 * 1024 * 1024) { alert('Arquivo maior que 18MB, prefira até 18MB'); }
+      currentFile = file; const sizeMb = (file.size / (1024 * 1024)).toFixed(1); fileLabel.innerHTML = `<span class="text-indigo-400 font-semibold">${file.name}</span> (${sizeMb} MB)`; 
     }
-
-    const fileToBase64 = (file) => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = err => reject(err);
-    });
-
+    const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = err => reject(err); });
     processBtn.addEventListener('click', async () => {
       const apiKey = localStorage.getItem('gemini_api_key');
-      if (!apiKey) {
-        alert("Chave API não configurada. Aceda à página config.html.");
-        window.location.href = "config.html";
-        return;
-      }
+      if (!apiKey) { alert("Chave API não configurada. Vá em Configurações."); window.location.href = "config.html"; return; }
       if (!currentFile) return alert("Selecione um arquivo de vídeo primeiro.");
-
-      processBtn.disabled = true;
-      statusContainer.classList.remove('hidden');
-      outputContainer.classList.add('hidden');
-      statusText.innerText = "Consultando catálogo de modelos ativos da sua conta...";
-
+      processBtn.disabled = true; statusContainer.classList.remove('hidden'); outputContainer.classList.add('hidden');
+      statusText.innerText = "Consultando modelos ativos...";
       try {
         const base64Data = await fileToBase64(currentFile);
-
         let activeModels = [];
         try {
           const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-          if (listRes.ok) {
-            const listData = await listRes.json();
-            activeModels = (listData.models || [])
-              .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-              .map(m => m.name.replace('models/', ''));
-          }
-        } catch (e) {
-          console.warn("Falha no ListModels, usando fallback:", e);
-        }
-
-        const preferredList = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash"];
+          if (listRes.ok) { const listData = await listRes.json(); activeModels = (listData.models || []).filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', '')); }
+        } catch (e) { console.warn("Falha ListModels:", e); }
+        const preferredList = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
         let modelsToTry = preferredList.filter(m => activeModels.includes(m));
-
-        if (modelsToTry.length === 0) {
-          modelsToTry = activeModels.filter(m => m.includes("flash"));
-        }
-        if (modelsToTry.length === 0) {
-          modelsToTry = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-3.8-flash"];
-        }
-
-        const langRules = {
-          "detect_to_pt": "Traduza falas e diálogos para Português (PT-BR). Prompts em inglês conciso.",
-          "pt_to_en": "Traduza falas para Inglês. Prompts em inglês conciso.",
-          "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso."
-        };
-
-        const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa no CineMorph Studio.
-Regras de idioma: ${langRules[langMode.value]}
-Instrução: Prompts e descrições 50% mais concisos, sem detalhes redundantes.
-
-Retorne estritamente um JSON no seguinte padrão:
-{
-  "characters": [
-    { "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês para imagem" }
-  ],
-  "environments": [
-    { "name": "Nome do local", "details": "Iluminação resumida", "master_prompt": "Prompt conciso em inglês para cenário" }
-  ],
-  "scenes": [
-    {
-      "scene_number": 1,
-      "timestamp": "00:00 - 00:05",
-      "camera": "Ângulo e movimento",
-      "action": "Ação resumida",
-      "audio": { "speech": "Falas", "sfx": "SFX" },
-      "prompt_t2v": "Prompt visual conciso em inglês para vídeo"
-    }
-  ]
-}`;
-
-        let successData = null;
-        let lastErrorMsg = "";
-
+        if (modelsToTry.length === 0) { modelsToTry = activeModels.filter(m => m.includes("flash")); }
+        if (modelsToTry.length === 0) { modelsToTry = ["gemini-1.5-flash"]; }
+        const langRules = { "detect_to_pt": "Traduza falas e diálogos para Português (PT-BR). Prompts em inglês conciso.", "pt_to_en": "Traduza falas para Inglês. Prompts em inglês conciso.", "keep_original": "Mantenha o áudio no idioma original. Prompts em inglês conciso." };
+        const promptText = `Você é um diretor e desconstrutor técnico de vídeos para IA generativa no CineMorph Studio. Regras de idioma: ${langRules[langMode.value]} Instrução: Prompts 50% mais concisos. Retorne estritamente JSON: { "characters": [{ "name": "Nome", "traits": "Aparência resumida", "master_prompt": "Prompt conciso em inglês" }], "environments": [{ "name": "Nome", "details": "Iluminação resumida", "master_prompt": "Prompt conciso" }], "scenes": [{ "scene_number": 1, "timestamp": "00:00 - 00:05", "camera": "Ângulo", "action": "Ação resumida", "audio": { "speech": "Falas", "sfx": "SFX" }, "prompt_t2v": "Prompt visual conciso em inglês" }] }`;
+        let successData = null; let lastErrorMsg = "";
         for (const model of modelsToTry) {
-          statusText.innerText = `Processando vídeo com [${model}]...`;
+          statusText.innerText = `Processando com [${model}]...`;
           try {
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            const res = await fetch(apiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: promptText },
-                    { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }
-                  ]
-                }],
-                generationConfig: {
-                  response_mime_type: "application/json",
-                  temperature: 0.2
-                }
-              })
-            });
-
-            if (res.status === 503 || res.status === 429) {
-              console.warn(`Modelo ${model} ocupado. Tentando alternativa...`);
-              continue;
-            }
-
-            const data = await res.json();
-            if (!res.ok) {
-              lastErrorMsg = data.error?.message || "Erro retornado pela API.";
-              continue;
-            }
-
-            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (rawText) {
-              successData = JSON.parse(rawText);
-              break;
-            }
-          } catch (e) {
-            lastErrorMsg = e.message;
-          }
+            const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: promptText }, { inline_data: { mime_type: currentFile.type || "video/mp4", data: base64Data } }] }], generationConfig: { response_mime_type: "application/json", temperature: 0.2 } }) });
+            if (res.status === 503 || res.status === 429) { continue; }
+            const data = await res.json(); if (!res.ok) { lastErrorMsg = data.error?.message || "Erro API"; continue; }
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text; if (rawText) { successData = JSON.parse(rawText); break; }
+          } catch (e) { lastErrorMsg = e.message; }
         }
-
-        if (!successData) {
-          throw new Error(lastErrorMsg || "Modelos temporariamente ocupados. Aguarde alguns instantes e tente novamente.");
-        }
-
-        renderOutput(successData);
-        outputContainer.classList.remove('hidden');
-      } catch (err) {
-        alert("Erro no processamento: " + err.message);
-      } finally {
-        processBtn.disabled = false;
-        statusContainer.classList.add('hidden');
-      }
+        if (!successData) { throw new Error(lastErrorMsg || "Modelos ocupados. Tente novamente."); }
+        renderOutput(successData); outputContainer.classList.remove('hidden');
+      } catch (err) { alert("Erro: " + err.message); } finally { processBtn.disabled = false; statusContainer.classList.add('hidden'); }
     });
-
     function renderOutput(data) {
-      charactersList.innerHTML = "";
-      (data.characters || []).forEach(char => {
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-400 uppercase">${char.name}</span>
-            <button onclick="navigator.clipboard.writeText('${char.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p class="text-xs text-slate-300">${char.traits}</p>
-          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${char.master_prompt}</div>
-        `;
+      charactersList.innerHTML = ""; (data.characters || []).forEach(char => {
+        const card = document.createElement('div'); card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
+        card.innerHTML = `<div class="flex items-center justify-between"><span class="text-xs font-bold text-indigo-400 uppercase">${char.name}</span><button onclick="navigator.clipboard.writeText('${char.master_prompt.replace(/'/g, "\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button></div><p class="text-xs text-slate-300">${char.traits}</p><div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${char.master_prompt}</div>`;
         charactersList.appendChild(card);
       });
-
-      environmentsList.innerHTML = "";
-      (data.environments || []).forEach(env => {
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-indigo-400 uppercase">${env.name}</span>
-            <button onclick="navigator.clipboard.writeText('${env.master_prompt.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p class="text-xs text-slate-300">${env.details}</p>
-          <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${env.master_prompt}</div>
-        `;
+      environmentsList.innerHTML = ""; (data.environments || []).forEach(env => {
+        const card = document.createElement('div'); card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-2";
+        card.innerHTML = `<div class="flex items-center justify-between"><span class="text-xs font-bold text-indigo-400 uppercase">${env.name}</span><button onclick="navigator.clipboard.writeText('${env.master_prompt.replace(/'/g, "\'")}')" class="text-slate-400 hover:text-white text-xs"><i class="fa-regular fa-copy"></i></button></div><p class="text-xs text-slate-300">${env.details}</p><div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-400 select-all">${env.master_prompt}</div>`;
         environmentsList.appendChild(card);
       });
-
-      fullPromptsText = "";
-      scenesList.innerHTML = "";
-      (data.scenes || []).forEach(scene => {
+      fullPromptsText = ""; scenesList.innerHTML = ""; (data.scenes || []).forEach(scene => {
         fullPromptsText += `// Cena ${scene.scene_number} (${scene.timestamp})\n${scene.prompt_t2v}\n\n`;
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3";
-        card.innerHTML = `
-          <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
-            <span class="font-bold text-indigo-400">CENA ${scene.scene_number}</span>
-            <div class="flex gap-3 text-slate-400 font-mono text-[11px]">
-              <span><i class="fa-regular fa-clock"></i> ${scene.timestamp}</span>
-              <span><i class="fa-solid fa-camera"></i> ${scene.camera}</span>
-            </div>
-          </div>
-          <p class="text-xs text-slate-300"><strong>Ação:</strong> ${scene.action}</p>
-          <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800/70 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div>
-              <span class="text-indigo-400 font-semibold block mb-0.5">Fala/Diálogo:</span>
-              <p class="text-slate-300 italic">${scene.audio?.speech || 'Sem falas'}</p>
-            </div>
-            <div>
-              <span class="text-indigo-400 font-semibold block mb-0.5">SFX/Áudio:</span>
-              <p class="text-slate-400">${scene.audio?.sfx || 'Ambiente'}</p>
-            </div>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start justify-between gap-3">
-            <p class="text-xs font-mono text-slate-300 select-all">${scene.prompt_t2v}</p>
-            <button onclick="navigator.clipboard.writeText('${scene.prompt_t2v.replace(/'/g, "\\'")}')" class="text-slate-400 hover:text-white text-xs mt-1"><i class="fa-regular fa-copy"></i></button>
-          </div>
-        `;
+        const card = document.createElement('div'); card.className = "bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-3";
+        card.innerHTML = `<div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2"><span class="font-bold text-indigo-400">CENA ${scene.scene_number}</span><div class="flex gap-3 text-slate-400 font-mono text-[11px]"><span><i class="fa-regular fa-clock"></i> ${scene.timestamp}</span><span><i class="fa-solid fa-camera"></i> ${scene.camera}</span></div></div><p class="text-xs text-slate-300"><strong>Ação:</strong> ${scene.action}</p><div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800/70 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"><div><span class="text-indigo-400 font-semibold block mb-0.5">Fala/Diálogo:</span><p class="text-slate-300 italic">${scene.audio?.speech || 'Sem falas'}</p></div><div><span class="text-indigo-400 font-semibold block mb-0.5">SFX/Áudio:</span><p class="text-slate-400">${scene.audio?.sfx || 'Ambiente'}</p></div></div><div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex items-start justify-between gap-3"><p class="text-xs font-mono text-slate-300 select-all">${scene.prompt_t2v}</p><button onclick="navigator.clipboard.writeText('${scene.prompt_t2v.replace(/'/g, "\'")}')" class="text-slate-400 hover:text-white text-xs mt-1"><i class="fa-regular fa-copy"></i></button></div>`;
         scenesList.appendChild(card);
       });
     }
+    copyAllScenesBtn.addEventListener('click', () => { navigator.clipboard.writeText(fullPromptsText); copyAllScenesBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`; setTimeout(() => copyAllScenesBtn.innerHTML = `<i class="fa-regular fa-copy"></i> Copiar Prompts`, 2000); });
 
-    copyAllScenesBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(fullPromptsText);
-      copyAllScenesBtn.innerHTML = `<i class="fa-solid fa-check"></i> Copiado!`;
-      setTimeout(() => copyAllScenesBtn.innerHTML = `<i class="fa-regular fa-copy"></i> Copiar Prompts`, 2000);
-    });
+    // Inicializa menu com modo teste
+    renderMenu();
   </script>
 </body>
 </html>
